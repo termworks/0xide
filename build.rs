@@ -92,6 +92,7 @@ fn main() {
         .allowlist_function("wlr_subcompositor_create")
         .allowlist_function("wlr_data_device_manager_create")
         .allowlist_function("wlr_xdg_shell_create")
+        .allowlist_function("wlr_xdg_toplevel_set_size")
         .allowlist_type("wlr_xdg_toplevel")
         .allowlist_type("wlr_seat")
         .allowlist_type("wlr_input_device")

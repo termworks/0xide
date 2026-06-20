@@ -7,6 +7,7 @@ struct wlr_backend;
 struct wlr_output;
 struct wlr_scene;
 struct wlr_scene_output;
+struct wlr_scene_tree;
 struct wlr_xdg_shell;
 struct wlr_xdg_toplevel;
 struct wlr_seat;
@@ -40,10 +41,25 @@ void snertwl_scene_output_render(struct wlr_scene_output *scene_output);
 // --- xdg-shell (app windows) ----------------------------------------------
 struct snertwl_listener *snertwl_xdg_shell_add_new_toplevel(
         struct wlr_xdg_shell *shell, snertwl_callback callback, void *userdata);
-// Add a toplevel to the scene graph, arrange its initial configure, and give
-// it keyboard focus when it maps. Reaches into wlr_xdg_surface fields, C-side.
-void snertwl_scene_add_xdg_toplevel(struct wlr_scene *scene,
-        struct wlr_xdg_toplevel *toplevel, struct wlr_seat *seat);
+// Add a toplevel to the scene graph and arrange its initial configure so the
+// client can map. Returns the scene tree node so Rust can position it.
+struct wlr_scene_tree *snertwl_scene_add_xdg_toplevel(struct wlr_scene *scene,
+        struct wlr_xdg_toplevel *toplevel);
+
+// Lifecycle listeners on a toplevel (Rust drives window tracking & layout).
+struct snertwl_listener *snertwl_xdg_add_map(struct wlr_xdg_toplevel *toplevel,
+        snertwl_callback callback, void *userdata);
+struct snertwl_listener *snertwl_xdg_add_unmap(struct wlr_xdg_toplevel *toplevel,
+        snertwl_callback callback, void *userdata);
+struct snertwl_listener *snertwl_xdg_add_destroy(struct wlr_xdg_toplevel *toplevel,
+        snertwl_callback callback, void *userdata);
+
+// Layout helpers: move a window's scene node; give a window keyboard focus;
+// read an output's pixel size. (All touch wlroots struct internals.)
+void snertwl_scene_tree_set_position(struct wlr_scene_tree *tree, int x, int y);
+void snertwl_focus_toplevel(struct wlr_seat *seat,
+        struct wlr_xdg_toplevel *toplevel);
+void snertwl_output_get_size(struct wlr_output *output, int *width, int *height);
 
 // --- seat & input ----------------------------------------------------------
 // Create the wl_seat global; returns the seat so Rust can wire input/focus.

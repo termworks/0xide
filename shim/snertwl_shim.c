@@ -116,38 +116,52 @@ struct snertwl_listener *snertwl_xdg_shell_add_new_toplevel(
     return signal_add(&shell->events.new_toplevel, callback, userdata);
 }
 
-// When a toplevel maps, give it keyboard focus so typing reaches it.
-struct snertwl_mapctx {
-    struct wlr_seat *seat;
-    struct wlr_surface *surface;
-};
-
-static void handle_toplevel_map(void *userdata, void *data) {
-    (void)data;
-    struct snertwl_mapctx *ctx = userdata;
-    struct wlr_keyboard *kb = wlr_seat_get_keyboard(ctx->seat);
-    if (kb != NULL) {
-        wlr_seat_keyboard_notify_enter(ctx->seat, ctx->surface, kb->keycodes,
-                kb->num_keycodes, &kb->modifiers);
-    } else {
-        wlr_seat_keyboard_notify_enter(ctx->seat, ctx->surface, NULL, 0, NULL);
-    }
-    wlr_log(WLR_INFO, "snertwl: keyboard focus -> toplevel");
-}
-
-void snertwl_scene_add_xdg_toplevel(struct wlr_scene *scene,
-        struct wlr_xdg_toplevel *toplevel, struct wlr_seat *seat) {
+struct wlr_scene_tree *snertwl_scene_add_xdg_toplevel(struct wlr_scene *scene,
+        struct wlr_xdg_toplevel *toplevel) {
     // A scene node that tracks this surface (and its popups) and follows its
     // map/unmap state automatically.
-    wlr_scene_xdg_surface_create(&scene->tree, toplevel->base);
+    struct wlr_scene_tree *tree =
+            wlr_scene_xdg_surface_create(&scene->tree, toplevel->base);
     // Configure the client on its initial commit so it can map.
     signal_add(&toplevel->base->surface->events.commit, handle_xdg_initial_commit,
             toplevel);
-    // Focus it on map.
-    struct snertwl_mapctx *ctx = calloc(1, sizeof(*ctx));
-    ctx->seat = seat;
-    ctx->surface = toplevel->base->surface;
-    signal_add(&toplevel->base->surface->events.map, handle_toplevel_map, ctx);
+    return tree;
+}
+
+struct snertwl_listener *snertwl_xdg_add_map(struct wlr_xdg_toplevel *toplevel,
+        snertwl_callback callback, void *userdata) {
+    return signal_add(&toplevel->base->surface->events.map, callback, userdata);
+}
+
+struct snertwl_listener *snertwl_xdg_add_unmap(struct wlr_xdg_toplevel *toplevel,
+        snertwl_callback callback, void *userdata) {
+    return signal_add(&toplevel->base->surface->events.unmap, callback, userdata);
+}
+
+struct snertwl_listener *snertwl_xdg_add_destroy(struct wlr_xdg_toplevel *toplevel,
+        snertwl_callback callback, void *userdata) {
+    return signal_add(&toplevel->events.destroy, callback, userdata);
+}
+
+void snertwl_scene_tree_set_position(struct wlr_scene_tree *tree, int x, int y) {
+    wlr_scene_node_set_position(&tree->node, x, y);
+}
+
+void snertwl_focus_toplevel(struct wlr_seat *seat,
+        struct wlr_xdg_toplevel *toplevel) {
+    struct wlr_surface *surface = toplevel->base->surface;
+    struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat);
+    if (kb != NULL) {
+        wlr_seat_keyboard_notify_enter(seat, surface, kb->keycodes,
+                kb->num_keycodes, &kb->modifiers);
+    } else {
+        wlr_seat_keyboard_notify_enter(seat, surface, NULL, 0, NULL);
+    }
+}
+
+void snertwl_output_get_size(struct wlr_output *output, int *width, int *height) {
+    *width = output->width;
+    *height = output->height;
 }
 
 // --- seat & input ----------------------------------------------------------

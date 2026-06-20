@@ -58,7 +58,31 @@ extern "C" {
     fn snertwl_scene_add_xdg_toplevel(
         scene: *mut wlr::wlr_scene,
         toplevel: *mut wlr::wlr_xdg_toplevel,
+    ) -> *mut wlr::wlr_scene_tree;
+    fn snertwl_xdg_add_map(
+        toplevel: *mut wlr::wlr_xdg_toplevel,
+        callback: ShimCallback,
+        userdata: *mut c_void,
+    ) -> *mut ShimListener;
+    fn snertwl_xdg_add_unmap(
+        toplevel: *mut wlr::wlr_xdg_toplevel,
+        callback: ShimCallback,
+        userdata: *mut c_void,
+    ) -> *mut ShimListener;
+    fn snertwl_xdg_add_destroy(
+        toplevel: *mut wlr::wlr_xdg_toplevel,
+        callback: ShimCallback,
+        userdata: *mut c_void,
+    ) -> *mut ShimListener;
+    fn snertwl_scene_tree_set_position(tree: *mut wlr::wlr_scene_tree, x: i32, y: i32);
+    fn snertwl_focus_toplevel(
         seat: *mut wlr::wlr_seat,
+        toplevel: *mut wlr::wlr_xdg_toplevel,
+    );
+    fn snertwl_output_get_size(
+        output: *mut wlr::wlr_output,
+        width: *mut i32,
+        height: *mut i32,
     );
     fn snertwl_seat_create(
         display: *mut wlr::wl_display,
@@ -92,6 +116,37 @@ struct Server {
     cursor: *mut wlr::wlr_cursor,
     renderer: *mut wlr::wlr_renderer,
     allocator: *mut wlr::wlr_allocator,
+    /// Mapped windows, in stacking order. Pointers to heap-allocated Toplevels.
+    windows: Vec<*mut Toplevel>,
+    /// Size of the (single, for now) output we tile within.
+    output_width: i32,
+    output_height: i32,
+}
+
+/// One application window we track. Heap-allocated; a raw pointer to it is the
+/// `userdata` for that window's map/unmap/destroy listeners.
+struct Toplevel {
+    server: *mut Server,
+    xdg_toplevel: *mut wlr::wlr_xdg_toplevel,
+    scene_tree: *mut wlr::wlr_scene_tree,
+}
+
+/// Gap between/around tiled windows, in pixels.
+const GAP: i32 = 10;
+
+/// Arrange all mapped windows as equal-width columns across the output.
+unsafe fn relayout(server: &mut Server) {
+    let n = server.windows.len() as i32;
+    if n == 0 {
+        return;
+    }
+    let col_w = ((server.output_width - GAP * (n + 1)) / n).max(1);
+    let h = (server.output_height - GAP * 2).max(1);
+    for (i, &tl) in server.windows.iter().enumerate() {
+        let x = GAP + (col_w + GAP) * i as i32;
+        snertwl_scene_tree_set_position((*tl).scene_tree, x, GAP);
+        wlr::wlr_xdg_toplevel_set_size((*tl).xdg_toplevel, col_w, h);
+    }
 }
 
 /// Called by the shim when the backend produces an output (one window, here).
@@ -103,6 +158,9 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
     // enable it (the shim owns the wlr_output_state dance).
     wlr::wlr_output_init_render(output, server.allocator, server.renderer);
     snertwl_output_enable(output);
+
+    // Remember the output size so the tiling layout knows its bounds.
+    snertwl_output_get_size(output, &mut server.output_width, &mut server.output_height);
 
     // Place the output in the layout, and tie that layout slot to a scene
     // output so the scene knows where this output sits and what to repaint.
@@ -129,13 +187,50 @@ unsafe extern "C" fn handle_frame(userdata: *mut c_void, _data: *mut c_void) {
 
 /// Called by the shim when a client creates an application window (toplevel).
 unsafe extern "C" fn handle_new_toplevel(userdata: *mut c_void, data: *mut c_void) {
-    let server = &mut *(userdata as *mut Server);
+    let server = userdata as *mut Server;
     let toplevel = data as *mut wlr::wlr_xdg_toplevel;
 
-    // Drop it into the scene graph; the scene draws it once the client maps,
-    // and the shim gives it keyboard focus on map. (Placement/tiling: Stage 5.)
-    snertwl_scene_add_xdg_toplevel(server.scene, toplevel, server.seat);
-    println!("snertwl: new toplevel — added to scene");
+    // Give it a scene node, then track it in Rust. We don't add it to the
+    // layout yet — that happens on map, when it actually has content.
+    let scene_tree = snertwl_scene_add_xdg_toplevel((*server).scene, toplevel);
+    let tl = Box::into_raw(Box::new(Toplevel {
+        server,
+        xdg_toplevel: toplevel,
+        scene_tree,
+    }));
+
+    // Listen for its lifecycle so Rust can keep the window list current.
+    let ud = tl as *mut c_void;
+    snertwl_xdg_add_map(toplevel, handle_map, ud);
+    snertwl_xdg_add_unmap(toplevel, handle_unmap, ud);
+    snertwl_xdg_add_destroy(toplevel, handle_destroy, ud);
+}
+
+/// A window's surface became mapped: add it to the layout and focus it.
+unsafe extern "C" fn handle_map(userdata: *mut c_void, _data: *mut c_void) {
+    let tl = userdata as *mut Toplevel;
+    let server = &mut *(*tl).server;
+    server.windows.push(tl);
+    relayout(server);
+    snertwl_focus_toplevel(server.seat, (*tl).xdg_toplevel);
+    println!("snertwl: window mapped — {} tiled", server.windows.len());
+}
+
+/// A window's surface was unmapped (hidden): drop it from the layout.
+unsafe extern "C" fn handle_unmap(userdata: *mut c_void, _data: *mut c_void) {
+    let tl = userdata as *mut Toplevel;
+    let server = &mut *(*tl).server;
+    server.windows.retain(|&w| w != tl);
+    relayout(server);
+}
+
+/// A window was destroyed: drop it from the layout and free our tracking.
+unsafe extern "C" fn handle_destroy(userdata: *mut c_void, _data: *mut c_void) {
+    let tl = userdata as *mut Toplevel;
+    let server = &mut *(*tl).server;
+    server.windows.retain(|&w| w != tl);
+    relayout(server);
+    drop(Box::from_raw(tl));
 }
 
 /// Called by the shim when an input device (keyboard, pointer, …) appears.
@@ -197,6 +292,9 @@ fn main() {
             cursor,
             renderer,
             allocator,
+            windows: Vec::new(),
+            output_width: 0,
+            output_height: 0,
         };
         let server_ptr = &mut server as *mut Server as *mut c_void;
         snertwl_backend_add_new_output(backend, handle_new_output, server_ptr);
