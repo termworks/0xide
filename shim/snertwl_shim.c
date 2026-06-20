@@ -174,19 +174,40 @@ struct wlr_seat *snertwl_seat_create(struct wl_display *display, const char *nam
     return seat;
 }
 
-// Per-keyboard context so the key/modifier handlers can reach the seat.
+// Per-keyboard context so the key/modifier handlers can reach the seat and the
+// Rust keybinding callback.
 struct snertwl_keyboard {
     struct wlr_seat *seat;
     struct wlr_keyboard *keyboard;
+    snertwl_key_callback key_callback;
+    void *key_userdata;
 };
 
 static void handle_key(void *userdata, void *data) {
     struct snertwl_keyboard *kb = userdata;
     struct wlr_keyboard_key_event *event = data;
-    // Forward to the focused client. (Keybindings will intercept here in Stage 5.)
-    wlr_seat_set_keyboard(kb->seat, kb->keyboard);
-    wlr_seat_keyboard_notify_key(kb->seat, event->time_msec, event->keycode,
-            event->state);
+
+    // Offer the press to Rust as a possible keybinding first. wlroots keycodes
+    // are offset by 8 from xkb keycodes.
+    bool handled = false;
+    if (event->state == WL_KEYBOARD_KEY_STATE_PRESSED && kb->key_callback != NULL) {
+        const xkb_keysym_t *syms;
+        int nsyms = xkb_state_key_get_syms(kb->keyboard->xkb_state,
+                event->keycode + 8, &syms);
+        uint32_t modifiers = wlr_keyboard_get_modifiers(kb->keyboard);
+        for (int i = 0; i < nsyms; i++) {
+            if (kb->key_callback(kb->key_userdata, syms[i], modifiers)) {
+                handled = true;
+            }
+        }
+    }
+
+    // Unhandled keys go to the focused client.
+    if (!handled) {
+        wlr_seat_set_keyboard(kb->seat, kb->keyboard);
+        wlr_seat_keyboard_notify_key(kb->seat, event->time_msec, event->keycode,
+                event->state);
+    }
 }
 
 static void handle_modifiers(void *userdata, void *data) {
@@ -197,7 +218,8 @@ static void handle_modifiers(void *userdata, void *data) {
 }
 
 static void seat_add_keyboard(struct wlr_seat *seat,
-        struct wlr_input_device *device) {
+        struct wlr_input_device *device, snertwl_key_callback key_callback,
+        void *key_userdata) {
     struct wlr_keyboard *keyboard = wlr_keyboard_from_input_device(device);
 
     // Compile scancodes -> keysyms with the default (locale/us) layout.
@@ -212,6 +234,8 @@ static void seat_add_keyboard(struct wlr_seat *seat,
     struct snertwl_keyboard *kb = calloc(1, sizeof(*kb));
     kb->seat = seat;
     kb->keyboard = keyboard;
+    kb->key_callback = key_callback;
+    kb->key_userdata = key_userdata;
     signal_add(&keyboard->events.key, handle_key, kb);
     signal_add(&keyboard->events.modifiers, handle_modifiers, kb);
 
@@ -328,10 +352,11 @@ struct wlr_cursor *snertwl_cursor_setup(struct wlr_output_layout *layout,
 }
 
 void snertwl_handle_new_input(struct wlr_seat *seat, struct wlr_cursor *cursor,
-        struct wlr_input_device *device) {
+        struct wlr_input_device *device, snertwl_key_callback key_callback,
+        void *key_userdata) {
     switch (device->type) {
     case WLR_INPUT_DEVICE_KEYBOARD:
-        seat_add_keyboard(seat, device);
+        seat_add_keyboard(seat, device, key_callback, key_userdata);
         break;
     case WLR_INPUT_DEVICE_POINTER:
         wlr_cursor_attach_input_device(cursor, device);

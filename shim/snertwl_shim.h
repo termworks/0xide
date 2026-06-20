@@ -1,6 +1,9 @@
 #ifndef SNERTWL_SHIM_H
 #define SNERTWL_SHIM_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 // Opaque to Rust; full definitions live in the wlroots headers / shim .c.
 struct wl_display;
 struct wlr_backend;
@@ -18,6 +21,11 @@ struct snertwl_listener;
 
 // Generic event callback handed to Rust: (userdata, signal-data).
 typedef void (*snertwl_callback)(void *userdata, void *data);
+
+// Key callback: returns true if the keysym was consumed as a binding (and so
+// must NOT be forwarded to the focused client).
+typedef bool (*snertwl_key_callback)(void *userdata, uint32_t keysym,
+        uint32_t modifiers);
 
 // --- toolchain / logging ---------------------------------------------------
 const char *snertwl_wlroots_version(void);
@@ -67,10 +75,12 @@ struct wlr_seat *snertwl_seat_create(struct wl_display *display, const char *nam
 // Subscribe to the backend's new_input signal (data = wlr_input_device).
 struct snertwl_listener *snertwl_backend_add_new_input(
         struct wlr_backend *backend, snertwl_callback callback, void *userdata);
-// Wire a new input device: keyboards get an xkb keymap + event forwarding,
-// pointers get attached to the cursor. Other device types are ignored.
+// Wire a new input device: keyboards get an xkb keymap + event forwarding
+// (key presses are offered to `key_callback` first), pointers get attached to
+// the cursor. Other device types are ignored.
 void snertwl_handle_new_input(struct wlr_seat *seat, struct wlr_cursor *cursor,
-        struct wlr_input_device *device);
+        struct wlr_input_device *device, snertwl_key_callback key_callback,
+        void *key_userdata);
 
 // Create a cursor over the output layout, route its events through scene
 // hit-testing to the seat, and show a default cursor image. Returns the cursor

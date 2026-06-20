@@ -22,6 +22,9 @@ const COLOR: (f32, f32, f32) = (0.0, 0.6, 0.6);
 /// Type of the callbacks our C shim invokes: (userdata, signal-data).
 type ShimCallback = unsafe extern "C" fn(*mut c_void, *mut c_void);
 
+/// Keybinding callback: (userdata, keysym, modifiers) -> was it consumed?
+type KeyCallback = unsafe extern "C" fn(*mut c_void, u32, u32) -> bool;
+
 /// Opaque handle to a `snertwl_listener` living on the C heap.
 #[repr(C)]
 struct ShimListener {
@@ -97,6 +100,8 @@ extern "C" {
         seat: *mut wlr::wlr_seat,
         cursor: *mut wlr::wlr_cursor,
         device: *mut wlr::wlr_input_device,
+        key_callback: KeyCallback,
+        key_userdata: *mut c_void,
     );
     fn snertwl_cursor_setup(
         layout: *mut wlr::wlr_output_layout,
@@ -109,6 +114,7 @@ extern "C" {
 /// `userdata` for the new_output callback, so the handler can reach the scene
 /// and layout it needs to wire up each output.
 struct Server {
+    display: *mut wlr::wl_display,
     scene: *mut wlr::wlr_scene,
     output_layout: *mut wlr::wlr_output_layout,
     scene_layout: *mut wlr::wlr_scene_output_layout,
@@ -118,6 +124,10 @@ struct Server {
     allocator: *mut wlr::wlr_allocator,
     /// Mapped windows, in stacking order. Pointers to heap-allocated Toplevels.
     windows: Vec<*mut Toplevel>,
+    /// Index into `windows` of the focused window.
+    focused: usize,
+    /// Modifier that triggers keybindings (Super by default; Alt for nested dev).
+    modkey: u32,
     /// Size of the (single, for now) output we tile within.
     output_width: i32,
     output_height: i32,
@@ -147,6 +157,62 @@ unsafe fn relayout(server: &mut Server) {
         snertwl_scene_tree_set_position((*tl).scene_tree, x, GAP);
         wlr::wlr_xdg_toplevel_set_size((*tl).xdg_toplevel, col_w, h);
     }
+}
+
+// --- keybindings -----------------------------------------------------------
+
+/// Modifier bits (mirror the WLR_MODIFIER_* enum).
+const MOD_LOGO: u32 = 1 << 6; // Super
+const MOD_ALT: u32 = 1 << 3; // Alt
+
+// xkb keysyms. Latin-1 letters equal their ASCII codes; named keys are 0xff..
+const KEY_RETURN: u32 = 0xff0d;
+const KEY_Q: u32 = b'q' as u32;
+const KEY_Q_SHIFT: u32 = b'Q' as u32;
+const KEY_J: u32 = b'j' as u32;
+const KEY_K: u32 = b'k' as u32;
+
+/// Give keyboard focus to window `idx` (wrapped into range).
+unsafe fn focus_index(server: &mut Server, idx: usize) {
+    if server.windows.is_empty() {
+        return;
+    }
+    let i = idx % server.windows.len();
+    server.focused = i;
+    snertwl_focus_toplevel(server.seat, (*server.windows[i]).xdg_toplevel);
+}
+
+/// Ask the focused window to close.
+unsafe fn close_focused(server: &Server) {
+    if let Some(&tl) = server.windows.get(server.focused) {
+        wlr::wlr_xdg_toplevel_send_close((*tl).xdg_toplevel);
+    }
+}
+
+/// Launch a program as a client of snertwl (inherits our WAYLAND_DISPLAY).
+fn spawn(program: &str) {
+    if let Err(e) = Command::new(program).spawn() {
+        eprintln!("snertwl: failed to spawn `{program}`: {e}");
+    }
+}
+
+/// Called by the shim for each key press; returns true to consume the key.
+/// All bindings here are Super-chords; everything else falls through to apps.
+unsafe extern "C" fn handle_keybinding(userdata: *mut c_void, keysym: u32, modifiers: u32) -> bool {
+    let server = &mut *(userdata as *mut Server);
+    if modifiers & server.modkey == 0 {
+        return false;
+    }
+    let n = server.windows.len();
+    match keysym {
+        KEY_RETURN => spawn("foot"),
+        KEY_Q => close_focused(server),
+        KEY_Q_SHIFT => wlr::wl_display_terminate(server.display),
+        KEY_J if n > 0 => focus_index(server, server.focused + 1),
+        KEY_K if n > 0 => focus_index(server, server.focused + n - 1),
+        _ => return false,
+    }
+    true
 }
 
 /// Called by the shim when the backend produces an output (one window, here).
@@ -212,7 +278,7 @@ unsafe extern "C" fn handle_map(userdata: *mut c_void, _data: *mut c_void) {
     let server = &mut *(*tl).server;
     server.windows.push(tl);
     relayout(server);
-    snertwl_focus_toplevel(server.seat, (*tl).xdg_toplevel);
+    focus_index(server, server.windows.len() - 1);
     println!("snertwl: window mapped — {} tiled", server.windows.len());
 }
 
@@ -220,24 +286,31 @@ unsafe extern "C" fn handle_map(userdata: *mut c_void, _data: *mut c_void) {
 unsafe extern "C" fn handle_unmap(userdata: *mut c_void, _data: *mut c_void) {
     let tl = userdata as *mut Toplevel;
     let server = &mut *(*tl).server;
-    server.windows.retain(|&w| w != tl);
-    relayout(server);
+    remove_window(server, tl);
 }
 
 /// A window was destroyed: drop it from the layout and free our tracking.
 unsafe extern "C" fn handle_destroy(userdata: *mut c_void, _data: *mut c_void) {
     let tl = userdata as *mut Toplevel;
     let server = &mut *(*tl).server;
+    remove_window(server, tl);
+    drop(Box::from_raw(tl));
+}
+
+/// Remove a window from the layout and re-focus a remaining one.
+unsafe fn remove_window(server: &mut Server, tl: *mut Toplevel) {
     server.windows.retain(|&w| w != tl);
     relayout(server);
-    drop(Box::from_raw(tl));
+    if !server.windows.is_empty() {
+        focus_index(server, server.focused.min(server.windows.len() - 1));
+    }
 }
 
 /// Called by the shim when an input device (keyboard, pointer, …) appears.
 unsafe extern "C" fn handle_new_input(userdata: *mut c_void, data: *mut c_void) {
     let server = &mut *(userdata as *mut Server);
     let device = data as *mut wlr::wlr_input_device;
-    snertwl_handle_new_input(server.seat, server.cursor, device);
+    snertwl_handle_new_input(server.seat, server.cursor, device, handle_keybinding, userdata);
 }
 
 fn main() {
@@ -282,9 +355,21 @@ fn main() {
         // hit-testing to the seat. Pointer devices get attached in new_input.
         let cursor = snertwl_cursor_setup(output_layout, scene, seat);
 
+        // Keybinding modifier: Super by default; `SNERTWL_MOD=alt` for nested
+        // dev (a nesting host like Hyprland grabs Super-chords before us).
+        let modkey = match env::var("SNERTWL_MOD").as_deref() {
+            Ok("alt") => MOD_ALT,
+            _ => MOD_LOGO,
+        };
+        println!(
+            "snertwl: keybinding modifier = {}",
+            if modkey == MOD_ALT { "Alt" } else { "Super" }
+        );
+
         // `server` lives for the whole of main(), which blocks in wl_display_run
         // below, so the pointer we hand the shim stays valid for the run.
         let mut server = Server {
+            display,
             scene,
             output_layout,
             scene_layout,
@@ -293,6 +378,8 @@ fn main() {
             renderer,
             allocator,
             windows: Vec::new(),
+            focused: 0,
+            modkey,
             output_width: 0,
             output_height: 0,
         };
