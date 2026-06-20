@@ -1,10 +1,10 @@
 #define WLR_USE_UNSTABLE
 #include <stdlib.h>
+#include <time.h>
 #include <wayland-server-core.h>
 #include <wlr/backend.h>
-#include <wlr/render/pass.h>
 #include <wlr/types/wlr_output.h>
-#include <wlr/util/box.h>
+#include <wlr/types/wlr_scene.h>
 #include <wlr/util/log.h>
 #include <wlr/version.h>
 
@@ -58,7 +58,7 @@ struct snertwl_listener *snertwl_output_add_frame(
     return signal_add(&output->events.frame, callback, userdata);
 }
 
-// --- output helpers --------------------------------------------------------
+// --- output / scene helpers ------------------------------------------------
 
 void snertwl_output_enable(struct wlr_output *output) {
     struct wlr_output_state state;
@@ -76,28 +76,17 @@ void snertwl_output_enable(struct wlr_output *output) {
     wlr_output_state_finish(&state);
 }
 
-void snertwl_output_render_clear(struct wlr_output *output,
-        float r, float g, float b) {
-    struct wlr_output_state state;
-    wlr_output_state_init(&state);
+void snertwl_scene_add_output_background(struct wlr_scene *scene,
+        struct wlr_output *output, float r, float g, float b) {
+    const float color[4] = {r, g, b, 1.0f};
+    wlr_scene_rect_create(&scene->tree, output->width, output->height, color);
+}
 
-    // Acquires a buffer from the output's swapchain and attaches it to `state`.
-    struct wlr_render_pass *pass =
-        wlr_output_begin_render_pass(output, &state, NULL);
-    if (pass == NULL) {
-        wlr_output_state_finish(&state);
-        return;
-    }
-
-    // One full-output rectangle in BLEND_MODE_NONE = a clear to a solid color.
-    struct wlr_render_rect_options rect = {
-        .box = {.x = 0, .y = 0, .width = output->width, .height = output->height},
-        .color = {.r = r, .g = g, .b = b, .a = 1.0f},
-        .blend_mode = WLR_RENDER_BLEND_MODE_NONE,
-    };
-    wlr_render_pass_add_rect(pass, &rect);
-
-    wlr_render_pass_submit(pass);
-    wlr_output_commit_state(output, &state);
-    wlr_output_state_finish(&state);
+void snertwl_scene_output_render(struct wlr_scene_output *scene_output) {
+    // The scene does the damage-tracked render pass internally, then we tell
+    // clients their frame was shown so they can produce the next one.
+    wlr_scene_output_commit(scene_output, NULL);
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    wlr_scene_output_send_frame_done(scene_output, &now);
 }

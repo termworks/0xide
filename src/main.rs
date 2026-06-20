@@ -42,13 +42,23 @@ extern "C" {
         userdata: *mut c_void,
     ) -> *mut ShimListener;
     fn snertwl_output_enable(output: *mut wlr::wlr_output);
-    fn snertwl_output_render_clear(output: *mut wlr::wlr_output, r: f32, g: f32, b: f32);
+    fn snertwl_scene_add_output_background(
+        scene: *mut wlr::wlr_scene,
+        output: *mut wlr::wlr_output,
+        r: f32,
+        g: f32,
+        b: f32,
+    );
+    fn snertwl_scene_output_render(scene_output: *mut wlr::wlr_scene_output);
 }
 
 /// Long-lived compositor state. We hand a pointer to this to the shim as the
-/// `userdata` for the new_output callback, so the handler can reach the
-/// renderer/allocator it needs to wire up each output.
+/// `userdata` for the new_output callback, so the handler can reach the scene
+/// and layout it needs to wire up each output.
 struct Server {
+    scene: *mut wlr::wlr_scene,
+    output_layout: *mut wlr::wlr_output_layout,
+    scene_layout: *mut wlr::wlr_scene_output_layout,
     renderer: *mut wlr::wlr_renderer,
     allocator: *mut wlr::wlr_allocator,
 }
@@ -58,27 +68,32 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
     let server = &mut *(userdata as *mut Server);
     let output = data as *mut wlr::wlr_output;
 
-    // Give the output our renderer + allocator so it can produce buffers.
+    // Give the output our renderer + allocator so it can produce buffers, then
+    // enable it (the shim owns the wlr_output_state dance).
     wlr::wlr_output_init_render(output, server.allocator, server.renderer);
-
-    // Enable it (the shim owns the wlr_output_state dance).
     snertwl_output_enable(output);
 
-    // Re-paint on every frame request; pass the output itself as userdata.
-    snertwl_output_add_frame(output, handle_frame, output as *mut c_void);
+    // Place the output in the layout, and tie that layout slot to a scene
+    // output so the scene knows where this output sits and what to repaint.
+    let layout_output = wlr::wlr_output_layout_add_auto(server.output_layout, output);
+    let scene_output = wlr::wlr_scene_output_create(server.scene, output);
+    wlr::wlr_scene_output_layout_add_output(server.scene_layout, layout_output, scene_output);
 
-    // Paint once now so the window isn't blank before the first frame event.
+    // The teal background is now a node in the scene graph, sized to the output.
     let (r, g, b) = COLOR;
-    snertwl_output_render_clear(output, r, g, b);
+    snertwl_scene_add_output_background(server.scene, output, r, g, b);
 
-    println!("snertwl: output online — painting teal");
+    // Render through the scene on every frame; pass the scene output along.
+    snertwl_output_add_frame(output, handle_frame, scene_output as *mut c_void);
+    snertwl_scene_output_render(scene_output); // kick the first frame
+
+    println!("snertwl: output online — scene attached");
 }
 
 /// Called by the shim each time the output is ready for a new frame.
 unsafe extern "C" fn handle_frame(userdata: *mut c_void, _data: *mut c_void) {
-    let output = userdata as *mut wlr::wlr_output;
-    let (r, g, b) = COLOR;
-    snertwl_output_render_clear(output, r, g, b);
+    let scene_output = userdata as *mut wlr::wlr_scene_output;
+    snertwl_scene_output_render(scene_output);
 }
 
 fn main() {
@@ -109,9 +124,19 @@ fn main() {
         wlr::wlr_subcompositor_create(display);
         wlr::wlr_data_device_manager_create(display);
 
+        // The scene graph holds everything that gets drawn; the output layout
+        // arranges outputs in space. Attaching them lets the scene keep each
+        // scene-output positioned to match its layout slot.
+        let scene = wlr::wlr_scene_create();
+        let output_layout = wlr::wlr_output_layout_create(display);
+        let scene_layout = wlr::wlr_scene_attach_output_layout(scene, output_layout);
+
         // `server` lives for the whole of main(), which blocks in wl_display_run
         // below, so the pointer we hand the shim stays valid for the run.
         let mut server = Server {
+            scene,
+            output_layout,
+            scene_layout,
             renderer,
             allocator,
         };
