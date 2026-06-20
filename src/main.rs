@@ -34,6 +34,7 @@ struct ShimListener {
 // Functions implemented in shim/snertwl_shim.c.
 extern "C" {
     fn snertwl_log_init();
+    fn snertwl_setup_signals(loop_: *mut wlr::wl_event_loop, display: *mut wlr::wl_display);
     fn snertwl_backend_add_new_output(
         backend: *mut wlr::wlr_backend,
         callback: ShimCallback,
@@ -341,6 +342,9 @@ fn main() {
         let display = wlr::wl_display_create();
         let event_loop = wlr::wl_display_get_event_loop(display);
 
+        // Quit gracefully on Ctrl-C / SIGTERM (via the loop's signalfd).
+        snertwl_setup_signals(event_loop, display);
+
         // Autocreate picks a backend from the environment: a nested Wayland
         // window here. NULL = we don't want the optional session handle.
         let backend = wlr::wlr_backend_autocreate(event_loop, ptr::null_mut());
@@ -435,6 +439,12 @@ fn main() {
 
         println!("snertwl: entering event loop (Ctrl-C to quit)");
         wlr::wl_display_run(display);
-        wlr::wl_display_destroy(display);
+
+        // Disconnect clients cleanly (this fires our per-window destroy
+        // handlers). We intentionally skip wl_display_destroy: tearing down
+        // wlroots globals trips internal asserts about global listeners we
+        // don't unregister, and the OS reclaims everything on process exit.
+        wlr::wl_display_destroy_clients(display);
+        println!("snertwl: shut down");
     }
 }

@@ -6,6 +6,7 @@
 
 // Opaque to Rust; full definitions live in the wlroots headers / shim .c.
 struct wl_display;
+struct wl_event_loop;
 struct wlr_backend;
 struct wlr_output;
 struct wlr_scene;
@@ -30,6 +31,9 @@ typedef bool (*snertwl_key_callback)(void *userdata, uint32_t keysym,
 // --- toolchain / logging ---------------------------------------------------
 const char *snertwl_wlroots_version(void);
 void snertwl_log_init(void);
+
+// Terminate the display loop on SIGINT/SIGTERM (graceful shutdown).
+void snertwl_setup_signals(struct wl_event_loop *loop, struct wl_display *display);
 
 // --- listener glue ---------------------------------------------------------
 struct snertwl_listener *snertwl_backend_add_new_output(

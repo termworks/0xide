@@ -75,7 +75,7 @@ fn main() {
         .allowlist_function("wl_display_add_socket_auto")
         .allowlist_function("wl_display_run")
         .allowlist_function("wl_display_terminate")
-        .allowlist_function("wl_display_destroy")
+        .allowlist_function("wl_display_destroy_clients")
         .allowlist_function("wlr_backend_autocreate")
         .allowlist_function("wlr_backend_start")
         .allowlist_function("wlr_backend_destroy")

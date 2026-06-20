@@ -1,4 +1,5 @@
 #define WLR_USE_UNSTABLE
+#include <signal.h>
 #include <stdlib.h>
 #include <time.h>
 #include <wayland-server.h>
@@ -25,6 +26,18 @@ const char *snertwl_wlroots_version(void) {
 void snertwl_log_init(void) {
     // Debug verbosity, default stderr sink. Done in C so the enum stays native.
     wlr_log_init(WLR_DEBUG, NULL);
+}
+
+static int handle_signal(int sig, void *data) {
+    (void)sig;
+    wl_display_terminate(data); // unwinds wl_display_run -> graceful shutdown
+    return 0;
+}
+
+void snertwl_setup_signals(struct wl_event_loop *loop, struct wl_display *display) {
+    // Handled via the event loop's signalfd, so it's safe (not an async signal).
+    wl_event_loop_add_signal(loop, SIGINT, handle_signal, display);
+    wl_event_loop_add_signal(loop, SIGTERM, handle_signal, display);
 }
 
 // --- listener glue ---------------------------------------------------------
