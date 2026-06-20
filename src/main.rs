@@ -10,7 +10,10 @@ mod wlr {
     include!(concat!(env!("OUT_DIR"), "/wlr_bindings.rs"));
 }
 
+use std::env;
+use std::ffi::CStr;
 use std::os::raw::c_void;
+use std::process::Command;
 use std::ptr;
 
 /// The color we paint every output. A saturated teal, easy to spot.
@@ -97,6 +100,15 @@ fn main() {
         let allocator = wlr::wlr_allocator_autocreate(backend, renderer);
         assert!(!allocator.is_null(), "failed to create wlr_allocator");
 
+        // Buffer-factory globals: wl_shm + linux-dmabuf. Clients need these to
+        // hand us pixel buffers; without them no app can show anything.
+        wlr::wlr_renderer_init_wl_display(renderer, display);
+
+        // Core client-facing globals: surfaces/regions, subsurfaces, clipboard.
+        wlr::wlr_compositor_create(display, 6, renderer);
+        wlr::wlr_subcompositor_create(display);
+        wlr::wlr_data_device_manager_create(display);
+
         // `server` lives for the whole of main(), which blocks in wl_display_run
         // below, so the pointer we hand the shim stays valid for the run.
         let mut server = Server {
@@ -109,9 +121,28 @@ fn main() {
             &mut server as *mut Server as *mut c_void,
         );
 
-        assert!(wlr::wlr_backend_start(backend), "failed to start backend");
-        println!("snertwl: backend started — entering event loop (Ctrl-C to quit)");
+        // Open the Unix socket clients connect through (e.g. "wayland-2").
+        let socket_ptr = wlr::wl_display_add_socket_auto(display);
+        assert!(!socket_ptr.is_null(), "failed to open a Wayland socket");
+        let socket = CStr::from_ptr(socket_ptr).to_str().unwrap().to_owned();
 
+        assert!(wlr::wlr_backend_start(backend), "failed to start backend");
+        println!("snertwl: socket ready — WAYLAND_DISPLAY={socket}");
+
+        // Clients we spawn should talk to *us*, not the host compositor. (Our
+        // own backend already connected to the host before this point.)
+        env::set_var("WAYLAND_DISPLAY", &socket);
+
+        // `cargo nested -- <cmd> [args…]` auto-spawns a test client against us.
+        let mut args = env::args().skip(1);
+        if let Some(program) = args.next() {
+            match Command::new(&program).args(args).spawn() {
+                Ok(_) => println!("snertwl: spawned client `{program}`"),
+                Err(e) => eprintln!("snertwl: failed to spawn `{program}`: {e}"),
+            }
+        }
+
+        println!("snertwl: entering event loop (Ctrl-C to quit)");
         wlr::wl_display_run(display);
         wlr::wl_display_destroy(display);
     }

@@ -8,6 +8,15 @@
 - Render path confirmed: GLES2 renderer on Intel Iris Xe → GBM buffer (format XR24)
   → GL FBO → DMA-BUF imported into the parent compositor.
 
+## Verifying the server with a client (Stage 1+)
+- `main` opens a socket via `wl_display_add_socket_auto` and, if given argv,
+  spawns that program with `WAYLAND_DISPLAY` set to our socket.
+- One-command check: `cargo nested -- wayland-info` — the client connects and
+  lists our globals (wl_shm, zwp_linux_dmabuf_v1, wl_compositor, wl_subcompositor,
+  wl_data_device_manager). Its stdout interleaves with the wlroots debug log.
+- Note: `wlr_compositor_create` makes only wl_compositor; wl_shm + linux-dmabuf
+  come from `wlr_renderer_init_wl_display(renderer, display)`.
+
 ## Headless verification recipe (for automated/agent checks)
 Because a nested run opens a window on the host and then blocks in `wl_display_run`,
 verify it like this:
