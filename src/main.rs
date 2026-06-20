@@ -62,6 +62,8 @@ extern "C" {
         scene: *mut wlr::wlr_scene,
         toplevel: *mut wlr::wlr_xdg_toplevel,
     ) -> *mut wlr::wlr_scene_tree;
+    fn snertwl_xdg_add_commit(toplevel: *mut wlr::wlr_xdg_toplevel) -> *mut ShimListener;
+    fn snertwl_listener_remove(listener: *mut ShimListener);
     fn snertwl_xdg_add_map(
         toplevel: *mut wlr::wlr_xdg_toplevel,
         callback: ShimCallback,
@@ -139,6 +141,12 @@ struct Toplevel {
     server: *mut Server,
     xdg_toplevel: *mut wlr::wlr_xdg_toplevel,
     scene_tree: *mut wlr::wlr_scene_tree,
+    // Listeners we registered; removed+freed on destroy so wlroots doesn't
+    // assert on a non-empty destroy list.
+    commit_listener: *mut ShimListener,
+    map_listener: *mut ShimListener,
+    unmap_listener: *mut ShimListener,
+    destroy_listener: *mut ShimListener,
 }
 
 /// Gap between/around tiled windows, in pixels.
@@ -263,13 +271,19 @@ unsafe extern "C" fn handle_new_toplevel(userdata: *mut c_void, data: *mut c_voi
         server,
         xdg_toplevel: toplevel,
         scene_tree,
+        commit_listener: ptr::null_mut(),
+        map_listener: ptr::null_mut(),
+        unmap_listener: ptr::null_mut(),
+        destroy_listener: ptr::null_mut(),
     }));
 
-    // Listen for its lifecycle so Rust can keep the window list current.
+    // Listen for its lifecycle so Rust can keep the window list current. We keep
+    // the listener handles to unregister them on destroy.
     let ud = tl as *mut c_void;
-    snertwl_xdg_add_map(toplevel, handle_map, ud);
-    snertwl_xdg_add_unmap(toplevel, handle_unmap, ud);
-    snertwl_xdg_add_destroy(toplevel, handle_destroy, ud);
+    (*tl).commit_listener = snertwl_xdg_add_commit(toplevel);
+    (*tl).map_listener = snertwl_xdg_add_map(toplevel, handle_map, ud);
+    (*tl).unmap_listener = snertwl_xdg_add_unmap(toplevel, handle_unmap, ud);
+    (*tl).destroy_listener = snertwl_xdg_add_destroy(toplevel, handle_destroy, ud);
 }
 
 /// A window's surface became mapped: add it to the layout and focus it.
@@ -289,10 +303,16 @@ unsafe extern "C" fn handle_unmap(userdata: *mut c_void, _data: *mut c_void) {
     remove_window(server, tl);
 }
 
-/// A window was destroyed: drop it from the layout and free our tracking.
+/// A window was destroyed: unregister its listeners, drop it from the layout,
+/// and free our tracking.
 unsafe extern "C" fn handle_destroy(userdata: *mut c_void, _data: *mut c_void) {
     let tl = userdata as *mut Toplevel;
     let server = &mut *(*tl).server;
+    // Remove every listener we put on this window before wlroots frees it.
+    snertwl_listener_remove((*tl).commit_listener);
+    snertwl_listener_remove((*tl).map_listener);
+    snertwl_listener_remove((*tl).unmap_listener);
+    snertwl_listener_remove((*tl).destroy_listener);
     remove_window(server, tl);
     drop(Box::from_raw(tl));
 }

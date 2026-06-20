@@ -120,12 +120,21 @@ struct wlr_scene_tree *snertwl_scene_add_xdg_toplevel(struct wlr_scene *scene,
         struct wlr_xdg_toplevel *toplevel) {
     // A scene node that tracks this surface (and its popups) and follows its
     // map/unmap state automatically.
-    struct wlr_scene_tree *tree =
-            wlr_scene_xdg_surface_create(&scene->tree, toplevel->base);
-    // Configure the client on its initial commit so it can map.
-    signal_add(&toplevel->base->surface->events.commit, handle_xdg_initial_commit,
-            toplevel);
-    return tree;
+    return wlr_scene_xdg_surface_create(&scene->tree, toplevel->base);
+}
+
+// Configure the client on its initial commit so it can map. Returned so Rust
+// can remove it (with the other per-window listeners) on destroy.
+struct snertwl_listener *snertwl_xdg_add_commit(struct wlr_xdg_toplevel *toplevel) {
+    return signal_add(&toplevel->base->surface->events.commit,
+            handle_xdg_initial_commit, toplevel);
+}
+
+// Unsubscribe and free a listener. Each per-window listener must be removed
+// before its object is destroyed (wlroots asserts an empty destroy list).
+void snertwl_listener_remove(struct snertwl_listener *l) {
+    wl_list_remove(&l->listener.link);
+    free(l);
 }
 
 struct snertwl_listener *snertwl_xdg_add_map(struct wlr_xdg_toplevel *toplevel,

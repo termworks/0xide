@@ -49,10 +49,17 @@ void snertwl_scene_output_render(struct wlr_scene_output *scene_output);
 // --- xdg-shell (app windows) ----------------------------------------------
 struct snertwl_listener *snertwl_xdg_shell_add_new_toplevel(
         struct wlr_xdg_shell *shell, snertwl_callback callback, void *userdata);
-// Add a toplevel to the scene graph and arrange its initial configure so the
-// client can map. Returns the scene tree node so Rust can position it.
+// Add a toplevel to the scene graph. Returns the scene tree node so Rust can
+// position it. (Use snertwl_xdg_add_commit for the initial-configure listener.)
 struct wlr_scene_tree *snertwl_scene_add_xdg_toplevel(struct wlr_scene *scene,
         struct wlr_xdg_toplevel *toplevel);
+
+// Register the initial-commit handler (lets the client map). Returns the
+// listener so Rust can remove it on destroy with the others.
+struct snertwl_listener *snertwl_xdg_add_commit(struct wlr_xdg_toplevel *toplevel);
+
+// Unsubscribe and free a listener returned by one of the add helpers.
+void snertwl_listener_remove(struct snertwl_listener *listener);
 
 // Lifecycle listeners on a toplevel (Rust drives window tracking & layout).
 struct snertwl_listener *snertwl_xdg_add_map(struct wlr_xdg_toplevel *toplevel,
