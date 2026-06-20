@@ -11,9 +11,11 @@
 #include <wlr/types/wlr_compositor.h>     // wlr_compositor_create
 #include <wlr/types/wlr_subcompositor.h>  // wlr_subcompositor_create
 #include <wlr/types/wlr_data_device.h>    // wlr_data_device_manager_create
+#include <wlr/types/wlr_input_device.h>   // wlr_input_device (opaque to Rust)
 #include <wlr/types/wlr_output.h>         // wlr_output, wlr_output_init_render
 #include <wlr/types/wlr_output_layout.h>  // wlr_output_layout_create/add_auto
 #include <wlr/types/wlr_scene.h>          // wlr_scene_*
+#include <wlr/types/wlr_seat.h>           // wlr_seat (opaque to Rust)
 #include <wlr/types/wlr_xdg_shell.h>      // wlr_xdg_shell_create, wlr_xdg_toplevel
 #include <wlr/util/log.h>            // wlr_log_*
 #include <wlr/version.h>             // WLR_VERSION_STR

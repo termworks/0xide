@@ -58,8 +58,21 @@ extern "C" {
     fn snertwl_scene_add_xdg_toplevel(
         scene: *mut wlr::wlr_scene,
         toplevel: *mut wlr::wlr_xdg_toplevel,
+        seat: *mut wlr::wlr_seat,
     );
-    fn snertwl_seat_create(display: *mut wlr::wl_display, name: *const c_char);
+    fn snertwl_seat_create(
+        display: *mut wlr::wl_display,
+        name: *const c_char,
+    ) -> *mut wlr::wlr_seat;
+    fn snertwl_backend_add_new_input(
+        backend: *mut wlr::wlr_backend,
+        callback: ShimCallback,
+        userdata: *mut c_void,
+    ) -> *mut ShimListener;
+    fn snertwl_seat_handle_new_input(
+        seat: *mut wlr::wlr_seat,
+        device: *mut wlr::wlr_input_device,
+    );
 }
 
 /// Long-lived compositor state. We hand a pointer to this to the shim as the
@@ -69,6 +82,7 @@ struct Server {
     scene: *mut wlr::wlr_scene,
     output_layout: *mut wlr::wlr_output_layout,
     scene_layout: *mut wlr::wlr_scene_output_layout,
+    seat: *mut wlr::wlr_seat,
     renderer: *mut wlr::wlr_renderer,
     allocator: *mut wlr::wlr_allocator,
 }
@@ -111,10 +125,17 @@ unsafe extern "C" fn handle_new_toplevel(userdata: *mut c_void, data: *mut c_voi
     let server = &mut *(userdata as *mut Server);
     let toplevel = data as *mut wlr::wlr_xdg_toplevel;
 
-    // Drop it into the scene graph; the scene draws it once the client maps.
-    // (Placement/focus/input come in later stages — for now it lands top-left.)
-    snertwl_scene_add_xdg_toplevel(server.scene, toplevel);
+    // Drop it into the scene graph; the scene draws it once the client maps,
+    // and the shim gives it keyboard focus on map. (Placement/tiling: Stage 5.)
+    snertwl_scene_add_xdg_toplevel(server.scene, toplevel, server.seat);
     println!("snertwl: new toplevel — added to scene");
+}
+
+/// Called by the shim when an input device (keyboard, pointer, …) appears.
+unsafe extern "C" fn handle_new_input(userdata: *mut c_void, data: *mut c_void) {
+    let server = &mut *(userdata as *mut Server);
+    let device = data as *mut wlr::wlr_input_device;
+    snertwl_seat_handle_new_input(server.seat, device);
 }
 
 fn main() {
@@ -145,9 +166,8 @@ fn main() {
         wlr::wlr_subcompositor_create(display);
         wlr::wlr_data_device_manager_create(display);
 
-        // Minimal seat: enough of a wl_seat for clients to start. Input device
-        // wiring and focus come in Stage 4.
-        snertwl_seat_create(display, c"seat0".as_ptr());
+        // Create the seat (wl_seat global). We wire input devices into it below.
+        let seat = snertwl_seat_create(display, c"seat0".as_ptr());
 
         // The scene graph holds everything that gets drawn; the output layout
         // arranges outputs in space. Attaching them lets the scene keep each
@@ -162,11 +182,13 @@ fn main() {
             scene,
             output_layout,
             scene_layout,
+            seat,
             renderer,
             allocator,
         };
         let server_ptr = &mut server as *mut Server as *mut c_void;
         snertwl_backend_add_new_output(backend, handle_new_output, server_ptr);
+        snertwl_backend_add_new_input(backend, handle_new_input, server_ptr);
 
         // xdg-shell: the xdg_wm_base global apps bind to create windows. We hook
         // its new_toplevel signal so each app window enters our scene graph.

@@ -9,6 +9,8 @@ struct wlr_scene;
 struct wlr_scene_output;
 struct wlr_xdg_shell;
 struct wlr_xdg_toplevel;
+struct wlr_seat;
+struct wlr_input_device;
 struct snertwl_listener;
 
 // Generic event callback handed to Rust: (userdata, signal-data).
@@ -36,14 +38,20 @@ void snertwl_scene_output_render(struct wlr_scene_output *scene_output);
 // --- xdg-shell (app windows) ----------------------------------------------
 struct snertwl_listener *snertwl_xdg_shell_add_new_toplevel(
         struct wlr_xdg_shell *shell, snertwl_callback callback, void *userdata);
-// Add a toplevel to the scene graph and arrange its initial configure so the
-// client can map. Reaches into wlr_xdg_surface fields, hence C-side.
+// Add a toplevel to the scene graph, arrange its initial configure, and give
+// it keyboard focus when it maps. Reaches into wlr_xdg_surface fields, C-side.
 void snertwl_scene_add_xdg_toplevel(struct wlr_scene *scene,
-        struct wlr_xdg_toplevel *toplevel);
+        struct wlr_xdg_toplevel *toplevel, struct wlr_seat *seat);
 
-// --- seat (minimal) --------------------------------------------------------
-// Create the wl_seat global and advertise keyboard+pointer so clients will
-// start. Actual input device wiring / focus comes in Stage 4.
-void snertwl_seat_create(struct wl_display *display, const char *name);
+// --- seat & input ----------------------------------------------------------
+// Create the wl_seat global; returns the seat so Rust can wire input/focus.
+struct wlr_seat *snertwl_seat_create(struct wl_display *display, const char *name);
+// Subscribe to the backend's new_input signal (data = wlr_input_device).
+struct snertwl_listener *snertwl_backend_add_new_input(
+        struct wlr_backend *backend, snertwl_callback callback, void *userdata);
+// Wire a new input device into the seat. Keyboards get an xkb keymap and have
+// their key/modifier events forwarded; other device types wait for Stage 4b.
+void snertwl_seat_handle_new_input(struct wlr_seat *seat,
+        struct wlr_input_device *device);
 
 #endif // SNERTWL_SHIM_H

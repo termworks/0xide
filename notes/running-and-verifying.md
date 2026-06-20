@@ -20,6 +20,12 @@
   ("no seats available") — we create a minimal one via `snertwl_seat_create`.
 - Gotcha: wlroots' xdg-shell header #includes `xdg-shell-protocol.h`, which is
   NOT a system header — build.rs generates it with `wayland-scanner` into OUT_DIR.
+- Input verification: no `wtype`/`ydotool` installed, so keystrokes can't be
+  injected from the agent. Verify keyboard *wiring* via log markers
+  ("keyboard attached", "keyboard focus -> toplevel"); verify actual typing by
+  hand — focus the nested snertwl window in the host, then type into foot.
+- Nested keyboard caveat: the Wayland backend only receives keys when the host
+  (Hyprland) gives the snertwl window focus.
 
 ## Headless verification recipe (for automated/agent checks)
 Because a nested run opens a window on the host and then blocks in `wl_display_run`,

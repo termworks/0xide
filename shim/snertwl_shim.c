@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include <wayland-server.h>
+#include <xkbcommon/xkbcommon.h>
 #include <wlr/backend.h>
+#include <wlr/types/wlr_input_device.h>
+#include <wlr/types/wlr_keyboard.h>
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_scene.h>
 #include <wlr/types/wlr_seat.h>
@@ -110,22 +113,108 @@ struct snertwl_listener *snertwl_xdg_shell_add_new_toplevel(
     return signal_add(&shell->events.new_toplevel, callback, userdata);
 }
 
+// When a toplevel maps, give it keyboard focus so typing reaches it.
+struct snertwl_mapctx {
+    struct wlr_seat *seat;
+    struct wlr_surface *surface;
+};
+
+static void handle_toplevel_map(void *userdata, void *data) {
+    (void)data;
+    struct snertwl_mapctx *ctx = userdata;
+    struct wlr_keyboard *kb = wlr_seat_get_keyboard(ctx->seat);
+    if (kb != NULL) {
+        wlr_seat_keyboard_notify_enter(ctx->seat, ctx->surface, kb->keycodes,
+                kb->num_keycodes, &kb->modifiers);
+    } else {
+        wlr_seat_keyboard_notify_enter(ctx->seat, ctx->surface, NULL, 0, NULL);
+    }
+    wlr_log(WLR_INFO, "snertwl: keyboard focus -> toplevel");
+}
+
 void snertwl_scene_add_xdg_toplevel(struct wlr_scene *scene,
-        struct wlr_xdg_toplevel *toplevel) {
+        struct wlr_xdg_toplevel *toplevel, struct wlr_seat *seat) {
     // A scene node that tracks this surface (and its popups) and follows its
     // map/unmap state automatically.
     wlr_scene_xdg_surface_create(&scene->tree, toplevel->base);
     // Configure the client on its initial commit so it can map.
     signal_add(&toplevel->base->surface->events.commit, handle_xdg_initial_commit,
             toplevel);
+    // Focus it on map.
+    struct snertwl_mapctx *ctx = calloc(1, sizeof(*ctx));
+    ctx->seat = seat;
+    ctx->surface = toplevel->base->surface;
+    signal_add(&toplevel->base->surface->events.map, handle_toplevel_map, ctx);
 }
 
-// --- seat (minimal) --------------------------------------------------------
+// --- seat & input ----------------------------------------------------------
 
-void snertwl_seat_create(struct wl_display *display, const char *name) {
+struct wlr_seat *snertwl_seat_create(struct wl_display *display, const char *name) {
     struct wlr_seat *seat = wlr_seat_create(display, name);
-    // Advertise input capabilities so clients (e.g. foot) will start. No real
-    // devices are wired up yet — that is Stage 4.
+    // Advertise input capabilities so clients (e.g. foot) will start.
     wlr_seat_set_capabilities(seat,
             WL_SEAT_CAPABILITY_KEYBOARD | WL_SEAT_CAPABILITY_POINTER);
+    return seat;
+}
+
+// Per-keyboard context so the key/modifier handlers can reach the seat.
+struct snertwl_keyboard {
+    struct wlr_seat *seat;
+    struct wlr_keyboard *keyboard;
+};
+
+static void handle_key(void *userdata, void *data) {
+    struct snertwl_keyboard *kb = userdata;
+    struct wlr_keyboard_key_event *event = data;
+    // Forward to the focused client. (Keybindings will intercept here in Stage 5.)
+    wlr_seat_set_keyboard(kb->seat, kb->keyboard);
+    wlr_seat_keyboard_notify_key(kb->seat, event->time_msec, event->keycode,
+            event->state);
+}
+
+static void handle_modifiers(void *userdata, void *data) {
+    (void)data;
+    struct snertwl_keyboard *kb = userdata;
+    wlr_seat_set_keyboard(kb->seat, kb->keyboard);
+    wlr_seat_keyboard_notify_modifiers(kb->seat, &kb->keyboard->modifiers);
+}
+
+static void seat_add_keyboard(struct wlr_seat *seat,
+        struct wlr_input_device *device) {
+    struct wlr_keyboard *keyboard = wlr_keyboard_from_input_device(device);
+
+    // Compile scancodes -> keysyms with the default (locale/us) layout.
+    struct xkb_context *context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    struct xkb_keymap *keymap =
+            xkb_keymap_new_from_names(context, NULL, XKB_KEYMAP_COMPILE_NO_FLAGS);
+    wlr_keyboard_set_keymap(keyboard, keymap);
+    xkb_keymap_unref(keymap);
+    xkb_context_unref(context);
+    wlr_keyboard_set_repeat_info(keyboard, 25, 600);
+
+    struct snertwl_keyboard *kb = calloc(1, sizeof(*kb));
+    kb->seat = seat;
+    kb->keyboard = keyboard;
+    signal_add(&keyboard->events.key, handle_key, kb);
+    signal_add(&keyboard->events.modifiers, handle_modifiers, kb);
+
+    wlr_seat_set_keyboard(seat, keyboard);
+    wlr_log(WLR_INFO, "snertwl: keyboard attached");
+}
+
+struct snertwl_listener *snertwl_backend_add_new_input(
+        struct wlr_backend *backend, snertwl_callback callback, void *userdata) {
+    return signal_add(&backend->events.new_input, callback, userdata);
+}
+
+void snertwl_seat_handle_new_input(struct wlr_seat *seat,
+        struct wlr_input_device *device) {
+    switch (device->type) {
+    case WLR_INPUT_DEVICE_KEYBOARD:
+        seat_add_keyboard(seat, device);
+        break;
+    default:
+        // Pointers/touch/etc. handled in Stage 4b.
+        break;
+    }
 }

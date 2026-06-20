@@ -21,6 +21,10 @@ fn main() {
     let wayland = pkg_config::Config::new()
         .probe("wayland-server")
         .expect("wayland-server not found via pkg-config");
+    // Our shim calls xkbcommon directly (keymap compilation), so link it.
+    let xkbcommon = pkg_config::Config::new()
+        .probe("xkbcommon")
+        .expect("xkbcommon not found via pkg-config");
 
     // 2. Generate xdg-shell-protocol.h into OUT_DIR. wlroots' xdg-shell header
     //    #includes it; wayland-scanner produces it from the protocol XML.
@@ -42,6 +46,7 @@ fn main() {
         .include_paths
         .iter()
         .chain(wayland.include_paths.iter())
+        .chain(xkbcommon.include_paths.iter())
         .cloned()
         .collect();
     include_paths.push(out_dir.clone());
@@ -88,6 +93,8 @@ fn main() {
         .allowlist_function("wlr_data_device_manager_create")
         .allowlist_function("wlr_xdg_shell_create")
         .allowlist_type("wlr_xdg_toplevel")
+        .allowlist_type("wlr_seat")
+        .allowlist_type("wlr_input_device")
         .allowlist_function("wlr_log.*")
         .layout_tests(false)
         .generate()
