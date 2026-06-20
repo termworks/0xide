@@ -1,0 +1,12 @@
+[package]
+name = "snertwl"
+version = "0.1.0"
+edition = "2021"
+description = "A Wayland compositor in the spirit of Hyprland, built on wlroots"
+
+[dependencies]
+
+[build-dependencies]
+bindgen = "0.71"
+cc = "1"
+pkg-config = "0.3"
