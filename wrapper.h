@@ -1,9 +1,13 @@
 // Bindgen entry point: everything #included here becomes Rust declarations.
 //
 // wlroots gates its real API behind WLR_USE_UNSTABLE — without this define the
-// headers expand to `#error`. build.rs passes the same flag to clang; defining
-// it here too keeps the header self-contained and identical to what the shim sees.
+// headers expand to `#error`. The shim .c sets the same define for itself.
 #define WLR_USE_UNSTABLE
 
-#include <wlr/util/log.h>
-#include <wlr/version.h>
+#include <wayland-server-core.h>     // wl_display_*, wl_event_loop
+#include <wlr/backend.h>             // wlr_backend_autocreate/start/destroy
+#include <wlr/render/allocator.h>    // wlr_allocator_autocreate
+#include <wlr/render/wlr_renderer.h> // wlr_renderer_autocreate
+#include <wlr/types/wlr_output.h>    // wlr_output, wlr_output_init_render
+#include <wlr/util/log.h>            // wlr_log_*
+#include <wlr/version.h>             // WLR_VERSION_STR
