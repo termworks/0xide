@@ -14,5 +14,6 @@
 #include <wlr/types/wlr_output.h>         // wlr_output, wlr_output_init_render
 #include <wlr/types/wlr_output_layout.h>  // wlr_output_layout_create/add_auto
 #include <wlr/types/wlr_scene.h>          // wlr_scene_*
+#include <wlr/types/wlr_xdg_shell.h>      // wlr_xdg_shell_create, wlr_xdg_toplevel
 #include <wlr/util/log.h>            // wlr_log_*
 #include <wlr/version.h>             // WLR_VERSION_STR

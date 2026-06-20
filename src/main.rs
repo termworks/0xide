@@ -12,7 +12,7 @@ mod wlr {
 
 use std::env;
 use std::ffi::CStr;
-use std::os::raw::c_void;
+use std::os::raw::{c_char, c_void};
 use std::process::Command;
 use std::ptr;
 
@@ -50,6 +50,16 @@ extern "C" {
         b: f32,
     );
     fn snertwl_scene_output_render(scene_output: *mut wlr::wlr_scene_output);
+    fn snertwl_xdg_shell_add_new_toplevel(
+        shell: *mut wlr::wlr_xdg_shell,
+        callback: ShimCallback,
+        userdata: *mut c_void,
+    ) -> *mut ShimListener;
+    fn snertwl_scene_add_xdg_toplevel(
+        scene: *mut wlr::wlr_scene,
+        toplevel: *mut wlr::wlr_xdg_toplevel,
+    );
+    fn snertwl_seat_create(display: *mut wlr::wl_display, name: *const c_char);
 }
 
 /// Long-lived compositor state. We hand a pointer to this to the shim as the
@@ -96,6 +106,17 @@ unsafe extern "C" fn handle_frame(userdata: *mut c_void, _data: *mut c_void) {
     snertwl_scene_output_render(scene_output);
 }
 
+/// Called by the shim when a client creates an application window (toplevel).
+unsafe extern "C" fn handle_new_toplevel(userdata: *mut c_void, data: *mut c_void) {
+    let server = &mut *(userdata as *mut Server);
+    let toplevel = data as *mut wlr::wlr_xdg_toplevel;
+
+    // Drop it into the scene graph; the scene draws it once the client maps.
+    // (Placement/focus/input come in later stages — for now it lands top-left.)
+    snertwl_scene_add_xdg_toplevel(server.scene, toplevel);
+    println!("snertwl: new toplevel — added to scene");
+}
+
 fn main() {
     unsafe {
         snertwl_log_init();
@@ -124,6 +145,10 @@ fn main() {
         wlr::wlr_subcompositor_create(display);
         wlr::wlr_data_device_manager_create(display);
 
+        // Minimal seat: enough of a wl_seat for clients to start. Input device
+        // wiring and focus come in Stage 4.
+        snertwl_seat_create(display, c"seat0".as_ptr());
+
         // The scene graph holds everything that gets drawn; the output layout
         // arranges outputs in space. Attaching them lets the scene keep each
         // scene-output positioned to match its layout slot.
@@ -140,11 +165,13 @@ fn main() {
             renderer,
             allocator,
         };
-        snertwl_backend_add_new_output(
-            backend,
-            handle_new_output,
-            &mut server as *mut Server as *mut c_void,
-        );
+        let server_ptr = &mut server as *mut Server as *mut c_void;
+        snertwl_backend_add_new_output(backend, handle_new_output, server_ptr);
+
+        // xdg-shell: the xdg_wm_base global apps bind to create windows. We hook
+        // its new_toplevel signal so each app window enters our scene graph.
+        let xdg_shell = wlr::wlr_xdg_shell_create(display, 6);
+        snertwl_xdg_shell_add_new_toplevel(xdg_shell, handle_new_toplevel, server_ptr);
 
         // Open the Unix socket clients connect through (e.g. "wayland-2").
         let socket_ptr = wlr::wl_display_add_socket_auto(display);

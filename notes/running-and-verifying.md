@@ -16,6 +16,10 @@
   wl_data_device_manager). Its stdout interleaves with the wlroots debug log.
 - Note: `wlr_compositor_create` makes only wl_compositor; wl_shm + linux-dmabuf
   come from `wlr_renderer_init_wl_display(renderer, display)`.
+- Gotcha: real apps (e.g. `foot`) refuse to start without a `wl_seat` global
+  ("no seats available") — we create a minimal one via `snertwl_seat_create`.
+- Gotcha: wlroots' xdg-shell header #includes `xdg-shell-protocol.h`, which is
+  NOT a system header — build.rs generates it with `wayland-scanner` into OUT_DIR.
 
 ## Headless verification recipe (for automated/agent checks)
 Because a nested run opens a window on the host and then blocks in `wl_display_run`,

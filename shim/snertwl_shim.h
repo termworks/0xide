@@ -2,10 +2,13 @@
 #define SNERTWL_SHIM_H
 
 // Opaque to Rust; full definitions live in the wlroots headers / shim .c.
+struct wl_display;
 struct wlr_backend;
 struct wlr_output;
 struct wlr_scene;
 struct wlr_scene_output;
+struct wlr_xdg_shell;
+struct wlr_xdg_toplevel;
 struct snertwl_listener;
 
 // Generic event callback handed to Rust: (userdata, signal-data).
@@ -29,5 +32,18 @@ void snertwl_scene_add_output_background(struct wlr_scene *scene,
         struct wlr_output *output, float r, float g, float b);
 // Render + present one frame for this scene output (owns the timespec/clock).
 void snertwl_scene_output_render(struct wlr_scene_output *scene_output);
+
+// --- xdg-shell (app windows) ----------------------------------------------
+struct snertwl_listener *snertwl_xdg_shell_add_new_toplevel(
+        struct wlr_xdg_shell *shell, snertwl_callback callback, void *userdata);
+// Add a toplevel to the scene graph and arrange its initial configure so the
+// client can map. Reaches into wlr_xdg_surface fields, hence C-side.
+void snertwl_scene_add_xdg_toplevel(struct wlr_scene *scene,
+        struct wlr_xdg_toplevel *toplevel);
+
+// --- seat (minimal) --------------------------------------------------------
+// Create the wl_seat global and advertise keyboard+pointer so clients will
+// start. Actual input device wiring / focus comes in Stage 4.
+void snertwl_seat_create(struct wl_display *display, const char *name);
 
 #endif // SNERTWL_SHIM_H

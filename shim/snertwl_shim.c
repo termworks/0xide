@@ -1,10 +1,12 @@
 #define WLR_USE_UNSTABLE
 #include <stdlib.h>
 #include <time.h>
-#include <wayland-server-core.h>
+#include <wayland-server.h>
 #include <wlr/backend.h>
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_scene.h>
+#include <wlr/types/wlr_seat.h>
+#include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/util/log.h>
 #include <wlr/version.h>
 
@@ -89,4 +91,41 @@ void snertwl_scene_output_render(struct wlr_scene_output *scene_output) {
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
     wlr_scene_output_send_frame_done(scene_output, &now);
+}
+
+// --- xdg-shell (app windows) ----------------------------------------------
+
+// On the client's very first commit we must answer with a configure, or it
+// never maps. Size 0,0 means "client, pick your own size".
+static void handle_xdg_initial_commit(void *userdata, void *data) {
+    (void)data;
+    struct wlr_xdg_toplevel *toplevel = userdata;
+    if (toplevel->base->initial_commit) {
+        wlr_xdg_toplevel_set_size(toplevel, 0, 0);
+    }
+}
+
+struct snertwl_listener *snertwl_xdg_shell_add_new_toplevel(
+        struct wlr_xdg_shell *shell, snertwl_callback callback, void *userdata) {
+    return signal_add(&shell->events.new_toplevel, callback, userdata);
+}
+
+void snertwl_scene_add_xdg_toplevel(struct wlr_scene *scene,
+        struct wlr_xdg_toplevel *toplevel) {
+    // A scene node that tracks this surface (and its popups) and follows its
+    // map/unmap state automatically.
+    wlr_scene_xdg_surface_create(&scene->tree, toplevel->base);
+    // Configure the client on its initial commit so it can map.
+    signal_add(&toplevel->base->surface->events.commit, handle_xdg_initial_commit,
+            toplevel);
+}
+
+// --- seat (minimal) --------------------------------------------------------
+
+void snertwl_seat_create(struct wl_display *display, const char *name) {
+    struct wlr_seat *seat = wlr_seat_create(display, name);
+    // Advertise input capabilities so clients (e.g. foot) will start. No real
+    // devices are wired up yet — that is Stage 4.
+    wlr_seat_set_capabilities(seat,
+            WL_SEAT_CAPABILITY_KEYBOARD | WL_SEAT_CAPABILITY_POINTER);
 }
