@@ -4,11 +4,14 @@
 #include <wayland-server.h>
 #include <xkbcommon/xkbcommon.h>
 #include <wlr/backend.h>
+#include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_input_device.h>
 #include <wlr/types/wlr_keyboard.h>
 #include <wlr/types/wlr_output.h>
+#include <wlr/types/wlr_pointer.h>
 #include <wlr/types/wlr_scene.h>
 #include <wlr/types/wlr_seat.h>
+#include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/util/log.h>
 #include <wlr/version.h>
@@ -207,14 +210,120 @@ struct snertwl_listener *snertwl_backend_add_new_input(
     return signal_add(&backend->events.new_input, callback, userdata);
 }
 
-void snertwl_seat_handle_new_input(struct wlr_seat *seat,
+// --- pointer / cursor ------------------------------------------------------
+
+// Bundles everything the cursor event handlers need.
+struct snertwl_pointer {
+    struct wlr_cursor *cursor;
+    struct wlr_xcursor_manager *cursor_mgr;
+    struct wlr_scene *scene;
+    struct wlr_seat *seat;
+};
+
+// Find the surface under the cursor (and the surface-local coords), via the
+// scene graph. Returns NULL when the cursor is over the bare background.
+static struct wlr_surface *surface_at(struct snertwl_pointer *p,
+        double *sx, double *sy) {
+    struct wlr_scene_node *node = wlr_scene_node_at(&p->scene->tree.node,
+            p->cursor->x, p->cursor->y, sx, sy);
+    if (node == NULL || node->type != WLR_SCENE_NODE_BUFFER) {
+        return NULL;
+    }
+    struct wlr_scene_surface *scene_surface =
+            wlr_scene_surface_try_from_buffer(wlr_scene_buffer_from_node(node));
+    return scene_surface ? scene_surface->surface : NULL;
+}
+
+static void process_motion(struct snertwl_pointer *p, uint32_t time) {
+    double sx, sy;
+    struct wlr_surface *surface = surface_at(p, &sx, &sy);
+    if (surface == NULL) {
+        // Over the background: show our own cursor, focus nothing.
+        wlr_cursor_set_xcursor(p->cursor, p->cursor_mgr, "default");
+        wlr_seat_pointer_clear_focus(p->seat);
+    } else {
+        wlr_seat_pointer_notify_enter(p->seat, surface, sx, sy);
+        wlr_seat_pointer_notify_motion(p->seat, time, sx, sy);
+    }
+}
+
+static void handle_cursor_motion(void *userdata, void *data) {
+    struct snertwl_pointer *p = userdata;
+    struct wlr_pointer_motion_event *e = data;
+    wlr_cursor_move(p->cursor, &e->pointer->base, e->delta_x, e->delta_y);
+    process_motion(p, e->time_msec);
+}
+
+static void handle_cursor_motion_absolute(void *userdata, void *data) {
+    struct snertwl_pointer *p = userdata;
+    struct wlr_pointer_motion_absolute_event *e = data;
+    wlr_cursor_warp_absolute(p->cursor, &e->pointer->base, e->x, e->y);
+    process_motion(p, e->time_msec);
+}
+
+static void handle_cursor_button(void *userdata, void *data) {
+    struct snertwl_pointer *p = userdata;
+    struct wlr_pointer_button_event *e = data;
+    wlr_seat_pointer_notify_button(p->seat, e->time_msec, e->button, e->state);
+    // Click-to-focus: on press, give keyboard focus to the window under cursor.
+    if (e->state == WL_POINTER_BUTTON_STATE_PRESSED) {
+        double sx, sy;
+        struct wlr_surface *surface = surface_at(p, &sx, &sy);
+        struct wlr_keyboard *kb = wlr_seat_get_keyboard(p->seat);
+        if (surface != NULL && kb != NULL) {
+            wlr_seat_keyboard_notify_enter(p->seat, surface, kb->keycodes,
+                    kb->num_keycodes, &kb->modifiers);
+        }
+    }
+}
+
+static void handle_cursor_axis(void *userdata, void *data) {
+    struct snertwl_pointer *p = userdata;
+    struct wlr_pointer_axis_event *e = data;
+    wlr_seat_pointer_notify_axis(p->seat, e->time_msec, e->orientation, e->delta,
+            e->delta_discrete, e->source, e->relative_direction);
+}
+
+static void handle_cursor_frame(void *userdata, void *data) {
+    (void)data;
+    struct snertwl_pointer *p = userdata;
+    wlr_seat_pointer_notify_frame(p->seat);
+}
+
+struct wlr_cursor *snertwl_cursor_setup(struct wlr_output_layout *layout,
+        struct wlr_scene *scene, struct wlr_seat *seat) {
+    struct wlr_cursor *cursor = wlr_cursor_create();
+    wlr_cursor_attach_output_layout(cursor, layout);
+
+    struct wlr_xcursor_manager *cursor_mgr = wlr_xcursor_manager_create(NULL, 24);
+    wlr_xcursor_manager_load(cursor_mgr, 1);
+
+    struct snertwl_pointer *p = calloc(1, sizeof(*p));
+    p->cursor = cursor;
+    p->cursor_mgr = cursor_mgr;
+    p->scene = scene;
+    p->seat = seat;
+
+    signal_add(&cursor->events.motion, handle_cursor_motion, p);
+    signal_add(&cursor->events.motion_absolute, handle_cursor_motion_absolute, p);
+    signal_add(&cursor->events.button, handle_cursor_button, p);
+    signal_add(&cursor->events.axis, handle_cursor_axis, p);
+    signal_add(&cursor->events.frame, handle_cursor_frame, p);
+
+    return cursor;
+}
+
+void snertwl_handle_new_input(struct wlr_seat *seat, struct wlr_cursor *cursor,
         struct wlr_input_device *device) {
     switch (device->type) {
     case WLR_INPUT_DEVICE_KEYBOARD:
         seat_add_keyboard(seat, device);
         break;
+    case WLR_INPUT_DEVICE_POINTER:
+        wlr_cursor_attach_input_device(cursor, device);
+        wlr_log(WLR_INFO, "snertwl: pointer attached");
+        break;
     default:
-        // Pointers/touch/etc. handled in Stage 4b.
         break;
     }
 }

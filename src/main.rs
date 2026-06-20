@@ -69,10 +69,16 @@ extern "C" {
         callback: ShimCallback,
         userdata: *mut c_void,
     ) -> *mut ShimListener;
-    fn snertwl_seat_handle_new_input(
+    fn snertwl_handle_new_input(
         seat: *mut wlr::wlr_seat,
+        cursor: *mut wlr::wlr_cursor,
         device: *mut wlr::wlr_input_device,
     );
+    fn snertwl_cursor_setup(
+        layout: *mut wlr::wlr_output_layout,
+        scene: *mut wlr::wlr_scene,
+        seat: *mut wlr::wlr_seat,
+    ) -> *mut wlr::wlr_cursor;
 }
 
 /// Long-lived compositor state. We hand a pointer to this to the shim as the
@@ -83,6 +89,7 @@ struct Server {
     output_layout: *mut wlr::wlr_output_layout,
     scene_layout: *mut wlr::wlr_scene_output_layout,
     seat: *mut wlr::wlr_seat,
+    cursor: *mut wlr::wlr_cursor,
     renderer: *mut wlr::wlr_renderer,
     allocator: *mut wlr::wlr_allocator,
 }
@@ -135,7 +142,7 @@ unsafe extern "C" fn handle_new_toplevel(userdata: *mut c_void, data: *mut c_voi
 unsafe extern "C" fn handle_new_input(userdata: *mut c_void, data: *mut c_void) {
     let server = &mut *(userdata as *mut Server);
     let device = data as *mut wlr::wlr_input_device;
-    snertwl_seat_handle_new_input(server.seat, device);
+    snertwl_handle_new_input(server.seat, server.cursor, device);
 }
 
 fn main() {
@@ -176,6 +183,10 @@ fn main() {
         let output_layout = wlr::wlr_output_layout_create(display);
         let scene_layout = wlr::wlr_scene_attach_output_layout(scene, output_layout);
 
+        // Cursor over the layout; the shim routes its events through scene
+        // hit-testing to the seat. Pointer devices get attached in new_input.
+        let cursor = snertwl_cursor_setup(output_layout, scene, seat);
+
         // `server` lives for the whole of main(), which blocks in wl_display_run
         // below, so the pointer we hand the shim stays valid for the run.
         let mut server = Server {
@@ -183,6 +194,7 @@ fn main() {
             output_layout,
             scene_layout,
             seat,
+            cursor,
             renderer,
             allocator,
         };

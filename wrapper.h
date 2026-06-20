@@ -11,6 +11,7 @@
 #include <wlr/types/wlr_compositor.h>     // wlr_compositor_create
 #include <wlr/types/wlr_subcompositor.h>  // wlr_subcompositor_create
 #include <wlr/types/wlr_data_device.h>    // wlr_data_device_manager_create
+#include <wlr/types/wlr_cursor.h>         // wlr_cursor (opaque to Rust)
 #include <wlr/types/wlr_input_device.h>   // wlr_input_device (opaque to Rust)
 #include <wlr/types/wlr_output.h>         // wlr_output, wlr_output_init_render
 #include <wlr/types/wlr_output_layout.h>  // wlr_output_layout_create/add_auto

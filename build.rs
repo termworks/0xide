@@ -95,6 +95,7 @@ fn main() {
         .allowlist_type("wlr_xdg_toplevel")
         .allowlist_type("wlr_seat")
         .allowlist_type("wlr_input_device")
+        .allowlist_type("wlr_cursor")
         .allowlist_function("wlr_log.*")
         .layout_tests(false)
         .generate()

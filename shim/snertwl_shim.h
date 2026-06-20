@@ -11,6 +11,8 @@ struct wlr_xdg_shell;
 struct wlr_xdg_toplevel;
 struct wlr_seat;
 struct wlr_input_device;
+struct wlr_cursor;
+struct wlr_output_layout;
 struct snertwl_listener;
 
 // Generic event callback handed to Rust: (userdata, signal-data).
@@ -49,9 +51,15 @@ struct wlr_seat *snertwl_seat_create(struct wl_display *display, const char *nam
 // Subscribe to the backend's new_input signal (data = wlr_input_device).
 struct snertwl_listener *snertwl_backend_add_new_input(
         struct wlr_backend *backend, snertwl_callback callback, void *userdata);
-// Wire a new input device into the seat. Keyboards get an xkb keymap and have
-// their key/modifier events forwarded; other device types wait for Stage 4b.
-void snertwl_seat_handle_new_input(struct wlr_seat *seat,
+// Wire a new input device: keyboards get an xkb keymap + event forwarding,
+// pointers get attached to the cursor. Other device types are ignored.
+void snertwl_handle_new_input(struct wlr_seat *seat, struct wlr_cursor *cursor,
         struct wlr_input_device *device);
+
+// Create a cursor over the output layout, route its events through scene
+// hit-testing to the seat, and show a default cursor image. Returns the cursor
+// so Rust can attach pointer devices to it.
+struct wlr_cursor *snertwl_cursor_setup(struct wlr_output_layout *layout,
+        struct wlr_scene *scene, struct wlr_seat *seat);
 
 #endif // SNERTWL_SHIM_H
