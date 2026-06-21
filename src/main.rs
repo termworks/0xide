@@ -217,8 +217,8 @@ struct Toplevel {
 }
 
 /// Recompute the whole picture: hide windows whose workspace isn't on any
-/// output, then tile each output's workspace as equal-width columns within that
-/// output's box. Called after any change to windows, workspaces or outputs.
+/// output, then tile each output's workspace as a spiral (dwindle). Called after
+/// any change to windows, workspaces or outputs.
 unsafe fn refresh(server: &mut Server) {
     // A window is visible iff its workspace is currently shown on some output.
     let mut shown = [false; WORKSPACE_COUNT];
@@ -231,20 +231,39 @@ unsafe fn refresh(server: &mut Server) {
         }
     }
 
-    // Tile each output independently, using its own position and size.
     let gap = server.config.gap;
     for o in &server.outputs {
         let ws = &server.workspaces[o.workspace];
-        let n = ws.windows.len() as i32;
+        let n = ws.windows.len();
         if n == 0 {
             continue;
         }
-        let col_w = ((o.w - gap * (n + 1)) / n).max(1);
-        let h = (o.h - gap * 2).max(1);
+
+        // Spiral layout: each window except the last splits the remaining rect,
+        // alternating vertical (left/right) then horizontal (top/bottom). The
+        // window takes the first half; the rest recurse into the second half.
+        let (mut rx, mut ry) = (o.x + gap, o.y + gap);
+        let (mut rw, mut rh) = ((o.w - gap * 2).max(1), (o.h - gap * 2).max(1));
+        let mut split_vertical = true;
         for (i, &tl) in ws.windows.iter().enumerate() {
-            let x = o.x + gap + (col_w + gap) * i as i32;
-            snertwl_scene_tree_set_position((*tl).scene_tree, x, o.y + gap);
-            wlr::wlr_xdg_toplevel_set_size((*tl).xdg_toplevel, col_w, h);
+            let (x, y, w, h);
+            if i == n - 1 {
+                // Last window fills whatever rect is left.
+                (x, y, w, h) = (rx, ry, rw, rh);
+            } else if split_vertical {
+                let half = ((rw - gap) / 2).max(1);
+                (x, y, w, h) = (rx, ry, half, rh);
+                rx += half + gap;
+                rw = (rw - half - gap).max(1);
+            } else {
+                let half = ((rh - gap) / 2).max(1);
+                (x, y, w, h) = (rx, ry, rw, half);
+                ry += half + gap;
+                rh = (rh - half - gap).max(1);
+            }
+            split_vertical = !split_vertical;
+            snertwl_scene_tree_set_position((*tl).scene_tree, x, y);
+            wlr::wlr_xdg_toplevel_set_size((*tl).xdg_toplevel, w, h);
         }
     }
 }
