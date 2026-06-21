@@ -166,6 +166,13 @@ void snertwl_scene_rect_set_enabled(struct wlr_scene_rect *rect, bool enabled) {
     wlr_scene_node_set_enabled(&rect->node, enabled);
 }
 
+// Which output is under the cursor right now (NULL if none). Lets Rust target
+// the monitor the mouse is on for new windows / workspace switches.
+struct wlr_output *snertwl_output_at_cursor(struct wlr_cursor *cursor,
+        struct wlr_output_layout *layout) {
+    return wlr_output_layout_output_at(layout, cursor->x, cursor->y);
+}
+
 // Read an output's box (position + size) in layout coordinates, so Rust can tile
 // windows within the correct monitor. (Touches wlr_box internals.)
 void snertwl_output_layout_get_box(struct wlr_output_layout *layout,

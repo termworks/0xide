@@ -73,6 +73,9 @@ void snertwl_scene_rect_set_enabled(struct wlr_scene_rect *rect, bool enabled);
 // Read an output's layout box (position + pixel size) for per-output tiling.
 void snertwl_output_layout_get_box(struct wlr_output_layout *layout,
         struct wlr_output *output, int *x, int *y, int *width, int *height);
+// The output currently under the cursor (NULL if none).
+struct wlr_output *snertwl_output_at_cursor(struct wlr_cursor *cursor,
+        struct wlr_output_layout *layout);
 // Render + present one frame for this scene output (owns the timespec/clock).
 void snertwl_scene_output_render(struct wlr_scene_output *scene_output);
 // Request a `frame` event once the output is ready (kicks the first paint).

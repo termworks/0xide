@@ -77,6 +77,10 @@ extern "C" {
         width: *mut i32,
         height: *mut i32,
     );
+    fn snertwl_output_at_cursor(
+        cursor: *mut wlr::wlr_cursor,
+        layout: *mut wlr::wlr_output_layout,
+    ) -> *mut wlr::wlr_output;
     fn snertwl_scene_output_render(scene_output: *mut wlr::wlr_scene_output);
     fn snertwl_output_schedule_frame(output: *mut wlr::wlr_output);
     fn snertwl_xdg_shell_add_new_toplevel(
@@ -154,8 +158,6 @@ struct Server {
     workspaces: Vec<Workspace>,
     /// Connected outputs (monitors), each displaying one workspace.
     outputs: Vec<Output>,
-    /// Which output keyboard actions (spawn, workspace switch) target.
-    focused_output: usize,
     /// User configuration: modifier, gap, background, keybindings.
     config: Config,
 }
@@ -247,9 +249,16 @@ unsafe fn refresh(server: &mut Server) {
     }
 }
 
-/// The workspace currently displayed on the focused output.
+/// The output the cursor is currently on (the target for new windows and
+/// workspace switches). Falls back to output 0 if the cursor is off all outputs.
+unsafe fn active_output(server: &Server) -> usize {
+    let out = snertwl_output_at_cursor(server.cursor, server.output_layout);
+    server.outputs.iter().position(|o| o.wlr_output == out).unwrap_or(0)
+}
+
+/// The workspace currently displayed on the active (cursor's) output.
 unsafe fn active_workspace(server: &Server) -> usize {
-    server.outputs[server.focused_output].workspace
+    server.outputs[active_output(server)].workspace
 }
 
 // --- keybindings -----------------------------------------------------------
@@ -291,7 +300,7 @@ unsafe fn switch_workspace(server: &mut Server, target: usize) {
     if server.outputs.is_empty() || target >= server.workspaces.len() {
         return;
     }
-    let fo = server.focused_output;
+    let fo = active_output(server);
     let current = server.outputs[fo].workspace;
     if target == current {
         return;
@@ -477,10 +486,6 @@ unsafe extern "C" fn handle_output_destroy(userdata: *mut c_void, data: *mut c_v
     let frame_ctx = o.frame_ctx;
     server.outputs.remove(pos);
     drop(Box::from_raw(frame_ctx));
-    // Keep focused_output in range.
-    if server.focused_output >= server.outputs.len() && !server.outputs.is_empty() {
-        server.focused_output = server.outputs.len() - 1;
-    }
     refresh(server);
     eprintln!("snertwl: output removed — {} left", server.outputs.len());
 }
@@ -717,7 +722,6 @@ fn main() {
                 })
                 .collect(),
             outputs: Vec::new(),
-            focused_output: 0,
             config,
         };
         let server_ptr = &mut server as *mut Server as *mut c_void;

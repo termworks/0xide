@@ -1,882 +1,1153 @@
-00:00:00.002 [INFO] [libseat] [libseat/libseat.c:62] Seat opened with backend 'logind'
-00:00:00.002 [INFO] [backend/session/session.c:117] Successfully loaded libseat session
-00:00:00.012 [DEBUG] [backend/session/session.c:410] Ignoring '/dev/dri/card0': not a KMS device
-00:00:00.012 [INFO] [backend/backend.c:248] Found 1 GPUs
-00:00:00.012 [INFO] [backend/drm/backend.c:225] Initializing DRM backend for /dev/dri/card1 (i915)
-00:00:00.013 [DEBUG] [backend/drm/drm.c:110] Using atomic DRM interface
-00:00:00.013 [DEBUG] [backend/drm/drm.c:131] ADDFB2 modifiers supported
-00:00:00.013 [INFO] [backend/drm/drm.c:310] Found 4 DRM CRTCs
-00:00:00.013 [INFO] [backend/drm/drm.c:268] Found 24 DRM planes
-00:00:00.052 [INFO] [render/egl.c:205] Supported EGL client extensions: EGL_EXT_platform_base EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_KHR_client_get_all_proc_addresses EGL_EXT_client_extensions EGL_KHR_debug EGL_KHR_platform_x11 EGL_EXT_platform_x11 EGL_EXT_platform_device EGL_MESA_platform_surfaceless EGL_EXT_explicit_device EGL_KHR_platform_wayland EGL_EXT_platform_wayland EGL_KHR_platform_gbm EGL_MESA_platform_gbm EGL_EXT_platform_xcb
-00:00:01.999 [DEBUG] [render/egl.c:523] Using EGL device /dev/dri/card1
-00:00:02.005 [INFO] [render/egl.c:369] Using EGL 1.5
-00:00:02.005 [INFO] [render/egl.c:370] Supported EGL display extensions: EGL_ANDROID_blob_cache EGL_ANDROID_native_fence_sync EGL_EXT_config_select_group EGL_EXT_create_context_robustness EGL_EXT_image_dma_buf_import EGL_EXT_image_dma_buf_import_modifiers EGL_EXT_protected_content EGL_EXT_query_reset_notification_strategy EGL_EXT_surface_compression EGL_IMG_context_priority EGL_KHR_cl_event2 EGL_KHR_config_attribs EGL_KHR_context_flush_control EGL_KHR_create_context EGL_KHR_create_context_no_error EGL_KHR_fence_sync EGL_KHR_get_all_proc_addresses EGL_KHR_gl_colorspace EGL_KHR_gl_renderbuffer_image EGL_KHR_gl_texture_2D_image EGL_KHR_gl_texture_3D_image EGL_KHR_gl_texture_cubemap_image EGL_KHR_image_base EGL_KHR_no_config_context EGL_KHR_partial_update EGL_KHR_reusable_sync EGL_KHR_surfaceless_context EGL_EXT_pixel_format_float EGL_KHR_wait_sync EGL_MESA_configless_context EGL_MESA_gl_interop EGL_MESA_image_dma_buf_export EGL_MESA_query_driver EGL_MESA_x11_native_visual_id 
-00:00:02.005 [INFO] [render/egl.c:372] Supported EGL device extensions: EGL_EXT_device_drm EGL_EXT_device_drm_render_node EGL_EXT_device_query_name EGL_EXT_device_persistent_id
-00:00:02.005 [INFO] [render/egl.c:374] EGL vendor: Mesa Project
-00:00:02.005 [INFO] [render/egl.c:376] EGL driver name: iris
-00:00:02.005 [DEBUG] [render/egl.c:120] Supported DMA-BUF formats:
-00:00:02.005 [DEBUG] [render/egl.c:169]   AB4H (0x48344241)
-00:00:02.005 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:169]   XB4H (0x48344258)
-00:00:02.005 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:169]   AB48 (0x38344241)
-00:00:02.005 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:169]   XB48 (0x38344258)
-00:00:02.005 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:169]   AR30 (0x30335241)
-00:00:02.005 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:169]   XR30 (0x30335258)
-00:00:02.005 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:169]   AB30 (0x30334241)
-00:00:02.005 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:169]   XB30 (0x30334258)
-00:00:02.005 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:169]   AR24 (0x34325241)
-00:00:02.005 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:169]   AB24 (0x34324241)
-00:00:02.005 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.005 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   XR24 (0x34325258)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   XB24 (0x34324258)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   AR15 (0x35315241)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   AR12 (0x32315241)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   RG16 (0x36314752)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   R8 (0x20203852)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   R16 (0x20363152)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   GR88 (0x38385247)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   GR32 (0x32335247)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   R  H (0x48202052)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   R  F (0x46202052)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   GR H (0x48205247)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   GR F (0x46205247)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   AB8F (0x46384241)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   YUV9 (0x39565559)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   YU11 (0x31315559)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   YU12 (0x32315559)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   YU16 (0x36315559)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   YU24 (0x34325559)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   YVU9 (0x39555659)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   YV11 (0x31315659)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   YV12 (0x32315659)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   YV16 (0x36315659)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   YV24 (0x34325659)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   S010 (0x30313053)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   S210 (0x30313253)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   S410 (0x30313453)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   S012 (0x32313053)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   S212 (0x32313253)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   S412 (0x32313453)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   S016 (0x36313053)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   S216 (0x36313253)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   S416 (0x36313453)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   NV12 (0x3231564E)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   NV21 (0x3132564E)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   P010 (0x30313050)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   P012 (0x32313050)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   P016 (0x36313050)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   P030 (0x30333050)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   NV16 (0x3631564E)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.006 [DEBUG] [render/egl.c:169]   NV61 (0x3136564E)
-00:00:02.006 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:169]   NV24 (0x3432564E)
-00:00:02.007 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:169]   NV42 (0x3234564E)
-00:00:02.007 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:169]   AYUV (0x56555941)
-00:00:02.007 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:169]   XYUV (0x56555958)
-00:00:02.007 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:169]   Y410 (0x30313459)
-00:00:02.007 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:169]   Y412 (0x32313459)
-00:00:02.007 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:169]   Y416 (0x36313459)
-00:00:02.007 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:169]   YUYV (0x56595559)
-00:00:02.007 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:169]   YVYU (0x55595659)
-00:00:02.007 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:169]   UYVY (0x59565955)
-00:00:02.007 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:169]   VYUY (0x59555956)
-00:00:02.007 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:169]   Y210 (0x30313259)
-00:00:02.007 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:169]   Y212 (0x32313259)
-00:00:02.007 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:169]   Y216 (0x36313259)
-00:00:02.007 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
-00:00:02.007 [DEBUG] [render/egl.c:189] EGL DMA-BUF format modifiers supported
-00:00:02.008 [DEBUG] [render/egl.c:449] Obtained high priority context
-00:00:02.008 [DEBUG] [render/egl.c:575] Using EGL_PLATFORM_DEVICE_EXT
-00:00:02.009 [INFO] [render/gles2/renderer.c:538] Creating GLES2 renderer
-00:00:02.009 [INFO] [render/gles2/renderer.c:539] Using OpenGL ES 3.2 Mesa 26.1.3-arch1.2
-00:00:02.009 [INFO] [render/gles2/renderer.c:540] GL vendor: Intel
-00:00:02.009 [INFO] [render/gles2/renderer.c:541] GL renderer: Mesa Intel(R) Iris(R) Xe Graphics (RPL-P)
-00:00:02.009 [INFO] [render/gles2/renderer.c:542] Supported GLES2 extensions: GL_EXT_blend_minmax GL_EXT_multi_draw_arrays GL_EXT_texture_filter_anisotropic GL_EXT_texture_compression_s3tc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_format_BGRA8888 GL_OES_compressed_ETC1_RGB8_texture GL_OES_depth24 GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_mapbuffer GL_OES_rgb8_rgba8 GL_OES_standard_derivatives GL_OES_stencil8 GL_OES_texture_3D GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_vertex_half_float GL_EXT_draw_instanced GL_EXT_texture_sRGB_decode GL_OES_EGL_image GL_OES_depth_texture GL_AMD_performance_monitor GL_OES_packed_depth_stencil GL_EXT_texture_type_2_10_10_10_REV GL_NV_conditional_render GL_OES_get_program_binary GL_APPLE_texture_max_level GL_EXT_discard_framebuffer GL_EXT_read_format_bgra GL_EXT_texture_storage GL_NV_pack_subimage GL_NV_texture_barrier GL_EXT_frag_depth GL_NV_fbo_color_attachments GL_OES_EGL_image_external GL_OES_EGL_sync GL_OES_vertex_array_object GL_OES_viewport_array GL_ANGLE_pack_reverse_row_order GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_EXT_occlusion_query_boolean GL_EXT_robustness GL_EXT_sRGB GL_EXT_texture_rg GL_EXT_unpack_subimage GL_NV_draw_buffers GL_NV_read_buffer GL_NV_read_depth GL_NV_read_depth_stencil GL_NV_read_stencil GL_APPLE_sync GL_EXT_draw_buffers GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_shadow_samplers GL_KHR_debug GL_KHR_robustness GL_KHR_texture_compression_astc_ldr GL_NV_generate_mipmap_sRGB GL_NV_pixel_buffer_object GL_OES_depth_texture_cube_map GL_OES_required_internalformat GL_OES_surfaceless_context GL_EXT_color_buffer_float GL_EXT_debug_label GL_EXT_sRGB_write_control GL_EXT_separate_shader_objects GL_EXT_shader_framebuffer_fetch GL_EXT_shader_group_vote GL_EXT_shader_implicit_conversions GL_EXT_shader_integer_mix GL_EXT_tessellation_point_size GL_EXT_tessellation_shader GL_INTEL_conservative_rasterization GL_INTEL_performance_query GL_ANDROID_extension_pack_es31a GL_EXT_base_instance GL_EXT_compressed_ETC1_RGB8_sub_texture GL_EXT_copy_image GL_EXT_draw_buffers_indexed GL_EXT_draw_elements_base_vertex GL_EXT_gpu_shader5 GL_EXT_multi_draw_indirect GL_EXT_polygon_offset_clamp GL_EXT_primitive_bounding_box GL_EXT_render_snorm GL_EXT_shader_io_blocks GL_EXT_texture_border_clamp GL_EXT_texture_buffer GL_EXT_texture_cube_map_array GL_EXT_texture_norm16 GL_EXT_texture_view GL_KHR_blend_equation_advanced GL_KHR_blend_equation_advanced_coherent GL_KHR_context_flush_control GL_KHR_robust_buffer_access_behavior GL_NV_image_formats GL_NV_shader_noperspective_interpolation GL_OES_copy_image GL_OES_draw_buffers_indexed GL_OES_draw_elements_base_vertex GL_OES_gpu_shader5 GL_OES_primitive_bounding_box GL_OES_sample_shading GL_OES_sample_variables GL_OES_shader_io_blocks GL_OES_shader_multisample_interpolation GL_OES_tessellation_point_size GL_OES_tessellation_shader GL_OES_texture_border_clamp GL_OES_texture_buffer GL_OES_texture_cube_map_array GL_OES_texture_stencil8 GL_OES_texture_storage_multisample_2d_array GL_OES_texture_view GL_EXT_blend_func_extended GL_EXT_buffer_storage GL_EXT_float_blend GL_EXT_geometry_point_size GL_EXT_geometry_shader GL_EXT_shader_samples_identical GL_EXT_texture_sRGB_R8 GL_KHR_no_error GL_KHR_texture_compression_astc_sliced_3d GL_NV_fragment_shader_interlock GL_OES_EGL_image_external_essl3 GL_OES_geometry_point_size GL_OES_geometry_shader GL_OES_shader_image_atomic GL_EXT_clear_texture GL_EXT_clip_cull_distance GL_EXT_conservative_depth GL_EXT_disjoint_timer_query GL_EXT_texture_compression_s3tc_srgb GL_MESA_shader_integer_functions GL_EXT_clip_control GL_EXT_color_buffer_half_float GL_EXT_memory_object GL_EXT_memory_object_fd GL_EXT_protected_textures GL_EXT_semaphore GL_EXT_semaphore_fd GL_EXT_texture_compression_bptc GL_EXT_texture_mirror_clamp_to_edge GL_KHR_parallel_shader_compile GL_NV_alpha_to_coverage_dither_control GL_EXT_EGL_image_storage GL_EXT_shader_framebuffer_fetch_non_coherent GL_EXT_texture_shadow_lod GL_INTEL_blackhole_render GL_MESA_framebuffer_flip_y GL_NV_compute_shader_derivatives GL_EXT_demote_to_helper_invocation GL_EXT_depth_clamp GL_EXT_texture_query_lod GL_KHR_shader_subgroup GL_MESA_sampler_objects GL_EXT_EGL_image_storage_compression GL_EXT_texture_storage_compression GL_MESA_bgra GL_MESA_texture_const_bandwidth GL_EXT_shader_clock 
-00:00:02.009 [DEBUG] [render/gles2/renderer.c:597] GPU reset notifications are enabled
-00:00:02.013 [DEBUG] [render/allocator/allocator.c:115] Trying to create gbm allocator
-00:00:02.016 [DEBUG] [render/allocator/gbm.c:216] Created GBM allocator with backend drm
-00:00:02.016 [DEBUG] [render/allocator/gbm.c:219] Using DRM node /dev/dri/card1
-00:00:02.022 [DEBUG] [xcursor/wlr_xcursor.c:224] Loaded cursor theme 'default' at size 24 (63 available cursors)
-00:00:02.022 [DEBUG] [backend/libinput/backend.c:88] Starting libinput backend
-00:00:02.169 [DEBUG] [backend/libinput/events.c:69] Adding Video Bus [0:6]
-00:00:02.173 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:02.173 [DEBUG] [backend/libinput/events.c:69] Adding Glorious Model O [9610:54]
-00:00:02.173 [INFO] [shim/snertwl_shim.c:502] snertwl: pointer attached
-00:00:02.173 [DEBUG] [backend/libinput/events.c:69] Adding Glorious Model O Keyboard [9610:54]
-00:00:02.177 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:02.177 [DEBUG] [backend/libinput/events.c:69] Adding Chicony HP Business Slim Keyboard [1008:12362]
-00:00:02.180 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:02.180 [DEBUG] [backend/libinput/events.c:69] Adding Chicony HP Business Slim Keyboard Consumer Control [1008:12362]
-00:00:02.183 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:02.183 [INFO] [shim/snertwl_shim.c:502] snertwl: pointer attached
-00:00:02.183 [DEBUG] [backend/libinput/events.c:69] Adding Chicony HP Business Slim Keyboard System Control [1008:12362]
-00:00:02.185 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:02.185 [DEBUG] [backend/libinput/events.c:69] Adding Chicony HP Business Slim Keyboard [1008:12362]
-00:00:02.187 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:02.187 [DEBUG] [backend/libinput/events.c:69] Adding ELAN0683:00 04F3:320B Mouse [1267:12811]
-00:00:02.187 [INFO] [shim/snertwl_shim.c:502] snertwl: pointer attached
-00:00:02.187 [DEBUG] [backend/libinput/events.c:69] Adding ELAN0683:00 04F3:320B Touchpad [1267:12811]
-00:00:02.187 [INFO] [shim/snertwl_shim.c:502] snertwl: pointer attached
-00:00:02.187 [DEBUG] [backend/libinput/events.c:69] Adding Video Bus [0:6]
-00:00:02.188 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:02.188 [DEBUG] [backend/libinput/events.c:69] Adding Intel HID events [0:0]
-00:00:02.203 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:02.203 [DEBUG] [backend/libinput/events.c:69] Adding Power Button [0:1]
-00:00:02.206 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:02.206 [DEBUG] [backend/libinput/events.c:69] Adding Lid Switch [0:5]
-00:00:02.206 [DEBUG] [backend/libinput/events.c:69] Adding Sleep Button [0:3]
-00:00:02.209 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:02.209 [DEBUG] [backend/libinput/events.c:69] Adding AT Translated Set 2 keyboard [1:1]
-00:00:02.213 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:02.213 [DEBUG] [backend/libinput/events.c:69] Adding TPPS/2 Elan TrackPoint [2:10]
-00:00:02.213 [INFO] [shim/snertwl_shim.c:502] snertwl: pointer attached
-00:00:02.213 [DEBUG] [backend/libinput/events.c:69] Adding ThinkPad Extra Buttons [6058:20564]
-00:00:02.216 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:02.216 [DEBUG] [backend/libinput/backend.c:125] libinput successfully initialized
-00:00:02.216 [INFO] [backend/drm/drm.c:1741] Scanning DRM connectors on /dev/dri/card1
-00:00:02.217 [INFO] [backend/drm/drm.c:1796] Found connector 'eDP-1'
-00:00:02.217 [INFO] [backend/drm/drm.c:1821] 'eDP-1' connected
-00:00:02.217 [DEBUG] [backend/drm/drm.c:1596] Current CRTC: 149
-00:00:02.217 [INFO] [backend/drm/drm.c:1610] Detected modes:
-00:00:02.217 [INFO] [backend/drm/drm.c:1634]   1920x1200 @ 60.003 Hz (preferred)
-00:00:02.217 [INFO] [backend/drm/drm.c:1671] Physical size: 350x220
-00:00:02.221 [INFO] [backend/drm/drm.c:1796] Found connector 'HDMI-A-1'
-00:00:02.221 [INFO] [backend/drm/drm.c:1796] Found connector 'DP-1'
-00:00:02.221 [INFO] [backend/drm/drm.c:1796] Found connector 'DP-2'
-00:00:02.233 [INFO] [backend/drm/drm.c:1796] Found connector 'DP-3'
-00:00:02.233 [INFO] [backend/drm/drm.c:1796] Found connector 'DP-4'
-00:00:02.418 [INFO] [backend/drm/drm.c:1796] Found connector 'DP-5'
-00:00:02.418 [INFO] [backend/drm/drm.c:1821] 'DP-5' connected
-00:00:02.418 [DEBUG] [backend/drm/drm.c:1596] Current CRTC: 267
-00:00:02.418 [INFO] [backend/drm/drm.c:1610] Detected modes:
-00:00:02.418 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 60.000 Hz (preferred)
-00:00:02.418 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 60.000 Hz 
-00:00:02.418 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 59.940 Hz 
-00:00:02.418 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 50.000 Hz 
-00:00:02.418 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 30.000 Hz 
-00:00:02.418 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 30.000 Hz 
-00:00:02.418 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 29.970 Hz 
-00:00:02.418 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 25.000 Hz 
-00:00:02.418 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 24.000 Hz 
-00:00:02.418 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 23.976 Hz 
-00:00:02.418 [INFO] [backend/drm/drm.c:1634]   2560x1600 @ 59.972 Hz 
-00:00:02.418 [INFO] [backend/drm/drm.c:1634]   2560x1440 @ 59.951 Hz 
-00:00:02.418 [INFO] [backend/drm/drm.c:1634]   1920x1080 @ 60.000 Hz 
-00:00:02.418 [INFO] [backend/drm/drm.c:1634]   1920x1080 @ 50.000 Hz 
-00:00:02.418 [INFO] [backend/drm/drm.c:1634]   1680x1050 @ 59.883 Hz 
-00:00:02.418 [INFO] [backend/drm/drm.c:1634]   1280x1024 @ 75.025 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1280x1024 @ 60.020 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1440x900 @ 59.901 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1280x960 @ 60.000 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1280x800 @ 59.910 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1152x864 @ 75.000 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1280x720 @ 60.000 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1280x720 @ 60.000 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1280x720 @ 59.940 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1280x720 @ 50.000 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1440x576 @ 50.000 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1440x576 @ 50.000 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1024x768 @ 75.029 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1024x768 @ 70.069 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1024x768 @ 60.004 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1440x480 @ 60.000 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1440x480 @ 60.000 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1440x480 @ 59.940 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   1440x480 @ 59.940 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   832x624 @ 74.551 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   800x600 @ 75.000 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   800x600 @ 72.188 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   800x600 @ 60.317 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   800x600 @ 56.250 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   720x576 @ 50.000 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   720x576 @ 50.000 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   720x480 @ 60.000 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   720x480 @ 60.000 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   720x480 @ 59.940 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   720x480 @ 59.940 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   640x480 @ 75.000 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   640x480 @ 72.809 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   640x480 @ 66.667 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   640x480 @ 60.000 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   640x480 @ 59.940 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   720x400 @ 70.082 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1634]   640x350 @ 70.072 Hz 
-00:00:02.419 [INFO] [backend/drm/drm.c:1671] Physical size: 620x340
-00:00:02.420 [INFO] [backend/drm/drm.c:1796] Found connector 'DP-6'
-00:00:02.420 [INFO] [backend/drm/drm.c:1796] Found connector 'DP-7'
-00:00:02.420 [INFO] [backend/drm/drm.c:1855] connector eDP-1: Requesting modeset
-00:00:02.420 [DEBUG] [types/output/render.c:123] Attaching empty buffer to output for modeset
-00:00:02.420 [DEBUG] [types/output/swapchain.c:27] Choosing primary buffer format XR24 (0x34325258) for output 'eDP-1'
-00:00:02.420 [DEBUG] [types/output/swapchain.c:96] Testing swapchain for output 'eDP-1'
-00:00:02.420 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
-00:00:02.425 [DEBUG] [render/allocator/gbm.c:146] Allocated 1920x1200 GBM buffer with format XR24 (0x34325258), modifier Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008)
-00:00:02.425 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1920x1200
-00:00:02.428 [INFO] [backend/drm/drm.c:944] connector eDP-1: Modesetting with 1920x1200 @ 60.003 Hz
+00:00:00.001 [INFO] [libseat] [libseat/libseat.c:62] Seat opened with backend 'logind'
+00:00:00.001 [INFO] [backend/session/session.c:117] Successfully loaded libseat session
+00:00:00.006 [DEBUG] [backend/session/session.c:410] Ignoring '/dev/dri/card0': not a KMS device
+00:00:00.006 [INFO] [backend/backend.c:248] Found 1 GPUs
+00:00:00.006 [INFO] [backend/drm/backend.c:225] Initializing DRM backend for /dev/dri/card1 (i915)
+00:00:00.006 [DEBUG] [backend/drm/drm.c:110] Using atomic DRM interface
+00:00:00.006 [DEBUG] [backend/drm/drm.c:131] ADDFB2 modifiers supported
+00:00:00.006 [INFO] [backend/drm/drm.c:310] Found 4 DRM CRTCs
+00:00:00.006 [INFO] [backend/drm/drm.c:268] Found 24 DRM planes
+00:00:00.050 [INFO] [render/egl.c:205] Supported EGL client extensions: EGL_EXT_platform_base EGL_EXT_device_base EGL_EXT_device_enumeration EGL_EXT_device_query EGL_KHR_client_get_all_proc_addresses EGL_EXT_client_extensions EGL_KHR_debug EGL_KHR_platform_x11 EGL_EXT_platform_x11 EGL_EXT_platform_device EGL_MESA_platform_surfaceless EGL_EXT_explicit_device EGL_KHR_platform_wayland EGL_EXT_platform_wayland EGL_KHR_platform_gbm EGL_MESA_platform_gbm EGL_EXT_platform_xcb
+00:00:00.055 [DEBUG] [render/egl.c:523] Using EGL device /dev/dri/card1
+00:00:00.061 [INFO] [render/egl.c:369] Using EGL 1.5
+00:00:00.061 [INFO] [render/egl.c:370] Supported EGL display extensions: EGL_ANDROID_blob_cache EGL_ANDROID_native_fence_sync EGL_EXT_config_select_group EGL_EXT_create_context_robustness EGL_EXT_image_dma_buf_import EGL_EXT_image_dma_buf_import_modifiers EGL_EXT_protected_content EGL_EXT_query_reset_notification_strategy EGL_EXT_surface_compression EGL_IMG_context_priority EGL_KHR_cl_event2 EGL_KHR_config_attribs EGL_KHR_context_flush_control EGL_KHR_create_context EGL_KHR_create_context_no_error EGL_KHR_fence_sync EGL_KHR_get_all_proc_addresses EGL_KHR_gl_colorspace EGL_KHR_gl_renderbuffer_image EGL_KHR_gl_texture_2D_image EGL_KHR_gl_texture_3D_image EGL_KHR_gl_texture_cubemap_image EGL_KHR_image_base EGL_KHR_no_config_context EGL_KHR_partial_update EGL_KHR_reusable_sync EGL_KHR_surfaceless_context EGL_EXT_pixel_format_float EGL_KHR_wait_sync EGL_MESA_configless_context EGL_MESA_gl_interop EGL_MESA_image_dma_buf_export EGL_MESA_query_driver EGL_MESA_x11_native_visual_id 
+00:00:00.061 [INFO] [render/egl.c:372] Supported EGL device extensions: EGL_EXT_device_drm EGL_EXT_device_drm_render_node EGL_EXT_device_query_name EGL_EXT_device_persistent_id
+00:00:00.061 [INFO] [render/egl.c:374] EGL vendor: Mesa Project
+00:00:00.061 [INFO] [render/egl.c:376] EGL driver name: iris
+00:00:00.061 [DEBUG] [render/egl.c:120] Supported DMA-BUF formats:
+00:00:00.061 [DEBUG] [render/egl.c:169]   AB4H (0x48344241)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   XB4H (0x48344258)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   AB48 (0x38344241)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   XB48 (0x38344258)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   AR30 (0x30335241)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   XR30 (0x30335258)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   AB30 (0x30334241)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   XB30 (0x30334258)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   AR24 (0x34325241)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   AB24 (0x34324241)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   XR24 (0x34325258)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   XB24 (0x34324258)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   AR15 (0x35315241)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   AR12 (0x32315241)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   RG16 (0x36314752)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   R8 (0x20203852)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   R16 (0x20363152)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   GR88 (0x38385247)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   GR32 (0x32335247)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   R  H (0x48202052)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   R  F (0x46202052)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   GR H (0x48205247)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   GR F (0x46205247)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   AB8F (0x46384241)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS (0x0100000000000006): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   YUV9 (0x39565559)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   YU11 (0x31315559)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   YU12 (0x32315559)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   YU16 (0x36315559)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   YU24 (0x34325559)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   YVU9 (0x39555659)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   YV11 (0x31315659)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   YV12 (0x32315659)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   YV16 (0x36315659)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   YV24 (0x34325659)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   S010 (0x30313053)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   S210 (0x30313253)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   S410 (0x30313453)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   S012 (0x32313053)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:169]   S212 (0x32313253)
+00:00:00.062 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.062 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   S412 (0x32313453)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   S016 (0x36313053)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   S216 (0x36313253)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   S416 (0x36313453)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   NV12 (0x3231564E)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   NV21 (0x3132564E)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   P010 (0x30313050)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   P012 (0x32313050)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   P016 (0x36313050)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   P030 (0x30333050)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   NV16 (0x3631564E)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   NV61 (0x3136564E)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   NV24 (0x3432564E)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   NV42 (0x3234564E)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   AYUV (0x56555941)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   XYUV (0x56555958)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   Y410 (0x30313459)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   Y412 (0x32313459)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   Y416 (0x36313459)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   YUYV (0x56595559)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   YVYU (0x55595659)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   UYVY (0x59565955)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED_GEN12_MC_CCS (0x0100000000000007): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   VYUY (0x59555956)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   Y210 (0x30313259)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   Y212 (0x32313259)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:169]   Y216 (0x36313259)
+00:00:00.063 [DEBUG] [render/egl.c:103]     INVALID (0x00FFFFFFFFFFFFFF): ✓ texture  ✓ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     LINEAR (0x0000000000000000): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     X_TILED (0x0100000000000001): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:103]     Y_TILED (0x0100000000000002): ✓ texture  ✗ render
+00:00:00.063 [DEBUG] [render/egl.c:189] EGL DMA-BUF format modifiers supported
+00:00:00.065 [DEBUG] [render/egl.c:449] Obtained high priority context
+00:00:00.065 [DEBUG] [render/egl.c:575] Using EGL_PLATFORM_DEVICE_EXT
+00:00:00.065 [INFO] [render/gles2/renderer.c:538] Creating GLES2 renderer
+00:00:00.065 [INFO] [render/gles2/renderer.c:539] Using OpenGL ES 3.2 Mesa 26.1.3-arch1.2
+00:00:00.065 [INFO] [render/gles2/renderer.c:540] GL vendor: Intel
+00:00:00.065 [INFO] [render/gles2/renderer.c:541] GL renderer: Mesa Intel(R) Iris(R) Xe Graphics (RPL-P)
+00:00:00.065 [INFO] [render/gles2/renderer.c:542] Supported GLES2 extensions: GL_EXT_blend_minmax GL_EXT_multi_draw_arrays GL_EXT_texture_filter_anisotropic GL_EXT_texture_compression_s3tc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_format_BGRA8888 GL_OES_compressed_ETC1_RGB8_texture GL_OES_depth24 GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_mapbuffer GL_OES_rgb8_rgba8 GL_OES_standard_derivatives GL_OES_stencil8 GL_OES_texture_3D GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_vertex_half_float GL_EXT_draw_instanced GL_EXT_texture_sRGB_decode GL_OES_EGL_image GL_OES_depth_texture GL_AMD_performance_monitor GL_OES_packed_depth_stencil GL_EXT_texture_type_2_10_10_10_REV GL_NV_conditional_render GL_OES_get_program_binary GL_APPLE_texture_max_level GL_EXT_discard_framebuffer GL_EXT_read_format_bgra GL_EXT_texture_storage GL_NV_pack_subimage GL_NV_texture_barrier GL_EXT_frag_depth GL_NV_fbo_color_attachments GL_OES_EGL_image_external GL_OES_EGL_sync GL_OES_vertex_array_object GL_OES_viewport_array GL_ANGLE_pack_reverse_row_order GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_EXT_occlusion_query_boolean GL_EXT_robustness GL_EXT_sRGB GL_EXT_texture_rg GL_EXT_unpack_subimage GL_NV_draw_buffers GL_NV_read_buffer GL_NV_read_depth GL_NV_read_depth_stencil GL_NV_read_stencil GL_APPLE_sync GL_EXT_draw_buffers GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_shadow_samplers GL_KHR_debug GL_KHR_robustness GL_KHR_texture_compression_astc_ldr GL_NV_generate_mipmap_sRGB GL_NV_pixel_buffer_object GL_OES_depth_texture_cube_map GL_OES_required_internalformat GL_OES_surfaceless_context GL_EXT_color_buffer_float GL_EXT_debug_label GL_EXT_sRGB_write_control GL_EXT_separate_shader_objects GL_EXT_shader_framebuffer_fetch GL_EXT_shader_group_vote GL_EXT_shader_implicit_conversions GL_EXT_shader_integer_mix GL_EXT_tessellation_point_size GL_EXT_tessellation_shader GL_INTEL_conservative_rasterization GL_INTEL_performance_query GL_ANDROID_extension_pack_es31a GL_EXT_base_instance GL_EXT_compressed_ETC1_RGB8_sub_texture GL_EXT_copy_image GL_EXT_draw_buffers_indexed GL_EXT_draw_elements_base_vertex GL_EXT_gpu_shader5 GL_EXT_multi_draw_indirect GL_EXT_polygon_offset_clamp GL_EXT_primitive_bounding_box GL_EXT_render_snorm GL_EXT_shader_io_blocks GL_EXT_texture_border_clamp GL_EXT_texture_buffer GL_EXT_texture_cube_map_array GL_EXT_texture_norm16 GL_EXT_texture_view GL_KHR_blend_equation_advanced GL_KHR_blend_equation_advanced_coherent GL_KHR_context_flush_control GL_KHR_robust_buffer_access_behavior GL_NV_image_formats GL_NV_shader_noperspective_interpolation GL_OES_copy_image GL_OES_draw_buffers_indexed GL_OES_draw_elements_base_vertex GL_OES_gpu_shader5 GL_OES_primitive_bounding_box GL_OES_sample_shading GL_OES_sample_variables GL_OES_shader_io_blocks GL_OES_shader_multisample_interpolation GL_OES_tessellation_point_size GL_OES_tessellation_shader GL_OES_texture_border_clamp GL_OES_texture_buffer GL_OES_texture_cube_map_array GL_OES_texture_stencil8 GL_OES_texture_storage_multisample_2d_array GL_OES_texture_view GL_EXT_blend_func_extended GL_EXT_buffer_storage GL_EXT_float_blend GL_EXT_geometry_point_size GL_EXT_geometry_shader GL_EXT_shader_samples_identical GL_EXT_texture_sRGB_R8 GL_KHR_no_error GL_KHR_texture_compression_astc_sliced_3d GL_NV_fragment_shader_interlock GL_OES_EGL_image_external_essl3 GL_OES_geometry_point_size GL_OES_geometry_shader GL_OES_shader_image_atomic GL_EXT_clear_texture GL_EXT_clip_cull_distance GL_EXT_conservative_depth GL_EXT_disjoint_timer_query GL_EXT_texture_compression_s3tc_srgb GL_MESA_shader_integer_functions GL_EXT_clip_control GL_EXT_color_buffer_half_float GL_EXT_memory_object GL_EXT_memory_object_fd GL_EXT_protected_textures GL_EXT_semaphore GL_EXT_semaphore_fd GL_EXT_texture_compression_bptc GL_EXT_texture_mirror_clamp_to_edge GL_KHR_parallel_shader_compile GL_NV_alpha_to_coverage_dither_control GL_EXT_EGL_image_storage GL_EXT_shader_framebuffer_fetch_non_coherent GL_EXT_texture_shadow_lod GL_INTEL_blackhole_render GL_MESA_framebuffer_flip_y GL_NV_compute_shader_derivatives GL_EXT_demote_to_helper_invocation GL_EXT_depth_clamp GL_EXT_texture_query_lod GL_KHR_shader_subgroup GL_MESA_sampler_objects GL_EXT_EGL_image_storage_compression GL_EXT_texture_storage_compression GL_MESA_bgra GL_MESA_texture_const_bandwidth GL_EXT_shader_clock 
+00:00:00.065 [DEBUG] [render/gles2/renderer.c:597] GPU reset notifications are enabled
+00:00:00.071 [DEBUG] [render/allocator/allocator.c:115] Trying to create gbm allocator
+00:00:00.074 [DEBUG] [render/allocator/gbm.c:216] Created GBM allocator with backend drm
+00:00:00.074 [DEBUG] [render/allocator/gbm.c:219] Using DRM node /dev/dri/card1
+00:00:00.081 [DEBUG] [xcursor/wlr_xcursor.c:224] Loaded cursor theme 'default' at size 24 (63 available cursors)
+00:00:00.081 [DEBUG] [backend/libinput/backend.c:88] Starting libinput backend
+00:00:00.220 [DEBUG] [backend/libinput/events.c:69] Adding Video Bus [0:6]
+00:00:00.223 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:00:00.223 [DEBUG] [backend/libinput/events.c:69] Adding Glorious Model O [9610:54]
+00:00:00.223 [INFO] [shim/snertwl_shim.c:509] snertwl: pointer attached
+00:00:00.223 [DEBUG] [backend/libinput/events.c:69] Adding Glorious Model O Keyboard [9610:54]
+00:00:00.225 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:00:00.225 [DEBUG] [backend/libinput/events.c:69] Adding Chicony HP Business Slim Keyboard [1008:12362]
+00:00:00.227 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:00:00.227 [DEBUG] [backend/libinput/events.c:69] Adding Chicony HP Business Slim Keyboard Consumer Control [1008:12362]
+00:00:00.229 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:00:00.229 [INFO] [shim/snertwl_shim.c:509] snertwl: pointer attached
+00:00:00.229 [DEBUG] [backend/libinput/events.c:69] Adding Chicony HP Business Slim Keyboard System Control [1008:12362]
+00:00:00.230 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:00:00.230 [DEBUG] [backend/libinput/events.c:69] Adding Chicony HP Business Slim Keyboard [1008:12362]
+00:00:00.232 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:00:00.232 [DEBUG] [backend/libinput/events.c:69] Adding ELAN0683:00 04F3:320B Mouse [1267:12811]
+00:00:00.232 [INFO] [shim/snertwl_shim.c:509] snertwl: pointer attached
+00:00:00.232 [DEBUG] [backend/libinput/events.c:69] Adding ELAN0683:00 04F3:320B Touchpad [1267:12811]
+00:00:00.232 [INFO] [shim/snertwl_shim.c:509] snertwl: pointer attached
+00:00:00.232 [DEBUG] [backend/libinput/events.c:69] Adding Video Bus [0:6]
+00:00:00.234 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:00:00.234 [DEBUG] [backend/libinput/events.c:69] Adding Intel HID events [0:0]
+00:00:00.247 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:00:00.247 [DEBUG] [backend/libinput/events.c:69] Adding Power Button [0:1]
+00:00:00.249 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:00:00.249 [DEBUG] [backend/libinput/events.c:69] Adding Lid Switch [0:5]
+00:00:00.249 [DEBUG] [backend/libinput/events.c:69] Adding Sleep Button [0:3]
+00:00:00.251 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:00:00.251 [DEBUG] [backend/libinput/events.c:69] Adding AT Translated Set 2 keyboard [1:1]
+00:00:00.253 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:00:00.253 [DEBUG] [backend/libinput/events.c:69] Adding TPPS/2 Elan TrackPoint [2:10]
+00:00:00.253 [INFO] [shim/snertwl_shim.c:509] snertwl: pointer attached
+00:00:00.253 [DEBUG] [backend/libinput/events.c:69] Adding ThinkPad Extra Buttons [6058:20564]
+00:00:00.254 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:00:00.254 [DEBUG] [backend/libinput/backend.c:125] libinput successfully initialized
+00:00:00.254 [INFO] [backend/drm/drm.c:1741] Scanning DRM connectors on /dev/dri/card1
+00:00:00.255 [INFO] [backend/drm/drm.c:1796] Found connector 'eDP-1'
+00:00:00.255 [INFO] [backend/drm/drm.c:1821] 'eDP-1' connected
+00:00:00.255 [DEBUG] [backend/drm/drm.c:1596] Current CRTC: 149
+00:00:00.255 [INFO] [backend/drm/drm.c:1610] Detected modes:
+00:00:00.255 [INFO] [backend/drm/drm.c:1634]   1920x1200 @ 60.003 Hz (preferred)
+00:00:00.255 [INFO] [backend/drm/drm.c:1671] Physical size: 350x220
+00:00:00.259 [INFO] [backend/drm/drm.c:1796] Found connector 'HDMI-A-1'
+00:00:00.259 [INFO] [backend/drm/drm.c:1796] Found connector 'DP-1'
+00:00:00.259 [INFO] [backend/drm/drm.c:1796] Found connector 'DP-2'
+00:00:00.271 [INFO] [backend/drm/drm.c:1796] Found connector 'DP-3'
+00:00:00.271 [INFO] [backend/drm/drm.c:1796] Found connector 'DP-4'
+00:00:01.795 [INFO] [backend/drm/drm.c:1796] Found connector 'DP-5'
+00:00:01.795 [INFO] [backend/drm/drm.c:1821] 'DP-5' connected
+00:00:01.795 [DEBUG] [backend/drm/drm.c:1596] Current CRTC: 267
+00:00:01.795 [INFO] [backend/drm/drm.c:1610] Detected modes:
+00:00:01.795 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 60.000 Hz (preferred)
+00:00:01.795 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 60.000 Hz 
+00:00:01.795 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 59.940 Hz 
+00:00:01.795 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 50.000 Hz 
+00:00:01.795 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 30.000 Hz 
+00:00:01.795 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 30.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 29.970 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 25.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 24.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 23.976 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   2560x1600 @ 59.972 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   2560x1440 @ 59.951 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1920x1080 @ 60.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1920x1080 @ 50.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1680x1050 @ 59.883 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1280x1024 @ 75.025 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1280x1024 @ 60.020 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1440x900 @ 59.901 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1280x960 @ 60.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1280x800 @ 59.910 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1152x864 @ 75.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1280x720 @ 60.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1280x720 @ 60.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1280x720 @ 59.940 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1280x720 @ 50.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1440x576 @ 50.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1440x576 @ 50.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1024x768 @ 75.029 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1024x768 @ 70.069 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1024x768 @ 60.004 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1440x480 @ 60.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1440x480 @ 60.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1440x480 @ 59.940 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   1440x480 @ 59.940 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   832x624 @ 74.551 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   800x600 @ 75.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   800x600 @ 72.188 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   800x600 @ 60.317 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   800x600 @ 56.250 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   720x576 @ 50.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   720x576 @ 50.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   720x480 @ 60.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   720x480 @ 60.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   720x480 @ 59.940 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   720x480 @ 59.940 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   640x480 @ 75.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   640x480 @ 72.809 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   640x480 @ 66.667 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   640x480 @ 60.000 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   640x480 @ 59.940 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   720x400 @ 70.082 Hz 
+00:00:01.796 [INFO] [backend/drm/drm.c:1634]   640x350 @ 70.072 Hz 
+00:00:01.797 [INFO] [backend/drm/drm.c:1671] Physical size: 620x340
+00:00:01.797 [INFO] [backend/drm/drm.c:1796] Found connector 'DP-6'
+00:00:01.797 [INFO] [backend/drm/drm.c:1796] Found connector 'DP-7'
+00:00:01.797 [INFO] [backend/drm/drm.c:1855] connector eDP-1: Requesting modeset
+00:00:01.797 [DEBUG] [types/output/render.c:123] Attaching empty buffer to output for modeset
+00:00:01.797 [DEBUG] [types/output/swapchain.c:27] Choosing primary buffer format XR24 (0x34325258) for output 'eDP-1'
+00:00:01.797 [DEBUG] [types/output/swapchain.c:96] Testing swapchain for output 'eDP-1'
+00:00:01.797 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
+00:00:01.801 [DEBUG] [render/allocator/gbm.c:146] Allocated 1920x1200 GBM buffer with format XR24 (0x34325258), modifier Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008)
+00:00:01.802 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1920x1200
+00:00:01.805 [INFO] [backend/drm/drm.c:944] connector eDP-1: Modesetting with 1920x1200 @ 60.003 Hz
 snertwl: output online @ 0,0 1920x1200 — workspace 1
-00:00:02.456 [INFO] [backend/drm/drm.c:1855] connector DP-5: Requesting modeset
-00:00:02.456 [DEBUG] [types/output/render.c:123] Attaching empty buffer to output for modeset
-00:00:02.456 [DEBUG] [types/output/swapchain.c:27] Choosing primary buffer format XR24 (0x34325258) for output 'DP-5'
-00:00:02.456 [DEBUG] [types/output/swapchain.c:96] Testing swapchain for output 'DP-5'
-00:00:02.456 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
-00:00:02.470 [DEBUG] [render/allocator/gbm.c:146] Allocated 3840x2160 GBM buffer with format XR24 (0x34325258), modifier Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008)
-00:00:02.470 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3840x2160
-00:00:02.470 [INFO] [backend/drm/drm.c:944] connector DP-5: Modesetting with 3840x2160 @ 60.000 Hz
+00:00:01.840 [INFO] [backend/drm/drm.c:1855] connector DP-5: Requesting modeset
+00:00:01.840 [DEBUG] [types/output/render.c:123] Attaching empty buffer to output for modeset
+00:00:01.840 [DEBUG] [types/output/swapchain.c:27] Choosing primary buffer format XR24 (0x34325258) for output 'DP-5'
+00:00:01.840 [DEBUG] [types/output/swapchain.c:96] Testing swapchain for output 'DP-5'
+00:00:01.840 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
+00:00:01.852 [DEBUG] [render/allocator/gbm.c:146] Allocated 3840x2160 GBM buffer with format XR24 (0x34325258), modifier Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008)
+00:00:01.853 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3840x2160
+00:00:01.853 [INFO] [backend/drm/drm.c:944] connector DP-5: Modesetting with 3840x2160 @ 60.000 Hz
 snertwl: output online @ 1920,0 3840x2160 — workspace 2
 snertwl: socket ready — WAYLAND_DISPLAY=wayland-0
 snertwl: entering event loop (Ctrl-C to quit)
 snertwl: forced repaint (output 0, 2 left)
-00:00:03.036 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
-00:00:03.040 [DEBUG] [render/allocator/gbm.c:146] Allocated 1920x1200 GBM buffer with format XR24 (0x34325258), modifier Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008)
-00:00:03.040 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1920x1200
+00:00:02.393 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
+00:00:02.397 [DEBUG] [render/allocator/gbm.c:146] Allocated 1920x1200 GBM buffer with format XR24 (0x34325258), modifier Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008)
+00:00:02.397 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1920x1200
 snertwl: forced repaint (output 1, 2 left)
-00:00:03.041 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
-00:00:03.050 [DEBUG] [render/allocator/gbm.c:146] Allocated 3840x2160 GBM buffer with format XR24 (0x34325258), modifier Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008)
-00:00:03.050 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3840x2160
+00:00:02.398 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
+00:00:02.405 [DEBUG] [render/allocator/gbm.c:146] Allocated 3840x2160 GBM buffer with format XR24 (0x34325258), modifier Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008)
+00:00:02.405 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3840x2160
 snertwl: forced repaint (output 0, 1 left)
 snertwl: forced repaint (output 1, 1 left)
 snertwl: forced repaint (output 0, 0 left)
 snertwl: forced repaint (output 1, 0 left)
-00:00:04.667 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a238560 (res 0x56241a6b6470)
-00:00:04.667 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a2389c0 (res 0x56241a70d530)
-00:00:04.667 [DEBUG] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x56241a13c3d0 (res 0x56241a70d5c0)
-00:00:04.667 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a23a3e0 (res 0x56241a70d380)
-00:00:04.667 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a4960a0 (res 0x56241a6dbb40)
-00:00:04.667 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a7040e0 (res 0x56241a6b1780)
-00:00:04.667 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a7044b0 (res 0x56241a6b1540)
-00:00:04.667 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a71d470 (res 0x56241a6adf90)
-00:00:04.667 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a71d880 (res 0x56241a6add50)
-00:00:04.667 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a71dc90 (res 0x56241a6b4ab0)
-00:00:04.667 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a71e0a0 (res 0x56241a6b4820)
-00:00:04.667 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a71e4b0 (res 0x56241a6b45e0)
-00:00:04.714 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
-[0.142] [glfw error 65544]: process_desktop_settings: failed with error: org.freedesktop.DBus.Error.NameHasNoOwner: Could not activate remote peer 'org.freedesktop.portal.Desktop': startup job failed
-00:00:04.752 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
-00:00:04.871 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
-00:00:05.635 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a7c39e0 (res 0x56241a70bfd0)
-00:00:05.635 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a7c3db0 (res 0x56241a707a20)
-00:00:05.635 [DEBUG] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x56241a3aea50 (res 0x56241a707900)
-00:00:05.635 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a7c4a30 (res 0x56241a709fd0)
-00:00:05.635 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a7c4e20 (res 0x56241a70e220)
-00:00:05.635 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a7c5210 (res 0x56241a70f300)
-00:00:05.635 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a7c5700 (res 0x56241a70f0c0)
-00:00:05.635 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a7c5bf0 (res 0x56241a70ee80)
-00:00:05.635 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a7c60e0 (res 0x56241a70ec40)
-00:00:05.635 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a7c65d0 (res 0x56241a70ea00)
-00:00:05.635 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a7c6ac0 (res 0x56241a70a9f0)
-00:00:05.635 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x56241a7c6fb0 (res 0x56241a70a7b0)
-00:00:05.650 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:05.658 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:05.678 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:04.637 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf7d2d900 (res 0x558bf81d05d0)
+00:00:04.637 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf7d2dd60 (res 0x558bf81d0810)
+00:00:04.637 [DEBUG] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x558bf7c31760 (res 0x558bf81ad120)
+00:00:04.637 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf7d2f780 (res 0x558bf8202cf0)
+00:00:04.637 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf81f9ea0 (res 0x558bf81c0890)
+00:00:04.637 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf81dfb60 (res 0x558bf81a9640)
+00:00:04.637 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf81dff30 (res 0x558bf81a9400)
+00:00:04.637 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8212de0 (res 0x558bf81a6b30)
+00:00:04.637 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82131f0 (res 0x558bf81c0510)
+00:00:04.637 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8213600 (res 0x558bf8170300)
+00:00:04.637 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8213a10 (res 0x558bf81aa2a0)
+00:00:04.637 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8213f00 (res 0x558bf81aa060)
+00:00:04.683 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
 [0.148] [glfw error 65544]: process_desktop_settings: failed with error: org.freedesktop.DBus.Error.NameHasNoOwner: Could not activate remote peer 'org.freedesktop.portal.Desktop': startup job failed
-00:00:05.718 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:05.805 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-snertwl: output 0 -> workspace 2
-00:00:09.681 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:09.684 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:09.691 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:09.697 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-snertwl: output 0 -> workspace 1
-00:00:10.294 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:10.295 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:10.304 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:10.305 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:10.367 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-snertwl: output 0 -> workspace 2
-00:00:10.666 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:10.671 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:10.680 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:10.684 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-snertwl: output 0 -> workspace 1
-00:00:11.217 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:11.218 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:11.228 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:11.229 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-snertwl: output 0 -> workspace 2
-00:00:12.227 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:12.228 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:12.236 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:12.252 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:12.346 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:12.347 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-snertwl: output 0 -> workspace 1
-00:00:13.093 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:13.095 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:13.109 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:13.128 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-snertwl: output 0 -> workspace 2
-00:00:13.572 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:13.573 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:13.586 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:13.586 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:04.724 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:04.826 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:07.498 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
+00:00:07.498 [DEBUG] [render/allocator/gbm.c:146] Allocated 64x64 GBM buffer with format AR24 (0x34325241), modifier LINEAR (0x0000000000000000)
+00:00:07.498 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 64x64
+00:00:07.498 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
+00:00:07.499 [DEBUG] [render/allocator/gbm.c:146] Allocated 64x64 GBM buffer with format AR24 (0x34325241), modifier LINEAR (0x0000000000000000)
+00:00:07.499 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 64x64
+00:00:13.200 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82bb970 (res 0x558bf82025a0)
+00:00:13.200 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82bbd40 (res 0x558bf8202480)
+00:00:13.200 [DEBUG] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x558bf7ee2090 (res 0x558bf8202360)
+00:00:13.200 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82bd0a0 (res 0x558bf8201ee0)
+00:00:13.200 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82bd4a0 (res 0x558bf82047f0)
+00:00:13.201 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82bd870 (res 0x558bf8200360)
+00:00:13.201 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82bdc90 (res 0x558bf8200120)
+00:00:13.201 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82be060 (res 0x558bf81ffee0)
+00:00:13.201 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82be430 (res 0x558bf81ffca0)
+00:00:13.201 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82be800 (res 0x558bf8204fd0)
+00:00:13.201 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82bebd0 (res 0x558bf8200fc0)
+00:00:13.201 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82befa0 (res 0x558bf8200d80)
+00:00:13.249 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+[0.154] [glfw error 65544]: process_desktop_settings: failed with error: org.freedesktop.DBus.Error.NameHasNoOwner: Could not activate remote peer 'org.freedesktop.portal.Desktop': startup job failed
+00:00:13.295 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+00:00:13.387 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+00:00:13.923 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82cf7a0 (res 0x558bf8205f90)
+00:00:13.923 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82cfb70 (res 0x558bf8205450)
+00:00:13.923 [DEBUG] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x558bf7ea3de0 (res 0x558bf8205330)
+00:00:13.923 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830a950 (res 0x558bf820fb30)
+00:00:13.923 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830ad20 (res 0x558bf8207bb0)
+00:00:13.923 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830b0f0 (res 0x558bf8217170)
+00:00:13.923 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830b4c0 (res 0x558bf8216f30)
+00:00:13.923 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830b970 (res 0x558bf8208810)
+00:00:13.923 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830be20 (res 0x558bf82085d0)
+00:00:13.923 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830c2d0 (res 0x558bf8208390)
+00:00:13.923 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830c780 (res 0x558bf8217dd0)
+00:00:13.923 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830cc30 (res 0x558bf8217b90)
+00:00:13.948 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:13.959 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:13.965 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+[0.144] [glfw error 65544]: process_desktop_settings: failed with error: org.freedesktop.DBus.Error.NameHasNoOwner: Could not activate remote peer 'org.freedesktop.portal.Desktop': startup job failed
+00:00:14.010 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:14.112 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:14.775 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+00:00:14.789 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+00:00:15.273 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830cc30 (res 0x558bf8206e30)
+00:00:15.273 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830c780 (res 0x558bf820c9b0)
+00:00:15.273 [DEBUG] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x558bf7ea3de0 (res 0x558bf81fc190)
+00:00:15.273 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830c2d0 (res 0x558bf821a770)
+00:00:15.273 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830be20 (res 0x558bf820e390)
+00:00:15.273 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830b970 (res 0x558bf820e030)
+00:00:15.273 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830b4c0 (res 0x558bf820dbb0)
+00:00:15.273 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830b0f0 (res 0x558bf82072b0)
+00:00:15.273 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830ad20 (res 0x558bf8209830)
+00:00:15.273 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf830a950 (res 0x558bf8205d50)
+00:00:15.273 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82cfb70 (res 0x558bf82046d0)
+00:00:15.273 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82cf7a0 (res 0x558bf8208990)
+00:00:15.293 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:15.303 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:15.320 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+[0.149] [glfw error 65544]: process_desktop_settings: failed with error: org.freedesktop.DBus.Error.NameHasNoOwner: Could not activate remote peer 'org.freedesktop.portal.Desktop': startup job failed
+00:00:15.363 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:15.449 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+snertwl: output 1 -> workspace 1
+00:00:17.238 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:17.245 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:17.249 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+00:00:17.251 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:17.260 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+00:00:17.277 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:17.373 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:17.387 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+snertwl: output 1 -> workspace 2
+00:00:18.160 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:18.160 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:18.171 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:18.171 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:18.174 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:18.192 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+snertwl: output 1 -> workspace 3
+snertwl: output 1 -> workspace 2
+snertwl: output 1 -> workspace 3
+snertwl: output 1 -> workspace 4
+snertwl: output 1 -> workspace 3
+snertwl: output 1 -> workspace 2
+snertwl: output 1 -> workspace 1
+00:00:22.519 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:22.521 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:22.532 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+00:00:22.540 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:22.541 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:22.546 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+snertwl: output 1 -> workspace 2
+00:00:23.332 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:23.333 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:23.334 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:23.346 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:23.357 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:23.357 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:23.443 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+snertwl: output 1 -> workspace 3
+snertwl: output 1 -> workspace 2
+snertwl: output 1 -> workspace 3
+00:00:26.739 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8345b30 (res 0x558bf82038c0)
+00:00:26.739 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8345f00 (res 0x558bf81d17d0)
+00:00:26.739 [DEBUG] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x558bf83155c0 (res 0x558bf82086f0)
+00:00:26.739 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf834a610 (res 0x558bf81d92d0)
+00:00:26.739 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf834aa10 (res 0x558bf82074f0)
+00:00:26.739 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82cc200 (res 0x558bf82094d0)
+00:00:26.739 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82cc5d0 (res 0x558bf81c0650)
+00:00:26.739 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82cc9a0 (res 0x558bf81fdf60)
+00:00:26.739 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82ccd70 (res 0x558bf8205c30)
+00:00:26.739 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82cd220 (res 0x558bf820b7b0)
+00:00:26.739 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82cd6d0 (res 0x558bf82095f0)
+00:00:26.739 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf82cdb80 (res 0x558bf8219c30)
+00:00:26.796 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+[0.168] [glfw error 65544]: process_desktop_settings: failed with error: org.freedesktop.DBus.Error.NameHasNoOwner: Could not activate remote peer 'org.freedesktop.portal.Desktop': startup job failed
+00:00:26.847 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+00:00:26.932 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+snertwl: output 1 -> workspace 2
+snertwl: output 1 -> workspace 3
+00:00:30.565 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8387e80 (res 0x558bf820afd0)
+00:00:30.565 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8388250 (res 0x558bf81fc730)
+00:00:30.565 [DEBUG] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x558bf833f1e0 (res 0x558bf8208150)
+00:00:30.565 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8388620 (res 0x558bf8201940)
+00:00:30.565 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf83889f0 (res 0x558bf8344680)
+00:00:30.565 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8388dc0 (res 0x558bf82ce030)
+00:00:30.565 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8389190 (res 0x558bf7fef7e0)
+00:00:30.565 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8389560 (res 0x558bf8342ae0)
+00:00:30.565 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8389930 (res 0x558bf830d300)
+00:00:30.565 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8389d00 (res 0x558bf830d420)
+00:00:30.565 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf838a0d0 (res 0x558bf833f500)
+00:00:30.565 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf838a4a0 (res 0x558bf833f620)
+00:00:30.615 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:30.627 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:30.628 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+[0.177] [glfw error 65544]: process_desktop_settings: failed with error: org.freedesktop.DBus.Error.NameHasNoOwner: Could not activate remote peer 'org.freedesktop.portal.Desktop': startup job failed
+00:00:30.672 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:30.771 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:31.048 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839c210 (res 0x558bf8207190)
+00:00:31.048 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839c5e0 (res 0x558bf830d0e0)
+00:00:31.048 [DEBUG] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x558bf8344110 (res 0x558bf8207850)
+00:00:31.048 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839d2e0 (res 0x558bf82bcfe0)
+00:00:31.048 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839d740 (res 0x558bf839db10)
+00:00:31.048 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839dc30 (res 0x558bf839e000)
+00:00:31.048 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839e200 (res 0x558bf839e5d0)
+00:00:31.048 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839e7d0 (res 0x558bf839eba0)
+00:00:31.048 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839eda0 (res 0x558bf839f170)
+00:00:31.048 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839f370 (res 0x558bf839f740)
+00:00:31.048 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839faa0 (res 0x558bf839fe70)
+00:00:31.048 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf83a0070 (res 0x558bf83a0440)
+00:00:31.064 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:31.070 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:31.072 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:31.086 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:31.092 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+[0.142] [glfw error 65544]: process_desktop_settings: failed with error: org.freedesktop.DBus.Error.NameHasNoOwner: Could not activate remote peer 'org.freedesktop.portal.Desktop': startup job failed
+00:00:31.133 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:31.229 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+snertwl: output 1 -> workspace 2
+snertwl: output 1 -> workspace 1
+00:00:32.084 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:32.086 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:32.093 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:32.094 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:32.094 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+00:00:32.111 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+snertwl: output 1 -> workspace 2
+00:00:32.872 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:32.873 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:32.874 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:32.881 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:32.892 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:32.892 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
 snertwl: output 0 -> workspace 3
+00:00:35.801 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
+00:00:35.802 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
+00:00:35.808 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
+00:00:35.821 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
+00:00:35.822 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
+00:00:35.843 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
 snertwl: output 0 -> workspace 2
-snertwl: output 0 -> workspace 1
-00:00:14.643 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:14.645 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:14.675 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:14.675 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-snertwl: output 0 -> workspace 3
-snertwl: output 0 -> workspace 1
-snertwl: output 0 -> workspace 3
+00:00:36.791 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:36.793 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:36.795 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:36.796 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:36.799 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:36.808 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:36.810 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:36.810 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:36.810 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:36.827 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
 snertwl: output 0 -> workspace 1
 snertwl: output 0 -> workspace 2
-00:00:17.532 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:17.535 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:17.549 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:17.549 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
 snertwl: output 0 -> workspace 3
-snertwl: output 0 -> workspace 1
-00:00:19.069 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:19.071 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:19.085 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:19.086 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-snertwl: output 0 -> workspace 3
-00:00:21.892 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:21.897 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:21.907 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:21.907 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-snertwl: output 0 -> workspace 1
-00:00:23.322 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:23.325 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:23.328 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:23.343 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-snertwl: output 0 -> workspace 3
-00:00:23.883 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:23.884 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:23.898 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-00:00:23.899 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
-snertwl: output 0 -> workspace 4
+00:00:39.524 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
+00:00:39.526 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
+00:00:39.528 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
+00:00:39.529 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:39.530 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:39.541 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:39.541 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:39.543 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
+00:00:39.561 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
+00:00:39.561 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
 snertwl: output 0 -> workspace 2
+00:00:40.198 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:40.201 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:40.202 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:40.204 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:40.205 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:40.209 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:40.209 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:40.210 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:40.221 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:40.222 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
 snertwl: output 0 -> workspace 1
-00:00:25.444 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:25.445 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:25.461 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:25.462 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
-00:00:28.612 [DEBUG] [backend/libinput/events.c:133] Removing Power Button [0:1]
-00:00:28.612 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:28.822 [DEBUG] [backend/libinput/events.c:133] Removing Chicony HP Business Slim Keyboard Consumer Control [1008:12362]
-00:00:28.823 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:28.823 [DEBUG] [backend/libinput/events.c:133] Removing ELAN0683:00 04F3:320B Mouse [1267:12811]
-00:00:28.824 [DEBUG] [backend/libinput/events.c:133] Removing Chicony HP Business Slim Keyboard [1008:12362]
-00:00:28.824 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:28.824 [DEBUG] [backend/libinput/events.c:133] Removing Chicony HP Business Slim Keyboard System Control [1008:12362]
-00:00:28.824 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:28.825 [DEBUG] [backend/libinput/events.c:133] Removing Glorious Model O Keyboard [9610:54]
-00:00:28.825 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:28.826 [DEBUG] [backend/libinput/events.c:133] Removing TPPS/2 Elan TrackPoint [2:10]
-00:00:28.826 [DEBUG] [backend/libinput/events.c:133] Removing ThinkPad Extra Buttons [6058:20564]
-00:00:28.826 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:28.826 [DEBUG] [backend/libinput/events.c:133] Removing Intel HID events [0:0]
-00:00:28.826 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:28.827 [DEBUG] [backend/libinput/events.c:133] Removing Glorious Model O [9610:54]
-00:00:28.827 [DEBUG] [backend/libinput/events.c:133] Removing Video Bus [0:6]
-00:00:28.827 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:28.828 [DEBUG] [backend/libinput/events.c:133] Removing Video Bus [0:6]
-00:00:28.828 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:28.828 [DEBUG] [backend/libinput/events.c:133] Removing Chicony HP Business Slim Keyboard [1008:12362]
-00:00:28.828 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:28.828 [DEBUG] [backend/libinput/events.c:133] Removing Sleep Button [0:3]
-00:00:28.829 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:28.829 [DEBUG] [backend/libinput/events.c:133] Removing AT Translated Set 2 keyboard [1:1]
-00:00:28.829 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:28.829 [DEBUG] [backend/libinput/events.c:133] Removing ELAN0683:00 04F3:320B Touchpad [1267:12811]
-00:00:28.829 [DEBUG] [backend/libinput/events.c:133] Removing Lid Switch [0:5]
-00:00:28.830 [INFO] [libseat] [libseat/backend/logind.c:358] Disabling seat
-00:00:28.830 [INFO] [backend/drm/backend.c:112] DRM FD paused
+snertwl: output 1 -> workspace 2
+00:00:41.955 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:41.959 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:41.975 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:41.975 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+snertwl: output 0 -> workspace 3
+00:00:43.587 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
+00:00:43.589 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
+00:00:43.590 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
+00:00:43.612 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
+00:00:43.613 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
+00:00:43.614 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 626x1156
+00:00:44.807 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:44.808 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:44.826 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:44.826 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:45.087 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:45.095 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+snertwl: output 0 -> workspace 1
+snertwl: output 1 -> workspace 1
+00:00:48.307 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:48.309 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:48.319 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+00:00:48.325 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:48.328 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:48.364 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+snertwl: output 1 -> workspace 2
+00:00:48.713 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:48.714 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:48.715 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:48.725 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:48.726 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:48.735 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+snertwl: output 1 -> workspace 1
+00:00:49.330 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:49.332 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:49.338 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+00:00:49.342 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:49.342 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:49.361 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+snertwl: output 1 -> workspace 2
+00:00:49.700 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:49.702 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:49.703 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:49.710 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:49.724 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:49.724 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+snertwl: output 1 -> workspace 3
+snertwl: output 1 -> workspace 2
+snertwl: output 1 -> workspace 1
+00:00:55.444 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:55.445 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:55.451 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+00:00:55.462 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:55.477 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:55.500 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+snertwl: output 1 -> workspace 2
+00:00:55.778 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:55.779 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:55.780 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:55.787 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:55.790 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:55.790 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+snertwl: output 1 -> workspace 3
+snertwl: output 1 -> workspace 2
+snertwl: output 1 -> workspace 1
+00:00:56.976 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:56.978 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:56.985 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:56.987 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+00:00:56.993 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:57.013 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+snertwl: output 1 -> workspace 2
+00:00:57.201 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:57.202 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:57.204 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:57.213 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:57.226 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:57.227 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+snertwl: output 1 -> workspace 1
+00:00:57.772 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:57.773 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:57.779 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+00:00:57.781 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:57.784 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 945x1156
+00:00:57.797 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+snertwl: output 1 -> workspace 2
+00:00:58.028 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:58.028 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:58.029 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:58.038 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:58.038 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:58.045 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1900x1156
+00:00:59.189 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8388dc0 (res 0x558bf82037a0)
+00:00:59.189 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf83889f0 (res 0x558bf81a6c80)
+00:00:59.189 [DEBUG] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x558bf833f1e0 (res 0x558bf81d17d0)
+00:00:59.189 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8388620 (res 0x558bf7ea18e0)
+00:00:59.189 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8388250 (res 0x558bf820b570)
+00:00:59.189 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8387e80 (res 0x558bf820edb0)
+00:00:59.189 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf83a0070 (res 0x558bf8217b90)
+00:00:59.189 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839faa0 (res 0x558bf820b450)
+00:00:59.189 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839f370 (res 0x558bf821a2f0)
+00:00:59.189 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839eda0 (res 0x558bf81fd5d0)
+00:00:59.189 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839e7d0 (res 0x558bf821a410)
+00:00:59.189 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839e200 (res 0x558bf81fa7a0)
+00:00:59.213 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:59.214 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:59.223 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:59.223 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:59.252 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+[0.178] [glfw error 65544]: process_desktop_settings: failed with error: org.freedesktop.DBus.Error.NameHasNoOwner: Could not activate remote peer 'org.freedesktop.portal.Desktop': startup job failed
+00:00:59.300 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:59.383 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839dc30 (res 0x558bf8208030)
+00:00:59.383 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839d740 (res 0x558bf820bd50)
+00:00:59.383 [DEBUG] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x558bf8344110 (res 0x558bf82c6b90)
+00:00:59.383 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839d2e0 (res 0x558bf8204490)
+00:00:59.383 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839c5e0 (res 0x558bf820eed0)
+00:00:59.383 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839c210 (res 0x558bf8209cb0)
+00:00:59.383 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf83118f0 (res 0x558bf8218370)
+00:00:59.383 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839ce50 (res 0x558bf81fccd0)
+00:00:59.383 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf83ba810 (res 0x558bf83a4b60)
+00:00:59.383 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8395710 (res 0x558bf8208cf0)
+00:00:59.383 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8394c40 (res 0x558bf82061d0)
+00:00:59.383 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8391ee0 (res 0x558bf81a6ec0)
+00:00:59.392 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:59.398 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 947x2116
+00:00:59.399 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 947x2116
+00:00:59.403 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 947x2116
+00:00:59.404 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 947x2116
+00:00:59.406 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 947x2116
+00:00:59.409 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 947x2116
+00:00:59.416 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 947x2116
+00:00:59.440 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 947x2116
+[0.177] [glfw error 65544]: process_desktop_settings: failed with error: org.freedesktop.DBus.Error.NameHasNoOwner: Could not activate remote peer 'org.freedesktop.portal.Desktop': startup job failed
+00:00:59.484 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 947x2116
+00:00:59.572 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 947x2116
+00:00:59.593 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:59.594 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:59.594 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:59.606 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:59.606 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:59.606 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:00:59.821 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:59.823 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:59.839 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:59.839 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:00:59.932 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:01:00.293 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+00:01:00.307 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3820x2116
+00:01:00.918 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8387e80 (res 0x558bf7fef570)
+00:01:00.918 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8388250 (res 0x558bf820b570)
+00:01:00.918 [DEBUG] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x558bf833f1e0 (res 0x558bf81c0770)
+00:01:00.918 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8388620 (res 0x558bf81fca90)
+00:01:00.918 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf83889f0 (res 0x558bf81fdf60)
+00:01:00.918 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8388dc0 (res 0x558bf8203cb0)
+00:01:00.918 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8391ee0 (res 0x558bf81cead0)
+00:01:00.918 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8394c40 (res 0x558bf8218c70)
+00:01:00.918 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8395710 (res 0x558bf81aa3c0)
+00:01:00.918 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf83ba810 (res 0x558bf81ff280)
+00:01:00.918 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839ce50 (res 0x558bf8217170)
+00:01:00.918 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf83118f0 (res 0x558bf8205c30)
+00:01:00.938 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:01:00.955 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:01:00.968 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+[0.156] [glfw error 65544]: process_desktop_settings: failed with error: org.freedesktop.DBus.Error.NameHasNoOwner: Could not activate remote peer 'org.freedesktop.portal.Desktop': startup job failed
+00:01:01.014 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:01:01.112 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1905x2116
+00:01:01.137 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839c210 (res 0x558bf820e030)
+00:01:01.137 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839c5e0 (res 0x558bf82190f0)
+00:01:01.137 [DEBUG] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x558bf7ea3de0 (res 0x558bf81fe860)
+00:01:01.137 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839d2e0 (res 0x558bf821a770)
+00:01:01.137 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839d740 (res 0x558bf81fab00)
+00:01:01.137 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839dc30 (res 0x558bf81fccd0)
+00:01:01.137 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839eda0 (res 0x558bf820b7b0)
+00:01:01.137 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839e200 (res 0x558bf8217a70)
+00:01:01.137 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf838e990 (res 0x558bf7e90d80)
+00:01:01.137 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf839f330 (res 0x558bf8207850)
+00:01:01.137 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8341b20 (res 0x558bf8207cd0)
+00:01:01.137 [DEBUG] [types/wlr_compositor.c:786] New wlr_surface 0x558bf8316920 (res 0x558bf820b8d0)
+00:01:01.150 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:01:01.159 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:01:01.163 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:01:01.172 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:01:01.177 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+[0.146] [glfw error 65544]: process_desktop_settings: failed with error: org.freedesktop.DBus.Error.NameHasNoOwner: Could not activate remote peer 'org.freedesktop.portal.Desktop': startup job failed
+00:01:01.220 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:01:01.306 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1266x2116
+00:01:03.402 [DEBUG] [backend/libinput/events.c:133] Removing Power Button [0:1]
+00:01:03.402 [INFO] [shim/snertwl_shim.c:361] snertwl: keyboard removed
+00:01:03.595 [DEBUG] [backend/libinput/events.c:133] Removing Chicony HP Business Slim Keyboard Consumer Control [1008:12362]
+00:01:03.595 [INFO] [shim/snertwl_shim.c:361] snertwl: keyboard removed
+00:01:03.596 [DEBUG] [backend/libinput/events.c:133] Removing ELAN0683:00 04F3:320B Mouse [1267:12811]
+00:01:03.596 [DEBUG] [backend/libinput/events.c:133] Removing Chicony HP Business Slim Keyboard [1008:12362]
+00:01:03.596 [INFO] [shim/snertwl_shim.c:361] snertwl: keyboard removed
+00:01:03.596 [DEBUG] [backend/libinput/events.c:133] Removing Chicony HP Business Slim Keyboard System Control [1008:12362]
+00:01:03.596 [INFO] [shim/snertwl_shim.c:361] snertwl: keyboard removed
+00:01:03.597 [DEBUG] [backend/libinput/events.c:133] Removing Glorious Model O Keyboard [9610:54]
+00:01:03.597 [INFO] [shim/snertwl_shim.c:361] snertwl: keyboard removed
+00:01:03.597 [DEBUG] [backend/libinput/events.c:133] Removing TPPS/2 Elan TrackPoint [2:10]
+00:01:03.597 [DEBUG] [backend/libinput/events.c:133] Removing ThinkPad Extra Buttons [6058:20564]
+00:01:03.597 [INFO] [shim/snertwl_shim.c:361] snertwl: keyboard removed
+00:01:03.597 [DEBUG] [backend/libinput/events.c:133] Removing Intel HID events [0:0]
+00:01:03.597 [INFO] [shim/snertwl_shim.c:361] snertwl: keyboard removed
+00:01:03.598 [DEBUG] [backend/libinput/events.c:133] Removing Glorious Model O [9610:54]
+00:01:03.598 [DEBUG] [backend/libinput/events.c:133] Removing Video Bus [0:6]
+00:01:03.598 [INFO] [shim/snertwl_shim.c:361] snertwl: keyboard removed
+00:01:03.598 [DEBUG] [backend/libinput/events.c:133] Removing Video Bus [0:6]
+00:01:03.598 [INFO] [shim/snertwl_shim.c:361] snertwl: keyboard removed
+00:01:03.598 [DEBUG] [backend/libinput/events.c:133] Removing Chicony HP Business Slim Keyboard [1008:12362]
+00:01:03.598 [INFO] [shim/snertwl_shim.c:361] snertwl: keyboard removed
+00:01:03.599 [DEBUG] [backend/libinput/events.c:133] Removing Sleep Button [0:3]
+00:01:03.599 [INFO] [shim/snertwl_shim.c:361] snertwl: keyboard removed
+00:01:03.599 [DEBUG] [backend/libinput/events.c:133] Removing AT Translated Set 2 keyboard [1:1]
+00:01:03.599 [INFO] [shim/snertwl_shim.c:361] snertwl: keyboard removed
+00:01:03.599 [DEBUG] [backend/libinput/events.c:133] Removing ELAN0683:00 04F3:320B Touchpad [1267:12811]
+00:01:03.599 [DEBUG] [backend/libinput/events.c:133] Removing Lid Switch [0:5]
+00:01:03.600 [INFO] [libseat] [libseat/backend/logind.c:358] Disabling seat
+00:01:03.600 [INFO] [backend/drm/backend.c:112] DRM FD paused
 snertwl: output removed — 1 left
-00:00:28.830 [DEBUG] [backend/drm/drm.c:1341] connector eDP-1: De-allocating CRTC 149
-00:00:28.830 [ERROR] [backend/drm/drm.c:1349] connector eDP-1: Failed to disable CRTC 149
+00:01:03.600 [DEBUG] [backend/drm/drm.c:1341] connector eDP-1: De-allocating CRTC 149
+00:01:03.600 [ERROR] [backend/drm/drm.c:1349] connector eDP-1: Failed to disable CRTC 149
 snertwl: output removed — 0 left
-00:00:28.830 [DEBUG] [backend/drm/drm.c:1341] connector DP-5: De-allocating CRTC 267
-00:00:28.830 [ERROR] [backend/drm/drm.c:1349] connector DP-5: Failed to disable CRTC 267
+00:01:03.600 [DEBUG] [backend/drm/drm.c:1341] connector DP-5: De-allocating CRTC 267
+00:01:03.600 [ERROR] [backend/drm/drm.c:1349] connector DP-5: Failed to disable CRTC 267
 snertwl: session inactive (VT switched away)
-00:00:28.831 [DEBUG] [backend/session/session.c:189] udev event for card1 (change)
-00:00:28.831 [DEBUG] [backend/session/session.c:222] DRM device card1 changed
-00:00:28.831 [DEBUG] [backend/session/session.c:189] udev event for card0 (change)
-00:00:33.484 [DEBUG] [backend/session/session.c:189] udev event for card1 (change)
-00:00:33.484 [DEBUG] [backend/session/session.c:222] DRM device card1 changed
-00:00:33.484 [DEBUG] [backend/session/session.c:189] udev event for card0 (change)
-00:00:33.494 [INFO] [libseat] [libseat/backend/logind.c:355] Enabling seat
-00:00:33.580 [INFO] [backend/drm/backend.c:112] DRM FD resumed
-00:00:33.580 [INFO] [backend/drm/drm.c:1741] Scanning DRM connectors on /dev/dri/card1
-00:00:33.580 [INFO] [backend/drm/drm.c:1821] 'eDP-1' connected
-00:00:33.580 [DEBUG] [backend/drm/drm.c:1596] Current CRTC: 149
-00:00:33.580 [INFO] [backend/drm/drm.c:1610] Detected modes:
-00:00:33.580 [INFO] [backend/drm/drm.c:1634]   1920x1200 @ 60.003 Hz (preferred)
-00:00:33.580 [INFO] [backend/drm/drm.c:1671] Physical size: 350x220
-00:00:33.769 [INFO] [backend/drm/drm.c:1821] 'DP-5' connected
-00:00:33.769 [DEBUG] [backend/drm/drm.c:1596] Current CRTC: 267
-00:00:33.769 [INFO] [backend/drm/drm.c:1610] Detected modes:
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 60.000 Hz (preferred)
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 60.000 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 59.940 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 50.000 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 30.000 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 30.000 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 29.970 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 25.000 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 24.000 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 23.976 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   2560x1600 @ 59.972 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   2560x1440 @ 59.951 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   1920x1080 @ 60.000 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   1920x1080 @ 50.000 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   1680x1050 @ 59.883 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   1280x1024 @ 75.025 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   1280x1024 @ 60.020 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   1440x900 @ 59.901 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   1280x960 @ 60.000 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   1280x800 @ 59.910 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   1152x864 @ 75.000 Hz 
-00:00:33.769 [INFO] [backend/drm/drm.c:1634]   1280x720 @ 60.000 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   1280x720 @ 60.000 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   1280x720 @ 59.940 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   1280x720 @ 50.000 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   1440x576 @ 50.000 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   1440x576 @ 50.000 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   1024x768 @ 75.029 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   1024x768 @ 70.069 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   1024x768 @ 60.004 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   1440x480 @ 60.000 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   1440x480 @ 60.000 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   1440x480 @ 59.940 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   1440x480 @ 59.940 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   832x624 @ 74.551 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   800x600 @ 75.000 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   800x600 @ 72.188 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   800x600 @ 60.317 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   800x600 @ 56.250 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   720x576 @ 50.000 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   720x576 @ 50.000 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   720x480 @ 60.000 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   720x480 @ 60.000 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   720x480 @ 59.940 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   720x480 @ 59.940 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   640x480 @ 75.000 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   640x480 @ 72.809 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   640x480 @ 66.667 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   640x480 @ 60.000 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   640x480 @ 59.940 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   720x400 @ 70.082 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1634]   640x350 @ 70.072 Hz 
-00:00:33.770 [INFO] [backend/drm/drm.c:1671] Physical size: 620x340
-00:00:33.771 [INFO] [backend/drm/drm.c:1855] connector eDP-1: Requesting modeset
-00:00:33.771 [DEBUG] [types/output/render.c:123] Attaching empty buffer to output for modeset
-00:00:33.771 [DEBUG] [types/output/swapchain.c:27] Choosing primary buffer format XR24 (0x34325258) for output 'eDP-1'
-00:00:33.771 [DEBUG] [types/output/swapchain.c:96] Testing swapchain for output 'eDP-1'
-00:00:33.771 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
-00:00:33.775 [DEBUG] [render/allocator/gbm.c:146] Allocated 1920x1200 GBM buffer with format XR24 (0x34325258), modifier Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008)
-00:00:33.775 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1920x1200
-00:00:33.776 [INFO] [backend/drm/drm.c:944] connector eDP-1: Modesetting with 1920x1200 @ 60.003 Hz
+00:01:03.601 [DEBUG] [backend/session/session.c:189] udev event for card1 (change)
+00:01:03.601 [DEBUG] [backend/session/session.c:222] DRM device card1 changed
+00:01:03.601 [DEBUG] [backend/session/session.c:189] udev event for card0 (change)
+00:01:09.245 [DEBUG] [backend/session/session.c:189] udev event for card1 (change)
+00:01:09.246 [DEBUG] [backend/session/session.c:222] DRM device card1 changed
+00:01:09.246 [DEBUG] [backend/session/session.c:189] udev event for card0 (change)
+00:01:09.258 [INFO] [libseat] [libseat/backend/logind.c:355] Enabling seat
+00:01:09.314 [INFO] [backend/drm/backend.c:112] DRM FD resumed
+00:01:09.314 [INFO] [backend/drm/drm.c:1741] Scanning DRM connectors on /dev/dri/card1
+00:01:09.315 [INFO] [backend/drm/drm.c:1821] 'eDP-1' connected
+00:01:09.315 [DEBUG] [backend/drm/drm.c:1596] Current CRTC: 149
+00:01:09.315 [INFO] [backend/drm/drm.c:1610] Detected modes:
+00:01:09.315 [INFO] [backend/drm/drm.c:1634]   1920x1200 @ 60.003 Hz (preferred)
+00:01:09.315 [INFO] [backend/drm/drm.c:1671] Physical size: 350x220
+00:01:09.529 [INFO] [backend/drm/drm.c:1821] 'DP-5' connected
+00:01:09.529 [DEBUG] [backend/drm/drm.c:1596] Current CRTC: 267
+00:01:09.529 [INFO] [backend/drm/drm.c:1610] Detected modes:
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 60.000 Hz (preferred)
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 60.000 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 59.940 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 50.000 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 30.000 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 30.000 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 29.970 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 25.000 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 24.000 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   3840x2160 @ 23.976 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   2560x1600 @ 59.972 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   2560x1440 @ 59.951 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   1920x1080 @ 60.000 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   1920x1080 @ 50.000 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   1680x1050 @ 59.883 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   1280x1024 @ 75.025 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   1280x1024 @ 60.020 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   1440x900 @ 59.901 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   1280x960 @ 60.000 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   1280x800 @ 59.910 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   1152x864 @ 75.000 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   1280x720 @ 60.000 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   1280x720 @ 60.000 Hz 
+00:01:09.529 [INFO] [backend/drm/drm.c:1634]   1280x720 @ 59.940 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   1280x720 @ 50.000 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   1440x576 @ 50.000 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   1440x576 @ 50.000 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   1024x768 @ 75.029 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   1024x768 @ 70.069 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   1024x768 @ 60.004 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   1440x480 @ 60.000 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   1440x480 @ 60.000 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   1440x480 @ 59.940 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   1440x480 @ 59.940 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   832x624 @ 74.551 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   800x600 @ 75.000 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   800x600 @ 72.188 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   800x600 @ 60.317 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   800x600 @ 56.250 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   720x576 @ 50.000 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   720x576 @ 50.000 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   720x480 @ 60.000 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   720x480 @ 60.000 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   720x480 @ 59.940 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   720x480 @ 59.940 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   640x480 @ 75.000 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   640x480 @ 72.809 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   640x480 @ 66.667 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   640x480 @ 60.000 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   640x480 @ 59.940 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   720x400 @ 70.082 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1634]   640x350 @ 70.072 Hz 
+00:01:09.530 [INFO] [backend/drm/drm.c:1671] Physical size: 620x340
+00:01:09.531 [INFO] [backend/drm/drm.c:1855] connector eDP-1: Requesting modeset
+00:01:09.531 [DEBUG] [types/output/render.c:123] Attaching empty buffer to output for modeset
+00:01:09.531 [DEBUG] [types/output/swapchain.c:27] Choosing primary buffer format XR24 (0x34325258) for output 'eDP-1'
+00:01:09.531 [DEBUG] [types/output/swapchain.c:96] Testing swapchain for output 'eDP-1'
+00:01:09.531 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
+00:01:09.535 [DEBUG] [render/allocator/gbm.c:146] Allocated 1920x1200 GBM buffer with format XR24 (0x34325258), modifier Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008)
+00:01:09.535 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1920x1200
+00:01:09.536 [INFO] [backend/drm/drm.c:944] connector eDP-1: Modesetting with 1920x1200 @ 60.003 Hz
+00:01:09.556 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
+00:01:09.556 [DEBUG] [render/allocator/gbm.c:146] Allocated 64x64 GBM buffer with format AR24 (0x34325241), modifier LINEAR (0x0000000000000000)
+00:01:09.556 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 64x64
 snertwl: output online @ 0,0 1920x1200 — workspace 1
-00:00:33.789 [INFO] [backend/drm/drm.c:1855] connector DP-5: Requesting modeset
-00:00:33.789 [DEBUG] [types/output/render.c:123] Attaching empty buffer to output for modeset
-00:00:33.789 [DEBUG] [types/output/swapchain.c:27] Choosing primary buffer format XR24 (0x34325258) for output 'DP-5'
-00:00:33.789 [DEBUG] [types/output/swapchain.c:96] Testing swapchain for output 'DP-5'
-00:00:33.789 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
-00:00:33.801 [DEBUG] [render/allocator/gbm.c:146] Allocated 3840x2160 GBM buffer with format XR24 (0x34325258), modifier Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008)
-00:00:33.801 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3840x2160
-00:00:33.802 [INFO] [backend/drm/drm.c:944] connector DP-5: Modesetting with 3840x2160 @ 60.000 Hz
+00:01:09.557 [INFO] [backend/drm/drm.c:1855] connector DP-5: Requesting modeset
+00:01:09.557 [DEBUG] [types/output/render.c:123] Attaching empty buffer to output for modeset
+00:01:09.557 [DEBUG] [types/output/swapchain.c:27] Choosing primary buffer format XR24 (0x34325258) for output 'DP-5'
+00:01:09.557 [DEBUG] [types/output/swapchain.c:96] Testing swapchain for output 'DP-5'
+00:01:09.557 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
+00:01:09.570 [DEBUG] [render/allocator/gbm.c:146] Allocated 3840x2160 GBM buffer with format XR24 (0x34325258), modifier Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008)
+00:01:09.571 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3840x2160
+00:01:09.571 [INFO] [backend/drm/drm.c:944] connector DP-5: Modesetting with 3840x2160 @ 60.000 Hz
+00:01:09.585 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
+00:01:09.585 [DEBUG] [render/allocator/gbm.c:146] Allocated 64x64 GBM buffer with format AR24 (0x34325241), modifier LINEAR (0x0000000000000000)
+00:01:09.585 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 64x64
 snertwl: output online @ 1920,0 3840x2160 — workspace 2
 snertwl: session active — repainting 2 output(s)
-00:00:33.811 [DEBUG] [backend/libinput/events.c:69] Adding Video Bus [0:6]
-00:00:33.816 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:33.816 [DEBUG] [backend/libinput/events.c:69] Adding Glorious Model O [9610:54]
-00:00:33.816 [INFO] [shim/snertwl_shim.c:502] snertwl: pointer attached
-00:00:33.816 [DEBUG] [backend/libinput/events.c:69] Adding Glorious Model O Keyboard [9610:54]
-00:00:33.819 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:33.819 [DEBUG] [backend/libinput/events.c:69] Adding Chicony HP Business Slim Keyboard [1008:12362]
-00:00:33.821 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:33.821 [DEBUG] [backend/libinput/events.c:69] Adding Chicony HP Business Slim Keyboard Consumer Control [1008:12362]
-00:00:33.823 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:33.823 [INFO] [shim/snertwl_shim.c:502] snertwl: pointer attached
-00:00:33.823 [DEBUG] [backend/libinput/events.c:69] Adding Chicony HP Business Slim Keyboard System Control [1008:12362]
-00:00:33.825 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:33.825 [DEBUG] [backend/libinput/events.c:69] Adding Chicony HP Business Slim Keyboard [1008:12362]
-00:00:33.828 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:33.828 [DEBUG] [backend/libinput/events.c:69] Adding ELAN0683:00 04F3:320B Mouse [1267:12811]
-00:00:33.828 [INFO] [shim/snertwl_shim.c:502] snertwl: pointer attached
-00:00:33.828 [DEBUG] [backend/libinput/events.c:69] Adding ELAN0683:00 04F3:320B Touchpad [1267:12811]
-00:00:33.828 [INFO] [shim/snertwl_shim.c:502] snertwl: pointer attached
-00:00:33.828 [DEBUG] [backend/libinput/events.c:69] Adding Video Bus [0:6]
-00:00:33.831 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:33.831 [DEBUG] [backend/libinput/events.c:69] Adding Intel HID events [0:0]
-00:00:33.832 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:33.832 [DEBUG] [backend/libinput/events.c:69] Adding Power Button [0:1]
-00:00:33.834 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:33.834 [DEBUG] [backend/libinput/events.c:69] Adding Lid Switch [0:5]
-00:00:33.834 [DEBUG] [backend/libinput/events.c:69] Adding Sleep Button [0:3]
-00:00:33.836 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:33.836 [DEBUG] [backend/libinput/events.c:69] Adding AT Translated Set 2 keyboard [1:1]
-00:00:33.837 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
-00:00:33.837 [DEBUG] [backend/libinput/events.c:69] Adding TPPS/2 Elan TrackPoint [2:10]
-00:00:33.837 [INFO] [shim/snertwl_shim.c:502] snertwl: pointer attached
-00:00:33.837 [DEBUG] [backend/libinput/events.c:69] Adding ThinkPad Extra Buttons [6058:20564]
-00:00:33.839 [INFO] [shim/snertwl_shim.c:382] snertwl: keyboard attached
+00:01:09.588 [DEBUG] [backend/libinput/events.c:69] Adding Video Bus [0:6]
+00:01:09.592 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:01:09.592 [DEBUG] [backend/libinput/events.c:69] Adding Glorious Model O [9610:54]
+00:01:09.592 [INFO] [shim/snertwl_shim.c:509] snertwl: pointer attached
+00:01:09.592 [DEBUG] [backend/libinput/events.c:69] Adding Glorious Model O Keyboard [9610:54]
+00:01:09.597 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:01:09.597 [DEBUG] [backend/libinput/events.c:69] Adding Chicony HP Business Slim Keyboard [1008:12362]
+00:01:09.603 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:01:09.603 [DEBUG] [backend/libinput/events.c:69] Adding Chicony HP Business Slim Keyboard Consumer Control [1008:12362]
+00:01:09.607 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:01:09.607 [INFO] [shim/snertwl_shim.c:509] snertwl: pointer attached
+00:01:09.607 [DEBUG] [backend/libinput/events.c:69] Adding Chicony HP Business Slim Keyboard System Control [1008:12362]
+00:01:09.609 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:01:09.609 [DEBUG] [backend/libinput/events.c:69] Adding Chicony HP Business Slim Keyboard [1008:12362]
+00:01:09.611 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:01:09.611 [DEBUG] [backend/libinput/events.c:69] Adding ELAN0683:00 04F3:320B Mouse [1267:12811]
+00:01:09.611 [INFO] [shim/snertwl_shim.c:509] snertwl: pointer attached
+00:01:09.611 [DEBUG] [backend/libinput/events.c:69] Adding ELAN0683:00 04F3:320B Touchpad [1267:12811]
+00:01:09.611 [INFO] [shim/snertwl_shim.c:509] snertwl: pointer attached
+00:01:09.611 [DEBUG] [backend/libinput/events.c:69] Adding Video Bus [0:6]
+00:01:09.613 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:01:09.613 [DEBUG] [backend/libinput/events.c:69] Adding Intel HID events [0:0]
+00:01:09.615 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:01:09.615 [DEBUG] [backend/libinput/events.c:69] Adding Power Button [0:1]
+00:01:09.616 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:01:09.616 [DEBUG] [backend/libinput/events.c:69] Adding Lid Switch [0:5]
+00:01:09.616 [DEBUG] [backend/libinput/events.c:69] Adding Sleep Button [0:3]
+00:01:09.618 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:01:09.618 [DEBUG] [backend/libinput/events.c:69] Adding AT Translated Set 2 keyboard [1:1]
+00:01:09.619 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
+00:01:09.619 [DEBUG] [backend/libinput/events.c:69] Adding TPPS/2 Elan TrackPoint [2:10]
+00:01:09.619 [INFO] [shim/snertwl_shim.c:509] snertwl: pointer attached
+00:01:09.619 [DEBUG] [backend/libinput/events.c:69] Adding ThinkPad Extra Buttons [6058:20564]
+00:01:09.621 [INFO] [shim/snertwl_shim.c:389] snertwl: keyboard attached
 snertwl: forced repaint (output 0, 2 left)
-00:00:33.839 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
-00:00:33.841 [DEBUG] [render/allocator/gbm.c:146] Allocated 1920x1200 GBM buffer with format XR24 (0x34325258), modifier Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008)
-00:00:33.841 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1920x1200
+00:01:09.621 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
+00:01:09.623 [DEBUG] [render/allocator/gbm.c:146] Allocated 1920x1200 GBM buffer with format XR24 (0x34325258), modifier Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008)
+00:01:09.623 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 1920x1200
 snertwl: forced repaint (output 1, 2 left)
-00:00:33.842 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
-00:00:33.847 [DEBUG] [render/allocator/gbm.c:146] Allocated 3840x2160 GBM buffer with format XR24 (0x34325258), modifier Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008)
-00:00:33.847 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3840x2160
-snertwl: forced repaint (output 0, 1 left)
+00:01:09.624 [DEBUG] [render/swapchain.c:101] Allocating new swapchain buffer
+00:01:09.629 [DEBUG] [render/allocator/gbm.c:146] Allocated 3840x2160 GBM buffer with format XR24 (0x34325258), modifier Y_TILED_GEN12_RC_CCS_CC (0x0100000000000008)
+00:01:09.629 [DEBUG] [render/gles2/renderer.c:157] Created GL FBO for buffer 3840x2160
 snertwl: forced repaint (output 1, 1 left)
-snertwl: forced repaint (output 0, 0 left)
+snertwl: forced repaint (output 0, 1 left)
 snertwl: forced repaint (output 1, 0 left)
-00:00:38.400 [DEBUG] [backend/libinput/events.c:133] Removing Power Button [0:1]
-00:00:38.400 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:38.624 [DEBUG] [backend/libinput/events.c:133] Removing Chicony HP Business Slim Keyboard Consumer Control [1008:12362]
-00:00:38.624 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:38.625 [DEBUG] [backend/libinput/events.c:133] Removing ELAN0683:00 04F3:320B Mouse [1267:12811]
-00:00:38.625 [DEBUG] [backend/libinput/events.c:133] Removing Chicony HP Business Slim Keyboard [1008:12362]
-00:00:38.625 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:38.626 [DEBUG] [backend/libinput/events.c:133] Removing Chicony HP Business Slim Keyboard System Control [1008:12362]
-00:00:38.626 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:38.627 [DEBUG] [backend/libinput/events.c:133] Removing Glorious Model O Keyboard [9610:54]
-00:00:38.627 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:38.627 [DEBUG] [backend/libinput/events.c:133] Removing TPPS/2 Elan TrackPoint [2:10]
-00:00:38.627 [DEBUG] [backend/libinput/events.c:133] Removing ThinkPad Extra Buttons [6058:20564]
-00:00:38.627 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:38.628 [DEBUG] [backend/libinput/events.c:133] Removing Intel HID events [0:0]
-00:00:38.628 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:38.628 [DEBUG] [backend/libinput/events.c:133] Removing Glorious Model O [9610:54]
-00:00:38.628 [DEBUG] [backend/libinput/events.c:133] Removing Video Bus [0:6]
-00:00:38.628 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:38.629 [DEBUG] [backend/libinput/events.c:133] Removing Video Bus [0:6]
-00:00:38.629 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:38.629 [DEBUG] [backend/libinput/events.c:133] Removing Chicony HP Business Slim Keyboard [1008:12362]
-00:00:38.629 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:38.630 [DEBUG] [backend/libinput/events.c:133] Removing Sleep Button [0:3]
-00:00:38.630 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:38.630 [DEBUG] [backend/libinput/events.c:133] Removing AT Translated Set 2 keyboard [1:1]
-00:00:38.630 [INFO] [shim/snertwl_shim.c:354] snertwl: keyboard removed
-00:00:38.630 [DEBUG] [backend/libinput/events.c:133] Removing ELAN0683:00 04F3:320B Touchpad [1267:12811]
-00:00:38.630 [DEBUG] [backend/libinput/events.c:133] Removing Lid Switch [0:5]
-00:00:38.630 [INFO] [libseat] [libseat/backend/logind.c:358] Disabling seat
-00:00:38.631 [INFO] [backend/drm/backend.c:112] DRM FD paused
-snertwl: output removed — 1 left
-00:00:38.631 [DEBUG] [backend/drm/drm.c:1341] connector eDP-1: De-allocating CRTC 149
-00:00:38.631 [ERROR] [backend/drm/drm.c:1349] connector eDP-1: Failed to disable CRTC 149
-snertwl: output removed — 0 left
-00:00:38.631 [DEBUG] [backend/drm/drm.c:1341] connector DP-5: De-allocating CRTC 267
-00:00:38.631 [ERROR] [backend/drm/drm.c:1349] connector DP-5: Failed to disable CRTC 267
-snertwl: session inactive (VT switched away)
-00:00:38.631 [DEBUG] [backend/session/session.c:189] udev event for card1 (change)
-00:00:38.631 [DEBUG] [backend/session/session.c:222] DRM device card1 changed
-00:00:38.631 [DEBUG] [backend/session/session.c:189] udev event for card0 (change)
+snertwl: forced repaint (output 0, 0 left)
+[68.683] [glfw error 65544]: Wayland: fatal display error: Broken pipe
+[60.119] [glfw error 65544]: Wayland: fatal display error: Broken pipe
+[12.404] [glfw error 65544]: Wayland: fatal display error: Broken pipe
+snertwl: shut down
+[12.188] [glfw error 65544]: Wayland: fatal display error: Broken pipe
