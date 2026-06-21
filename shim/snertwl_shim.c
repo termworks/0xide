@@ -9,6 +9,7 @@
 #include <wlr/types/wlr_input_device.h>
 #include <wlr/types/wlr_keyboard.h>
 #include <wlr/types/wlr_output.h>
+#include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_pointer.h>
 #include <wlr/types/wlr_scene.h>
 #include <wlr/types/wlr_seat.h>
@@ -106,9 +107,25 @@ void snertwl_output_enable(struct wlr_output *output) {
 }
 
 void snertwl_scene_add_output_background(struct wlr_scene *scene,
-        struct wlr_output *output, float r, float g, float b) {
+        struct wlr_output *output, int x, int y, float r, float g, float b) {
     const float color[4] = {r, g, b, 1.0f};
-    wlr_scene_rect_create(&scene->tree, output->width, output->height, color);
+    struct wlr_scene_rect *rect =
+            wlr_scene_rect_create(&scene->tree, output->width, output->height, color);
+    // Scene nodes share one coordinate space; place this output's background at
+    // the output's position in the layout so multiple monitors don't overlap.
+    wlr_scene_node_set_position(&rect->node, x, y);
+}
+
+// Read an output's box (position + size) in layout coordinates, so Rust can tile
+// windows within the correct monitor. (Touches wlr_box internals.)
+void snertwl_output_layout_get_box(struct wlr_output_layout *layout,
+        struct wlr_output *output, int *x, int *y, int *width, int *height) {
+    struct wlr_box box;
+    wlr_output_layout_get_box(layout, output, &box);
+    *x = box.x;
+    *y = box.y;
+    *width = box.width;
+    *height = box.height;
 }
 
 void snertwl_scene_output_render(struct wlr_scene_output *scene_output) {

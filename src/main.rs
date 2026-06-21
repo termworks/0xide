@@ -49,9 +49,19 @@ extern "C" {
     fn snertwl_scene_add_output_background(
         scene: *mut wlr::wlr_scene,
         output: *mut wlr::wlr_output,
+        x: i32,
+        y: i32,
         r: f32,
         g: f32,
         b: f32,
+    );
+    fn snertwl_output_layout_get_box(
+        layout: *mut wlr::wlr_output_layout,
+        output: *mut wlr::wlr_output,
+        x: *mut i32,
+        y: *mut i32,
+        width: *mut i32,
+        height: *mut i32,
     );
     fn snertwl_scene_output_render(scene_output: *mut wlr::wlr_scene_output);
     fn snertwl_xdg_shell_add_new_toplevel(
@@ -85,11 +95,6 @@ extern "C" {
     fn snertwl_focus_toplevel(
         seat: *mut wlr::wlr_seat,
         toplevel: *mut wlr::wlr_xdg_toplevel,
-    );
-    fn snertwl_output_get_size(
-        output: *mut wlr::wlr_output,
-        width: *mut i32,
-        height: *mut i32,
     );
     fn snertwl_seat_create(
         display: *mut wlr::wl_display,
@@ -126,14 +131,14 @@ struct Server {
     cursor: *mut wlr::wlr_cursor,
     renderer: *mut wlr::wlr_renderer,
     allocator: *mut wlr::wlr_allocator,
-    /// Virtual workspaces; only `active` is visible/tiled at a time.
+    /// Virtual workspaces; each is shown on at most one output at a time.
     workspaces: Vec<Workspace>,
-    active: usize,
+    /// Connected outputs (monitors), each displaying one workspace.
+    outputs: Vec<Output>,
+    /// Which output keyboard actions (spawn, workspace switch) target.
+    focused_output: usize,
     /// User configuration: modifier, gap, background, keybindings.
     config: Config,
-    /// Size of the (single, for now) output we tile within.
-    output_width: i32,
-    output_height: i32,
 }
 
 /// Number of virtual workspaces.
@@ -143,6 +148,16 @@ const WORKSPACE_COUNT: usize = 9;
 struct Workspace {
     windows: Vec<*mut Toplevel>,
     focused: usize,
+}
+
+/// One connected output (monitor): its box in layout coordinates and the
+/// workspace it currently displays.
+struct Output {
+    x: i32,
+    y: i32,
+    w: i32,
+    h: i32,
+    workspace: usize,
 }
 
 /// One application window we track. Heap-allocated; a raw pointer to it is the
@@ -159,28 +174,53 @@ struct Toplevel {
     destroy_listener: *mut ShimListener,
 }
 
-/// Arrange the active workspace's windows as equal-width columns.
-unsafe fn relayout(server: &mut Server) {
+/// Recompute the whole picture: hide windows whose workspace isn't on any
+/// output, then tile each output's workspace as equal-width columns within that
+/// output's box. Called after any change to windows, workspaces or outputs.
+unsafe fn refresh(server: &mut Server) {
+    // A window is visible iff its workspace is currently shown on some output.
+    let mut shown = [false; WORKSPACE_COUNT];
+    for o in &server.outputs {
+        shown[o.workspace] = true;
+    }
+    for (wi, ws) in server.workspaces.iter().enumerate() {
+        for &tl in &ws.windows {
+            snertwl_scene_tree_set_enabled((*tl).scene_tree, shown[wi]);
+        }
+    }
+
+    // Tile each output independently, using its own position and size.
     let gap = server.config.gap;
-    let ws = &server.workspaces[server.active];
-    let n = ws.windows.len() as i32;
-    if n == 0 {
-        return;
+    for o in &server.outputs {
+        let ws = &server.workspaces[o.workspace];
+        let n = ws.windows.len() as i32;
+        if n == 0 {
+            continue;
+        }
+        let col_w = ((o.w - gap * (n + 1)) / n).max(1);
+        let h = (o.h - gap * 2).max(1);
+        for (i, &tl) in ws.windows.iter().enumerate() {
+            let x = o.x + gap + (col_w + gap) * i as i32;
+            snertwl_scene_tree_set_position((*tl).scene_tree, x, o.y + gap);
+            wlr::wlr_xdg_toplevel_set_size((*tl).xdg_toplevel, col_w, h);
+        }
     }
-    let col_w = ((server.output_width - gap * (n + 1)) / n).max(1);
-    let h = (server.output_height - gap * 2).max(1);
-    for (i, &tl) in ws.windows.iter().enumerate() {
-        let x = gap + (col_w + gap) * i as i32;
-        snertwl_scene_tree_set_position((*tl).scene_tree, x, gap);
-        wlr::wlr_xdg_toplevel_set_size((*tl).xdg_toplevel, col_w, h);
-    }
+}
+
+/// The workspace currently displayed on the focused output.
+unsafe fn active_workspace(server: &Server) -> usize {
+    server.outputs[server.focused_output].workspace
 }
 
 // --- keybindings -----------------------------------------------------------
 
-/// Give keyboard focus to window `idx` (wrapped) of the active workspace.
+/// Give keyboard focus to window `idx` (wrapped) of the focused output's
+/// workspace.
 unsafe fn focus_index(server: &mut Server, idx: usize) {
-    let a = server.active;
+    if server.outputs.is_empty() {
+        return;
+    }
+    let a = active_workspace(server);
     let len = server.workspaces[a].windows.len();
     if len == 0 {
         return;
@@ -190,36 +230,45 @@ unsafe fn focus_index(server: &mut Server, idx: usize) {
     snertwl_focus_toplevel(server.seat, (*server.workspaces[a].windows[i]).xdg_toplevel);
 }
 
-/// Ask the focused window of the active workspace to close.
+/// Ask the focused window of the focused output's workspace to close.
 unsafe fn close_focused(server: &Server) {
-    let ws = &server.workspaces[server.active];
+    if server.outputs.is_empty() {
+        return;
+    }
+    let ws = &server.workspaces[active_workspace(server)];
     if let Some(&tl) = ws.windows.get(ws.focused) {
         wlr::wlr_xdg_toplevel_send_close((*tl).xdg_toplevel);
     }
 }
 
-/// Show the active workspace, hiding all others; re-tile and focus.
+/// Display `target` on the focused output. If it's already shown on another
+/// output, swap the two outputs' workspaces (so no workspace is on two monitors).
 unsafe fn switch_workspace(server: &mut Server, target: usize) {
-    if target == server.active || target >= server.workspaces.len() {
+    if server.outputs.is_empty() || target >= server.workspaces.len() {
         return;
     }
-    for &tl in &server.workspaces[server.active].windows {
-        snertwl_scene_tree_set_enabled((*tl).scene_tree, false);
+    let fo = server.focused_output;
+    let current = server.outputs[fo].workspace;
+    if target == current {
+        return;
     }
-    server.active = target;
-    for &tl in &server.workspaces[target].windows {
-        snertwl_scene_tree_set_enabled((*tl).scene_tree, true);
+    if let Some(other) = server.outputs.iter().position(|o| o.workspace == target) {
+        server.outputs[other].workspace = current; // swap: that monitor takes ours
     }
-    relayout(server);
+    server.outputs[fo].workspace = target;
+    refresh(server);
     let f = server.workspaces[target].focused;
     focus_index(server, f);
-    println!("snertwl: workspace {}", target + 1);
+    println!("snertwl: output {} -> workspace {}", fo, target + 1);
 }
 
-/// Move the active workspace's focused window to another workspace.
+/// Move the focused output's focused window to another workspace.
 unsafe fn move_to_workspace(server: &mut Server, target: usize) {
-    let a = server.active;
-    if target == a || target >= server.workspaces.len() || server.workspaces[a].windows.is_empty() {
+    if server.outputs.is_empty() || target >= server.workspaces.len() {
+        return;
+    }
+    let a = active_workspace(server);
+    if target == a || server.workspaces[a].windows.is_empty() {
         return;
     }
     let focused = server.workspaces[a].focused;
@@ -228,9 +277,8 @@ unsafe fn move_to_workspace(server: &mut Server, target: usize) {
     if server.workspaces[a].focused >= len && len > 0 {
         server.workspaces[a].focused = len - 1;
     }
-    snertwl_scene_tree_set_enabled((*tl).scene_tree, false); // hidden until target active
     server.workspaces[target].windows.push(tl);
-    relayout(server);
+    refresh(server); // recomputes visibility (target may or may not be displayed)
     let f = server.workspaces[a].focused;
     focus_index(server, f);
     println!("snertwl: moved window to workspace {}", target + 1);
@@ -264,18 +312,22 @@ unsafe extern "C" fn handle_keybinding(userdata: *mut c_void, keysym: u32, modif
         .map(|b| b.action.clone());
     let Some(action) = action else { return false };
 
-    let a = server.active;
-    let n = server.workspaces[a].windows.len();
+    // Window count on the focused output's workspace (0 if no output yet).
+    let n = if server.outputs.is_empty() {
+        0
+    } else {
+        server.workspaces[active_workspace(server)].windows.len()
+    };
     match action {
         Action::Spawn(cmd) => spawn(&cmd),
         Action::Close => close_focused(server),
         Action::Quit => wlr::wl_display_terminate(server.display),
         Action::FocusNext if n > 0 => {
-            let f = server.workspaces[a].focused;
+            let f = server.workspaces[active_workspace(server)].focused;
             focus_index(server, f + 1);
         }
         Action::FocusPrev if n > 0 => {
-            let f = server.workspaces[a].focused;
+            let f = server.workspaces[active_workspace(server)].focused;
             focus_index(server, f + n - 1);
         }
         Action::FocusNext | Action::FocusPrev => {}
@@ -295,24 +347,40 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
     wlr::wlr_output_init_render(output, server.allocator, server.renderer);
     snertwl_output_enable(output);
 
-    // Remember the output size so the tiling layout knows its bounds.
-    snertwl_output_get_size(output, &mut server.output_width, &mut server.output_height);
-
-    // Place the output in the layout, and tie that layout slot to a scene
-    // output so the scene knows where this output sits and what to repaint.
+    // Place the output in the layout (auto = to the right of existing ones), and
+    // tie that layout slot to a scene output so the scene knows where this
+    // output sits and what to repaint.
     let layout_output = wlr::wlr_output_layout_add_auto(server.output_layout, output);
     let scene_output = wlr::wlr_scene_output_create(server.scene, output);
     wlr::wlr_scene_output_layout_add_output(server.scene_layout, layout_output, scene_output);
 
-    // The background is now a node in the scene graph, sized to the output.
+    // Read this output's box (position + size) in layout coords for tiling.
+    let (mut x, mut y, mut w, mut h) = (0, 0, 0, 0);
+    snertwl_output_layout_get_box(server.output_layout, output, &mut x, &mut y, &mut w, &mut h);
+
+    // Give the output the lowest-numbered workspace not already on a monitor.
+    let mut workspace = 0;
+    for cand in 0..WORKSPACE_COUNT {
+        if !server.outputs.iter().any(|o| o.workspace == cand) {
+            workspace = cand;
+            break;
+        }
+    }
+    server.outputs.push(Output { x, y, w, h, workspace });
+
+    // Background node for this output, placed at its layout origin.
     let (r, g, b) = server.config.background;
-    snertwl_scene_add_output_background(server.scene, output, r, g, b);
+    snertwl_scene_add_output_background(server.scene, output, x, y, r, g, b);
 
     // Render through the scene on every frame; pass the scene output along.
     snertwl_output_add_frame(output, handle_frame, scene_output as *mut c_void);
+    refresh(server); // tile any windows already belonging to this workspace
     snertwl_scene_output_render(scene_output); // kick the first frame
 
-    println!("snertwl: output online — scene attached");
+    println!(
+        "snertwl: output online @ {x},{y} {w}x{h} — workspace {}",
+        workspace + 1
+    );
 }
 
 /// Called by the shim each time the output is ready for a new frame.
@@ -348,13 +416,17 @@ unsafe extern "C" fn handle_new_toplevel(userdata: *mut c_void, data: *mut c_voi
     (*tl).destroy_listener = snertwl_xdg_add_destroy(toplevel, handle_destroy, ud);
 }
 
-/// A window's surface became mapped: add it to the layout and focus it.
+/// A window's surface became mapped: add it to the focused output's workspace,
+/// re-tile and focus it.
 unsafe extern "C" fn handle_map(userdata: *mut c_void, _data: *mut c_void) {
     let tl = userdata as *mut Toplevel;
     let server = &mut *(*tl).server;
-    let a = server.active;
+    if server.outputs.is_empty() {
+        return; // no monitor to place it on yet
+    }
+    let a = active_workspace(server);
     server.workspaces[a].windows.push(tl);
-    relayout(server);
+    refresh(server);
     focus_index(server, server.workspaces[a].windows.len() - 1);
     println!(
         "snertwl: window mapped — ws {} now {} tiled",
@@ -395,11 +467,13 @@ unsafe fn remove_window(server: &mut Server, tl: *mut Toplevel) {
             break;
         }
     }
-    relayout(server);
-    let a = server.active;
-    if !server.workspaces[a].windows.is_empty() {
-        let f = server.workspaces[a].focused;
-        focus_index(server, f);
+    refresh(server);
+    if !server.outputs.is_empty() {
+        let a = active_workspace(server);
+        if !server.workspaces[a].windows.is_empty() {
+            let f = server.workspaces[a].focused;
+            focus_index(server, f);
+        }
     }
 }
 
@@ -477,10 +551,9 @@ fn main() {
                     focused: 0,
                 })
                 .collect(),
-            active: 0,
+            outputs: Vec::new(),
+            focused_output: 0,
             config,
-            output_width: 0,
-            output_height: 0,
         };
         let server_ptr = &mut server as *mut Server as *mut c_void;
         snertwl_backend_add_new_output(backend, handle_new_output, server_ptr);

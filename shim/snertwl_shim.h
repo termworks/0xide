@@ -48,9 +48,13 @@ struct snertwl_listener *snertwl_output_add_frame(
 // --- output / scene helpers ------------------------------------------------
 // Enable the output (owns the wlr_output_state init/commit/finish dance).
 void snertwl_output_enable(struct wlr_output *output);
-// Add a solid-color background rectangle, sized to `output`, at the scene root.
+// Add a solid-color background rectangle, sized to `output`, positioned at the
+// output's (x, y) in the layout so multiple outputs don't overlap at the origin.
 void snertwl_scene_add_output_background(struct wlr_scene *scene,
-        struct wlr_output *output, float r, float g, float b);
+        struct wlr_output *output, int x, int y, float r, float g, float b);
+// Read an output's layout box (position + pixel size) for per-output tiling.
+void snertwl_output_layout_get_box(struct wlr_output_layout *layout,
+        struct wlr_output *output, int *x, int *y, int *width, int *height);
 // Render + present one frame for this scene output (owns the timespec/clock).
 void snertwl_scene_output_render(struct wlr_scene_output *scene_output);
 
