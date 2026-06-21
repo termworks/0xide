@@ -237,12 +237,17 @@ struct wlr_seat *snertwl_seat_create(struct wl_display *display, const char *nam
 }
 
 // Per-keyboard context so the key/modifier handlers can reach the seat and the
-// Rust keybinding callback.
+// Rust keybinding callback. We track our listeners so we can remove them when
+// the device is destroyed (e.g. on VT switch, when logind pauses input) —
+// otherwise wlroots asserts the keyboard's signal lists aren't empty.
 struct snertwl_keyboard {
     struct wlr_seat *seat;
     struct wlr_keyboard *keyboard;
     snertwl_key_callback key_callback;
     void *key_userdata;
+    struct snertwl_listener *key_listener;
+    struct snertwl_listener *mod_listener;
+    struct snertwl_listener *destroy_listener;
 };
 
 static void handle_key(void *userdata, void *data) {
@@ -284,6 +289,18 @@ static void handle_modifiers(void *userdata, void *data) {
     wlr_seat_keyboard_notify_modifiers(kb->seat, &kb->keyboard->modifiers);
 }
 
+// The input device is going away (unplugged, or paused on a VT switch). Detach
+// our listeners before wlroots tears the keyboard down, then free our context.
+static void handle_keyboard_destroy(void *userdata, void *data) {
+    (void)data;
+    struct snertwl_keyboard *kb = userdata;
+    snertwl_listener_remove(kb->key_listener);
+    snertwl_listener_remove(kb->mod_listener);
+    snertwl_listener_remove(kb->destroy_listener);
+    free(kb);
+    wlr_log(WLR_INFO, "snertwl: keyboard removed");
+}
+
 static void seat_add_keyboard(struct wlr_seat *seat,
         struct wlr_input_device *device, snertwl_key_callback key_callback,
         void *key_userdata) {
@@ -303,8 +320,10 @@ static void seat_add_keyboard(struct wlr_seat *seat,
     kb->keyboard = keyboard;
     kb->key_callback = key_callback;
     kb->key_userdata = key_userdata;
-    signal_add(&keyboard->events.key, handle_key, kb);
-    signal_add(&keyboard->events.modifiers, handle_modifiers, kb);
+    kb->key_listener = signal_add(&keyboard->events.key, handle_key, kb);
+    kb->mod_listener = signal_add(&keyboard->events.modifiers, handle_modifiers, kb);
+    // Device-level destroy, so we clean up when the keyboard is removed.
+    kb->destroy_listener = signal_add(&device->events.destroy, handle_keyboard_destroy, kb);
 
     wlr_seat_set_keyboard(seat, keyboard);
     wlr_log(WLR_INFO, "snertwl: keyboard attached");
