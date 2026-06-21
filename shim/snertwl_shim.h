@@ -12,6 +12,7 @@ struct wlr_output;
 struct wlr_scene;
 struct wlr_scene_output;
 struct wlr_scene_tree;
+struct wlr_scene_rect;
 struct wlr_xdg_shell;
 struct wlr_xdg_toplevel;
 struct wlr_seat;
@@ -48,14 +49,20 @@ struct snertwl_listener *snertwl_backend_add_new_output(
         struct wlr_backend *backend, snertwl_callback callback, void *userdata);
 struct snertwl_listener *snertwl_output_add_frame(
         struct wlr_output *output, snertwl_callback callback, void *userdata);
+// Fires when an output is destroyed (unplug, or VT-switch seat disable).
+struct snertwl_listener *snertwl_output_add_destroy(
+        struct wlr_output *output, snertwl_callback callback, void *userdata);
 
 // --- output / scene helpers ------------------------------------------------
 // Enable the output (owns the wlr_output_state init/commit/finish dance).
 void snertwl_output_enable(struct wlr_output *output);
 // Add a solid-color background rectangle, sized to `output`, positioned at the
 // output's (x, y) in the layout so multiple outputs don't overlap at the origin.
-void snertwl_scene_add_output_background(struct wlr_scene *scene,
+// Returns the rect so Rust can destroy it when the output goes away.
+struct wlr_scene_rect *snertwl_scene_add_output_background(struct wlr_scene *scene,
         struct wlr_output *output, int x, int y, float r, float g, float b);
+// Destroy a background rect created above.
+void snertwl_scene_rect_destroy(struct wlr_scene_rect *rect);
 // Read an output's layout box (position + pixel size) for per-output tiling.
 void snertwl_output_layout_get_box(struct wlr_output_layout *layout,
         struct wlr_output *output, int *x, int *y, int *width, int *height);

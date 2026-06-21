@@ -99,6 +99,15 @@ struct snertwl_listener *snertwl_output_add_frame(
     return signal_add(&output->events.frame, callback, userdata);
 }
 
+// Output destroy fires when a monitor is removed — including when logind
+// disables the seat on a VT switch (the DRM backend tears the output down).
+// Rust uses this to remove its frame listener (else wlr_output_finish asserts)
+// and drop the output from its list. `data` is the wlr_output.
+struct snertwl_listener *snertwl_output_add_destroy(
+        struct wlr_output *output, snertwl_callback callback, void *userdata) {
+    return signal_add(&output->events.destroy, callback, userdata);
+}
+
 // --- output / scene helpers ------------------------------------------------
 
 void snertwl_output_enable(struct wlr_output *output) {
@@ -117,7 +126,7 @@ void snertwl_output_enable(struct wlr_output *output) {
     wlr_output_state_finish(&state);
 }
 
-void snertwl_scene_add_output_background(struct wlr_scene *scene,
+struct wlr_scene_rect *snertwl_scene_add_output_background(struct wlr_scene *scene,
         struct wlr_output *output, int x, int y, float r, float g, float b) {
     const float color[4] = {r, g, b, 1.0f};
     struct wlr_scene_rect *rect =
@@ -125,6 +134,12 @@ void snertwl_scene_add_output_background(struct wlr_scene *scene,
     // Scene nodes share one coordinate space; place this output's background at
     // the output's position in the layout so multiple monitors don't overlap.
     wlr_scene_node_set_position(&rect->node, x, y);
+    return rect;
+}
+
+// Remove a background rectangle (when its output is destroyed).
+void snertwl_scene_rect_destroy(struct wlr_scene_rect *rect) {
+    wlr_scene_node_destroy(&rect->node);
 }
 
 // Read an output's box (position + size) in layout coordinates, so Rust can tile

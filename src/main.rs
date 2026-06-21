@@ -55,7 +55,13 @@ extern "C" {
         r: f32,
         g: f32,
         b: f32,
-    );
+    ) -> *mut c_void; // the background rect (opaque to Rust)
+    fn snertwl_scene_rect_destroy(rect: *mut c_void);
+    fn snertwl_output_add_destroy(
+        output: *mut wlr::wlr_output,
+        callback: ShimCallback,
+        userdata: *mut c_void,
+    ) -> *mut ShimListener;
     fn snertwl_output_layout_get_box(
         layout: *mut wlr::wlr_output_layout,
         output: *mut wlr::wlr_output,
@@ -154,14 +160,19 @@ struct Workspace {
     focused: usize,
 }
 
-/// One connected output (monitor): its box in layout coordinates and the
-/// workspace it currently displays.
+/// One connected output (monitor): its box in layout coordinates, the workspace
+/// it currently displays, and the resources to release when it's destroyed.
 struct Output {
+    wlr_output: *mut wlr::wlr_output,
     x: i32,
     y: i32,
     w: i32,
     h: i32,
     workspace: usize,
+    /// Listeners + background node to tear down when the output goes away.
+    frame_listener: *mut ShimListener,
+    destroy_listener: *mut ShimListener,
+    background: *mut c_void,
 }
 
 /// One application window we track. Heap-allocated; a raw pointer to it is the
@@ -381,14 +392,27 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
             break;
         }
     }
-    server.outputs.push(Output { x, y, w, h, workspace });
-
     // Background node for this output, placed at its layout origin.
     let (r, g, b) = server.config.background;
-    snertwl_scene_add_output_background(server.scene, output, x, y, r, g, b);
+    let background = snertwl_scene_add_output_background(server.scene, output, x, y, r, g, b);
 
-    // Render through the scene on every frame; pass the scene output along.
-    snertwl_output_add_frame(output, handle_frame, scene_output as *mut c_void);
+    // Render through the scene on every frame; pass the scene output along. Track
+    // the frame + destroy listeners so we can remove them when the output dies.
+    let frame_listener = snertwl_output_add_frame(output, handle_frame, scene_output as *mut c_void);
+    let destroy_listener = snertwl_output_add_destroy(output, handle_output_destroy, userdata);
+
+    server.outputs.push(Output {
+        wlr_output: output,
+        x,
+        y,
+        w,
+        h,
+        workspace,
+        frame_listener,
+        destroy_listener,
+        background,
+    });
+
     refresh(server); // tile any windows already belonging to this workspace
     snertwl_scene_output_render(scene_output); // kick the first frame
 
@@ -396,6 +420,28 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
         "snertwl: output online @ {x},{y} {w}x{h} — workspace {}",
         workspace + 1
     );
+}
+
+/// An output was removed (monitor unplugged, or logind disabled the seat on a VT
+/// switch). Remove its listeners + background before wlroots finishes it (else it
+/// asserts a non-empty frame listener list), then drop it from our list.
+unsafe extern "C" fn handle_output_destroy(userdata: *mut c_void, data: *mut c_void) {
+    let server = &mut *(userdata as *mut Server);
+    let output = data as *mut wlr::wlr_output;
+    let Some(pos) = server.outputs.iter().position(|o| o.wlr_output == output) else {
+        return;
+    };
+    let o = &server.outputs[pos];
+    snertwl_listener_remove(o.frame_listener);
+    snertwl_listener_remove(o.destroy_listener);
+    snertwl_scene_rect_destroy(o.background);
+    server.outputs.remove(pos);
+    // Keep focused_output in range.
+    if server.focused_output >= server.outputs.len() && !server.outputs.is_empty() {
+        server.focused_output = server.outputs.len() - 1;
+    }
+    refresh(server);
+    println!("snertwl: output removed — {} left", server.outputs.len());
 }
 
 /// Called by the shim each time the output is ready for a new frame.
