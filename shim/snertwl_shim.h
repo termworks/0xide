@@ -32,6 +32,10 @@ typedef bool (*snertwl_key_callback)(void *userdata, uint32_t keysym,
 const char *snertwl_wlroots_version(void);
 void snertwl_log_init(void);
 
+// Resolve a key name (case-insensitive, e.g. "Return"/"q"/"1") to an xkb keysym
+// for the config parser. Returns 0 for an unknown name.
+uint32_t snertwl_keysym_from_name(const char *name);
+
 // Terminate the display loop on SIGINT/SIGTERM (graceful shutdown).
 void snertwl_setup_signals(struct wl_event_loop *loop, struct wl_display *display);
 
@@ -76,6 +80,7 @@ struct snertwl_listener *snertwl_xdg_add_destroy(struct wlr_xdg_toplevel *toplev
 // Layout helpers: move a window's scene node; give a window keyboard focus;
 // read an output's pixel size. (All touch wlroots struct internals.)
 void snertwl_scene_tree_set_position(struct wlr_scene_tree *tree, int x, int y);
+void snertwl_scene_tree_set_enabled(struct wlr_scene_tree *tree, bool enabled);
 void snertwl_focus_toplevel(struct wlr_seat *seat,
         struct wlr_xdg_toplevel *toplevel);
 void snertwl_output_get_size(struct wlr_output *output, int *width, int *height);

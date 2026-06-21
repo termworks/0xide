@@ -1,0 +1,52 @@
+# snertwl example config
+#
+# Copy to ~/.config/snertwl/snertwl.conf and edit. Lines are `key = value`,
+# `#` starts a comment. With no config file, snertwl uses these same defaults.
+# A line it can't parse is warned about on stderr and skipped — never fatal.
+
+# --- general ---------------------------------------------------------------
+
+# Primary modifier, referenced as MOD / $mod in binds below. super | alt | ctrl.
+# (SNERTWL_MOD=alt in the environment overrides this — handy when running nested
+# under another compositor that grabs Super-chords.)
+modifier = super
+
+# Pixels between/around tiled windows.
+gap = 10
+
+# Background color of empty space, as `r g b` floats in 0..1.
+background = 0.0 0.6 0.6
+
+# --- keybindings -----------------------------------------------------------
+#
+# bind = MODS, KEY, ACTION[, ARG]
+#   MODS   space/`+` separated: MOD (=primary), SUPER, ALT, SHIFT, CTRL
+#   KEY    an xkb key name: Return, Q, 1, space, F1, ... (case-insensitive)
+#   ACTION spawn <cmd> | close | quit | focusnext | focusprev
+#          | workspace <n> | movetoworkspace <n>      (n = 1..9)
+
+bind = MOD, Return, spawn, kitty
+bind = MOD, Q, close
+bind = MOD SHIFT, Q, quit
+bind = MOD, J, focusnext
+bind = MOD, K, focusprev
+
+bind = MOD, 1, workspace, 1
+bind = MOD, 2, workspace, 2
+bind = MOD, 3, workspace, 3
+bind = MOD, 4, workspace, 4
+bind = MOD, 5, workspace, 5
+bind = MOD, 6, workspace, 6
+bind = MOD, 7, workspace, 7
+bind = MOD, 8, workspace, 8
+bind = MOD, 9, workspace, 9
+
+bind = MOD SHIFT, 1, movetoworkspace, 1
+bind = MOD SHIFT, 2, movetoworkspace, 2
+bind = MOD SHIFT, 3, movetoworkspace, 3
+bind = MOD SHIFT, 4, movetoworkspace, 4
+bind = MOD SHIFT, 5, movetoworkspace, 5
+bind = MOD SHIFT, 6, movetoworkspace, 6
+bind = MOD SHIFT, 7, movetoworkspace, 7
+bind = MOD SHIFT, 8, movetoworkspace, 8
+bind = MOD SHIFT, 9, movetoworkspace, 9

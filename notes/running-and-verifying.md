@@ -27,6 +27,34 @@
 - Nested keyboard caveat: the Wayland backend only receives keys when the host
   (Hyprland) gives the snertwl window focus.
 
+## Config file (Stage 5d)
+- Parsed in Rust (`src/config.rs`), no extra crates. Path:
+  `$XDG_CONFIG_HOME/snertwl/snertwl.conf` (else `~/.config/snertwl/snertwl.conf`).
+  No file → built-in defaults (Super, gap 10, the original keymap); a config with
+  zero `bind=` lines also falls back to the default binds.
+- Format `key = value`, `#` comments. Scalars: `modifier`, `gap`, `background`.
+  Binds: `bind = MODS, KEY, ACTION[, ARG]` (Hyprland-ish). `MOD`/`$mod` in a bind
+  expands to the primary `modifier`. KEY names resolve via xkb
+  (`snertwl_keysym_from_name` shim → `xkb_keysym_from_name`, case-insensitive →
+  level-0 keysym, matching how `handle_key` reports presses).
+- `SNERTWL_MOD=alt` still overrides the modifier (applied *before* binds are
+  parsed, so `MOD` resolves to Alt) — keep using it for nested dev.
+- An unparseable line warns on stderr (`config line N: …`) and is skipped; it
+  never stops startup. See `snertwl.conf.example` in the repo root.
+- Verify without a window: `XDG_CONFIG_HOME=/tmp/cfg WLR_BACKENDS=headless \
+  target/debug/snertwl >log 2>&1 &` then grep `snertwl: (loaded|no config|modifier|config line)`.
+
+## Real hardware (TTY / DRM-KMS) — works as of 2026-06-20
+- `wlr_backend_autocreate` picks the DRM/KMS backend on a bare TTY (no WAYLAND_DISPLAY).
+- Recipe: log into a free VT, then
+  `LIBSEAT_BACKEND=logind ~/Projects/snertwl/target/debug/snertwl foot 2>~/snertwl-tty.log`
+  - `LIBSEAT_BACKEND=logind` because user isn't in the `seat` group (logind grants the
+    active VT its devices). Two GPUs here: Intel `card1` (panel), discrete `card0`;
+    prepend `WLR_DRM_DEVICES=/dev/dri/card1` if it picks the wrong one.
+- **Single display works** (tile/focus/close/quit). **Multi-monitor is broken** —
+  `relayout()` only knows one output's size; proper multi-output + VT-switch handling
+  is deferred to full Stage 6.
+
 ## Headless verification recipe (for automated/agent checks)
 Because a nested run opens a window on the host and then blocks in `wl_display_run`,
 verify it like this:

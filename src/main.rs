@@ -10,14 +10,14 @@ mod wlr {
     include!(concat!(env!("OUT_DIR"), "/wlr_bindings.rs"));
 }
 
+mod config;
+
+use config::{Action, Config, MOD_MASK};
 use std::env;
 use std::ffi::CStr;
 use std::os::raw::{c_char, c_void};
 use std::process::Command;
 use std::ptr;
-
-/// The color we paint every output. A saturated teal, easy to spot.
-const COLOR: (f32, f32, f32) = (0.0, 0.6, 0.6);
 
 /// Type of the callbacks our C shim invokes: (userdata, signal-data).
 type ShimCallback = unsafe extern "C" fn(*mut c_void, *mut c_void);
@@ -81,6 +81,7 @@ extern "C" {
         userdata: *mut c_void,
     ) -> *mut ShimListener;
     fn snertwl_scene_tree_set_position(tree: *mut wlr::wlr_scene_tree, x: i32, y: i32);
+    fn snertwl_scene_tree_set_enabled(tree: *mut wlr::wlr_scene_tree, enabled: bool);
     fn snertwl_focus_toplevel(
         seat: *mut wlr::wlr_seat,
         toplevel: *mut wlr::wlr_xdg_toplevel,
@@ -125,15 +126,23 @@ struct Server {
     cursor: *mut wlr::wlr_cursor,
     renderer: *mut wlr::wlr_renderer,
     allocator: *mut wlr::wlr_allocator,
-    /// Mapped windows, in stacking order. Pointers to heap-allocated Toplevels.
-    windows: Vec<*mut Toplevel>,
-    /// Index into `windows` of the focused window.
-    focused: usize,
-    /// Modifier that triggers keybindings (Super by default; Alt for nested dev).
-    modkey: u32,
+    /// Virtual workspaces; only `active` is visible/tiled at a time.
+    workspaces: Vec<Workspace>,
+    active: usize,
+    /// User configuration: modifier, gap, background, keybindings.
+    config: Config,
     /// Size of the (single, for now) output we tile within.
     output_width: i32,
     output_height: i32,
+}
+
+/// Number of virtual workspaces.
+const WORKSPACE_COUNT: usize = 9;
+
+/// One workspace: an independent list of windows and its focused index.
+struct Workspace {
+    windows: Vec<*mut Toplevel>,
+    focused: usize,
 }
 
 /// One application window we track. Heap-allocated; a raw pointer to it is the
@@ -150,76 +159,128 @@ struct Toplevel {
     destroy_listener: *mut ShimListener,
 }
 
-/// Gap between/around tiled windows, in pixels.
-const GAP: i32 = 10;
-
-/// Arrange all mapped windows as equal-width columns across the output.
+/// Arrange the active workspace's windows as equal-width columns.
 unsafe fn relayout(server: &mut Server) {
-    let n = server.windows.len() as i32;
+    let gap = server.config.gap;
+    let ws = &server.workspaces[server.active];
+    let n = ws.windows.len() as i32;
     if n == 0 {
         return;
     }
-    let col_w = ((server.output_width - GAP * (n + 1)) / n).max(1);
-    let h = (server.output_height - GAP * 2).max(1);
-    for (i, &tl) in server.windows.iter().enumerate() {
-        let x = GAP + (col_w + GAP) * i as i32;
-        snertwl_scene_tree_set_position((*tl).scene_tree, x, GAP);
+    let col_w = ((server.output_width - gap * (n + 1)) / n).max(1);
+    let h = (server.output_height - gap * 2).max(1);
+    for (i, &tl) in ws.windows.iter().enumerate() {
+        let x = gap + (col_w + gap) * i as i32;
+        snertwl_scene_tree_set_position((*tl).scene_tree, x, gap);
         wlr::wlr_xdg_toplevel_set_size((*tl).xdg_toplevel, col_w, h);
     }
 }
 
 // --- keybindings -----------------------------------------------------------
 
-/// Modifier bits (mirror the WLR_MODIFIER_* enum).
-const MOD_LOGO: u32 = 1 << 6; // Super
-const MOD_ALT: u32 = 1 << 3; // Alt
-
-// xkb keysyms. Latin-1 letters equal their ASCII codes; named keys are 0xff..
-const KEY_RETURN: u32 = 0xff0d;
-const KEY_Q: u32 = b'q' as u32;
-const KEY_Q_SHIFT: u32 = b'Q' as u32;
-const KEY_J: u32 = b'j' as u32;
-const KEY_K: u32 = b'k' as u32;
-
-/// Give keyboard focus to window `idx` (wrapped into range).
+/// Give keyboard focus to window `idx` (wrapped) of the active workspace.
 unsafe fn focus_index(server: &mut Server, idx: usize) {
-    if server.windows.is_empty() {
+    let a = server.active;
+    let len = server.workspaces[a].windows.len();
+    if len == 0 {
         return;
     }
-    let i = idx % server.windows.len();
-    server.focused = i;
-    snertwl_focus_toplevel(server.seat, (*server.windows[i]).xdg_toplevel);
+    let i = idx % len;
+    server.workspaces[a].focused = i;
+    snertwl_focus_toplevel(server.seat, (*server.workspaces[a].windows[i]).xdg_toplevel);
 }
 
-/// Ask the focused window to close.
+/// Ask the focused window of the active workspace to close.
 unsafe fn close_focused(server: &Server) {
-    if let Some(&tl) = server.windows.get(server.focused) {
+    let ws = &server.workspaces[server.active];
+    if let Some(&tl) = ws.windows.get(ws.focused) {
         wlr::wlr_xdg_toplevel_send_close((*tl).xdg_toplevel);
     }
 }
 
+/// Show the active workspace, hiding all others; re-tile and focus.
+unsafe fn switch_workspace(server: &mut Server, target: usize) {
+    if target == server.active || target >= server.workspaces.len() {
+        return;
+    }
+    for &tl in &server.workspaces[server.active].windows {
+        snertwl_scene_tree_set_enabled((*tl).scene_tree, false);
+    }
+    server.active = target;
+    for &tl in &server.workspaces[target].windows {
+        snertwl_scene_tree_set_enabled((*tl).scene_tree, true);
+    }
+    relayout(server);
+    let f = server.workspaces[target].focused;
+    focus_index(server, f);
+    println!("snertwl: workspace {}", target + 1);
+}
+
+/// Move the active workspace's focused window to another workspace.
+unsafe fn move_to_workspace(server: &mut Server, target: usize) {
+    let a = server.active;
+    if target == a || target >= server.workspaces.len() || server.workspaces[a].windows.is_empty() {
+        return;
+    }
+    let focused = server.workspaces[a].focused;
+    let tl = server.workspaces[a].windows.remove(focused);
+    let len = server.workspaces[a].windows.len();
+    if server.workspaces[a].focused >= len && len > 0 {
+        server.workspaces[a].focused = len - 1;
+    }
+    snertwl_scene_tree_set_enabled((*tl).scene_tree, false); // hidden until target active
+    server.workspaces[target].windows.push(tl);
+    relayout(server);
+    let f = server.workspaces[a].focused;
+    focus_index(server, f);
+    println!("snertwl: moved window to workspace {}", target + 1);
+}
+
 /// Launch a program as a client of snertwl (inherits our WAYLAND_DISPLAY).
-fn spawn(program: &str) {
-    if let Err(e) = Command::new(program).spawn() {
-        eprintln!("snertwl: failed to spawn `{program}`: {e}");
+/// The command is whitespace-split into program + args (e.g. "grim -g ...").
+fn spawn(cmd: &str) {
+    let mut parts = cmd.split_whitespace();
+    let Some(program) = parts.next() else { return };
+    let args: Vec<&str> = parts.collect();
+    if let Err(e) = Command::new(program).args(&args).spawn() {
+        eprintln!("snertwl: failed to spawn `{cmd}`: {e}");
     }
 }
 
 /// Called by the shim for each key press; returns true to consume the key.
-/// All bindings here are Super-chords; everything else falls through to apps.
+/// We look the (modifiers, keysym) up in the config's bind table; an unmatched
+/// chord falls through to the focused app.
 unsafe extern "C" fn handle_keybinding(userdata: *mut c_void, keysym: u32, modifiers: u32) -> bool {
     let server = &mut *(userdata as *mut Server);
-    if modifiers & server.modkey == 0 {
-        return false;
-    }
-    let n = server.windows.len();
-    match keysym {
-        KEY_RETURN => spawn("foot"),
-        KEY_Q => close_focused(server),
-        KEY_Q_SHIFT => wlr::wl_display_terminate(server.display),
-        KEY_J if n > 0 => focus_index(server, server.focused + 1),
-        KEY_K if n > 0 => focus_index(server, server.focused + n - 1),
-        _ => return false,
+    let mods = modifiers & MOD_MASK;
+
+    // Find the matching bind, then act. We clone the action first so the
+    // immutable borrow of `server.config` ends before we mutate `server`.
+    let action = server
+        .config
+        .binds
+        .iter()
+        .find(|b| b.mods == mods && b.keysym == keysym)
+        .map(|b| b.action.clone());
+    let Some(action) = action else { return false };
+
+    let a = server.active;
+    let n = server.workspaces[a].windows.len();
+    match action {
+        Action::Spawn(cmd) => spawn(&cmd),
+        Action::Close => close_focused(server),
+        Action::Quit => wlr::wl_display_terminate(server.display),
+        Action::FocusNext if n > 0 => {
+            let f = server.workspaces[a].focused;
+            focus_index(server, f + 1);
+        }
+        Action::FocusPrev if n > 0 => {
+            let f = server.workspaces[a].focused;
+            focus_index(server, f + n - 1);
+        }
+        Action::FocusNext | Action::FocusPrev => {}
+        Action::Workspace(ws) => switch_workspace(server, ws),
+        Action::MoveToWorkspace(ws) => move_to_workspace(server, ws),
     }
     true
 }
@@ -243,8 +304,8 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
     let scene_output = wlr::wlr_scene_output_create(server.scene, output);
     wlr::wlr_scene_output_layout_add_output(server.scene_layout, layout_output, scene_output);
 
-    // The teal background is now a node in the scene graph, sized to the output.
-    let (r, g, b) = COLOR;
+    // The background is now a node in the scene graph, sized to the output.
+    let (r, g, b) = server.config.background;
     snertwl_scene_add_output_background(server.scene, output, r, g, b);
 
     // Render through the scene on every frame; pass the scene output along.
@@ -291,10 +352,15 @@ unsafe extern "C" fn handle_new_toplevel(userdata: *mut c_void, data: *mut c_voi
 unsafe extern "C" fn handle_map(userdata: *mut c_void, _data: *mut c_void) {
     let tl = userdata as *mut Toplevel;
     let server = &mut *(*tl).server;
-    server.windows.push(tl);
+    let a = server.active;
+    server.workspaces[a].windows.push(tl);
     relayout(server);
-    focus_index(server, server.windows.len() - 1);
-    println!("snertwl: window mapped — {} tiled", server.windows.len());
+    focus_index(server, server.workspaces[a].windows.len() - 1);
+    println!(
+        "snertwl: window mapped — ws {} now {} tiled",
+        a + 1,
+        server.workspaces[a].windows.len()
+    );
 }
 
 /// A window's surface was unmapped (hidden): drop it from the layout.
@@ -318,12 +384,22 @@ unsafe extern "C" fn handle_destroy(userdata: *mut c_void, _data: *mut c_void) {
     drop(Box::from_raw(tl));
 }
 
-/// Remove a window from the layout and re-focus a remaining one.
+/// Remove a window from whichever workspace holds it, then re-tile and focus.
 unsafe fn remove_window(server: &mut Server, tl: *mut Toplevel) {
-    server.windows.retain(|&w| w != tl);
+    for ws in server.workspaces.iter_mut() {
+        if let Some(pos) = ws.windows.iter().position(|&w| w == tl) {
+            ws.windows.remove(pos);
+            if ws.focused >= ws.windows.len() && !ws.windows.is_empty() {
+                ws.focused = ws.windows.len() - 1;
+            }
+            break;
+        }
+    }
     relayout(server);
-    if !server.windows.is_empty() {
-        focus_index(server, server.focused.min(server.windows.len() - 1));
+    let a = server.active;
+    if !server.workspaces[a].windows.is_empty() {
+        let f = server.workspaces[a].focused;
+        focus_index(server, f);
     }
 }
 
@@ -379,16 +455,10 @@ fn main() {
         // hit-testing to the seat. Pointer devices get attached in new_input.
         let cursor = snertwl_cursor_setup(output_layout, scene, seat);
 
-        // Keybinding modifier: Super by default; `SNERTWL_MOD=alt` for nested
-        // dev (a nesting host like Hyprland grabs Super-chords before us).
-        let modkey = match env::var("SNERTWL_MOD").as_deref() {
-            Ok("alt") => MOD_ALT,
-            _ => MOD_LOGO,
-        };
-        println!(
-            "snertwl: keybinding modifier = {}",
-            if modkey == MOD_ALT { "Alt" } else { "Super" }
-        );
+        // Load user config (modifier, gap, background, keybindings). Falls back
+        // to built-in defaults; `SNERTWL_MOD=alt` overrides the modifier for
+        // nested dev (a nesting host like Hyprland grabs Super-chords before us).
+        let config = Config::load();
 
         // `server` lives for the whole of main(), which blocks in wl_display_run
         // below, so the pointer we hand the shim stays valid for the run.
@@ -401,9 +471,14 @@ fn main() {
             cursor,
             renderer,
             allocator,
-            windows: Vec::new(),
-            focused: 0,
-            modkey,
+            workspaces: (0..WORKSPACE_COUNT)
+                .map(|_| Workspace {
+                    windows: Vec::new(),
+                    focused: 0,
+                })
+                .collect(),
+            active: 0,
+            config,
             output_width: 0,
             output_height: 0,
         };

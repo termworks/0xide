@@ -28,6 +28,14 @@ void snertwl_log_init(void) {
     wlr_log_init(WLR_DEBUG, NULL);
 }
 
+// Resolve a key name from the config (e.g. "Return", "q", "1") to an xkb keysym,
+// case-insensitively. Returns 0 (XKB_KEY_NoSymbol) for an unknown name. We match
+// bindings on level-0 keysyms, so case-insensitive lookup gives the unshifted
+// form (e.g. "Q" -> lowercase q), exactly what handle_key reports.
+uint32_t snertwl_keysym_from_name(const char *name) {
+    return xkb_keysym_from_name(name, XKB_KEYSYM_CASE_INSENSITIVE);
+}
+
 static int handle_signal(int sig, void *data) {
     (void)sig;
     wl_display_terminate(data); // unwinds wl_display_run -> graceful shutdown
@@ -169,6 +177,10 @@ void snertwl_scene_tree_set_position(struct wlr_scene_tree *tree, int x, int y) 
     wlr_scene_node_set_position(&tree->node, x, y);
 }
 
+void snertwl_scene_tree_set_enabled(struct wlr_scene_tree *tree, bool enabled) {
+    wlr_scene_node_set_enabled(&tree->node, enabled);
+}
+
 void snertwl_focus_toplevel(struct wlr_seat *seat,
         struct wlr_xdg_toplevel *toplevel) {
     struct wlr_surface *surface = toplevel->base->surface;
@@ -213,9 +225,14 @@ static void handle_key(void *userdata, void *data) {
     // are offset by 8 from xkb keycodes.
     bool handled = false;
     if (event->state == WL_KEYBOARD_KEY_STATE_PRESSED && kb->key_callback != NULL) {
+        uint32_t keycode = event->keycode + 8;
+        // Match bindings on the layout level-0 (unshifted) keysym, so e.g.
+        // Mod+Shift+1 reads as '1' (+Shift modifier), not the shifted '!'.
+        xkb_layout_index_t layout =
+                xkb_state_key_get_layout(kb->keyboard->xkb_state, keycode);
         const xkb_keysym_t *syms;
-        int nsyms = xkb_state_key_get_syms(kb->keyboard->xkb_state,
-                event->keycode + 8, &syms);
+        int nsyms = xkb_keymap_key_get_syms_by_level(kb->keyboard->keymap,
+                keycode, layout, 0, &syms);
         uint32_t modifiers = wlr_keyboard_get_modifiers(kb->keyboard);
         for (int i = 0; i < nsyms; i++) {
             if (kb->key_callback(kb->key_userdata, syms[i], modifiers)) {
