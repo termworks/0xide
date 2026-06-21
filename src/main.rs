@@ -36,6 +36,12 @@ extern "C" {
     fn snertwl_log_init();
     fn snertwl_setup_signals(loop_: *mut wlr::wl_event_loop, display: *mut wlr::wl_display);
     fn snertwl_session_change_vt(session: *mut wlr::wlr_session, vt: u32);
+    fn snertwl_session_add_active(
+        session: *mut wlr::wlr_session,
+        callback: ShimCallback,
+        userdata: *mut c_void,
+    ) -> *mut ShimListener;
+    fn snertwl_session_is_active(session: *mut wlr::wlr_session) -> bool;
     fn snertwl_backend_add_new_output(
         backend: *mut wlr::wlr_backend,
         callback: ShimCallback,
@@ -71,6 +77,7 @@ extern "C" {
         height: *mut i32,
     );
     fn snertwl_scene_output_render(scene_output: *mut wlr::wlr_scene_output);
+    fn snertwl_output_schedule_frame(output: *mut wlr::wlr_output);
     fn snertwl_xdg_shell_add_new_toplevel(
         shell: *mut wlr::wlr_xdg_shell,
         callback: ShimCallback,
@@ -414,7 +421,12 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
     });
 
     refresh(server); // tile any windows already belonging to this workspace
-    snertwl_scene_output_render(scene_output); // kick the first frame
+
+    // Kick the first paint via a scheduled frame rather than rendering now: on a
+    // VT-switch resume the output isn't ready this instant, and an early render
+    // would present nothing and leave idle windows blank. The frame handler then
+    // does a full repaint once the output is actually ready.
+    snertwl_output_schedule_frame(output);
 
     println!(
         "snertwl: output online @ {x},{y} {w}x{h} — workspace {}",
@@ -442,6 +454,25 @@ unsafe extern "C" fn handle_output_destroy(userdata: *mut c_void, data: *mut c_v
     }
     refresh(server);
     println!("snertwl: output removed — {} left", server.outputs.len());
+}
+
+/// Called by the shim on every session active change (VT switch away/back).
+/// On a VT switch the outputs aren't destroyed — they're re-modeset to black —
+/// and idle clients never redraw, so on regaining the VT we schedule a frame on
+/// each output to force a full repaint (the post-modeset swapchain is fresh, so
+/// the scene paints everything, not just damaged regions).
+unsafe extern "C" fn handle_session_active(userdata: *mut c_void, _data: *mut c_void) {
+    let server = &mut *(userdata as *mut Server);
+    if !snertwl_session_is_active(server.session) {
+        return; // switched away; nothing to do
+    }
+    for o in &server.outputs {
+        snertwl_output_schedule_frame(o.wlr_output);
+    }
+    println!(
+        "snertwl: session active — repainting {} output(s)",
+        server.outputs.len()
+    );
 }
 
 /// Called by the shim each time the output is ready for a new frame.
@@ -623,6 +654,8 @@ fn main() {
         let server_ptr = &mut server as *mut Server as *mut c_void;
         snertwl_backend_add_new_output(backend, handle_new_output, server_ptr);
         snertwl_backend_add_new_input(backend, handle_new_input, server_ptr);
+        // Repaint outputs when we regain the VT (no-op when nested / no session).
+        snertwl_session_add_active(session, handle_session_active, server_ptr);
 
         // xdg-shell: the xdg_wm_base global apps bind to create windows. We hook
         // its new_toplevel signal so each app window enters our scene graph.

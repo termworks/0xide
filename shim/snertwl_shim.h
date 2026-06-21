@@ -43,6 +43,11 @@ void snertwl_setup_signals(struct wl_event_loop *loop, struct wl_display *displa
 
 // Switch to virtual terminal `vt` (1-based); no-op if `session` is NULL.
 void snertwl_session_change_vt(struct wlr_session *session, unsigned vt);
+// Subscribe to session active changes (VT switch away/back). NULL if no session.
+struct snertwl_listener *snertwl_session_add_active(struct wlr_session *session,
+        snertwl_callback callback, void *userdata);
+// True while the session owns the VT (false while switched away).
+bool snertwl_session_is_active(struct wlr_session *session);
 
 // --- listener glue ---------------------------------------------------------
 struct snertwl_listener *snertwl_backend_add_new_output(
@@ -68,6 +73,8 @@ void snertwl_output_layout_get_box(struct wlr_output_layout *layout,
         struct wlr_output *output, int *x, int *y, int *width, int *height);
 // Render + present one frame for this scene output (owns the timespec/clock).
 void snertwl_scene_output_render(struct wlr_scene_output *scene_output);
+// Request a `frame` event once the output is ready (kicks the first paint).
+void snertwl_output_schedule_frame(struct wlr_output *output);
 
 // --- xdg-shell (app windows) ----------------------------------------------
 struct snertwl_listener *snertwl_xdg_shell_add_new_toplevel(

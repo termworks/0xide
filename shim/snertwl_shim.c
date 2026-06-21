@@ -60,6 +60,11 @@ void snertwl_session_change_vt(struct wlr_session *session, unsigned vt) {
     }
 }
 
+// True if the session currently owns the VT (false while switched away).
+bool snertwl_session_is_active(struct wlr_session *session) {
+    return session != NULL && session->active;
+}
+
 // --- listener glue ---------------------------------------------------------
 //
 // wlroots delivers every event through wl_signal/wl_listener: you embed a
@@ -92,6 +97,17 @@ static struct snertwl_listener *signal_add(struct wl_signal *signal,
 struct snertwl_listener *snertwl_backend_add_new_output(
         struct wlr_backend *backend, snertwl_callback callback, void *userdata) {
     return signal_add(&backend->events.new_output, callback, userdata);
+}
+
+// Subscribe to the session active signal (fires on every VT switch, away and
+// back). The handler uses snertwl_session_is_active to tell direction. No-op
+// (NULL) when there's no session, e.g. nested.
+struct snertwl_listener *snertwl_session_add_active(struct wlr_session *session,
+        snertwl_callback callback, void *userdata) {
+    if (session == NULL) {
+        return NULL;
+    }
+    return signal_add(&session->events.active, callback, userdata);
 }
 
 struct snertwl_listener *snertwl_output_add_frame(
@@ -152,6 +168,13 @@ void snertwl_output_layout_get_box(struct wlr_output_layout *layout,
     *y = box.y;
     *width = box.width;
     *height = box.height;
+}
+
+// Ask the output to emit a `frame` event when it's ready to draw. Used to kick
+// the first paint of a (re)created output without rendering before it's ready —
+// the frame handler then does a full repaint, so resumed windows reappear.
+void snertwl_output_schedule_frame(struct wlr_output *output) {
+    wlr_output_schedule_frame(output);
 }
 
 void snertwl_scene_output_render(struct wlr_scene_output *scene_output) {
