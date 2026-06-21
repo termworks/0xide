@@ -63,6 +63,7 @@ extern "C" {
         b: f32,
     ) -> *mut c_void; // the background rect (opaque to Rust)
     fn snertwl_scene_rect_destroy(rect: *mut c_void);
+    fn snertwl_scene_rect_set_enabled(rect: *mut c_void, enabled: bool);
     fn snertwl_output_add_destroy(
         output: *mut wlr::wlr_output,
         callback: ShimCallback,
@@ -176,11 +177,27 @@ struct Output {
     w: i32,
     h: i32,
     workspace: usize,
-    /// Listeners + background node to tear down when the output goes away.
+    /// Listeners + background node + frame context to tear down on destroy.
     frame_listener: *mut ShimListener,
     destroy_listener: *mut ShimListener,
     background: *mut c_void,
+    frame_ctx: *mut FrameCtx,
+    /// Frames remaining to force a full repaint (after creation/VT resume). A
+    /// `frame` event only fires once the output is actually presenting, so doing
+    /// the full-output damage here lands *after* the async resume modeset.
+    repaint_frames: u32,
 }
+
+/// Userdata for an output's `frame` callback: enough to render this output and
+/// find its `Output` entry (so handle_frame can honor `repaint_frames`).
+struct FrameCtx {
+    server: *mut Server,
+    scene_output: *mut wlr::wlr_scene_output,
+    wlr_output: *mut wlr::wlr_output,
+}
+
+/// How many frames to force-repaint after an output comes up or the VT resumes.
+const REPAINT_FRAMES: u32 = 3;
 
 /// One application window we track. Heap-allocated; a raw pointer to it is the
 /// `userdata` for that window's map/unmap/destroy listeners.
@@ -285,7 +302,7 @@ unsafe fn switch_workspace(server: &mut Server, target: usize) {
     refresh(server);
     let f = server.workspaces[target].focused;
     focus_index(server, f);
-    println!("snertwl: output {} -> workspace {}", fo, target + 1);
+    eprintln!("snertwl: output {} -> workspace {}", fo, target + 1);
 }
 
 /// Move the focused output's focused window to another workspace.
@@ -307,7 +324,7 @@ unsafe fn move_to_workspace(server: &mut Server, target: usize) {
     refresh(server); // recomputes visibility (target may or may not be displayed)
     let f = server.workspaces[a].focused;
     focus_index(server, f);
-    println!("snertwl: moved window to workspace {}", target + 1);
+    eprintln!("snertwl: moved window to workspace {}", target + 1);
 }
 
 /// Launch a program as a client of snertwl (inherits our WAYLAND_DISPLAY).
@@ -403,9 +420,15 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
     let (r, g, b) = server.config.background;
     let background = snertwl_scene_add_output_background(server.scene, output, x, y, r, g, b);
 
-    // Render through the scene on every frame; pass the scene output along. Track
-    // the frame + destroy listeners so we can remove them when the output dies.
-    let frame_listener = snertwl_output_add_frame(output, handle_frame, scene_output as *mut c_void);
+    // Render through the scene on every frame. The frame callback needs to find
+    // this output (for repaint_frames), so hand it a heap FrameCtx. Track the
+    // frame + destroy listeners so we can remove them when the output dies.
+    let frame_ctx = Box::into_raw(Box::new(FrameCtx {
+        server: userdata as *mut Server,
+        scene_output,
+        wlr_output: output,
+    }));
+    let frame_listener = snertwl_output_add_frame(output, handle_frame, frame_ctx as *mut c_void);
     let destroy_listener = snertwl_output_add_destroy(output, handle_output_destroy, userdata);
 
     server.outputs.push(Output {
@@ -418,14 +441,15 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
         frame_listener,
         destroy_listener,
         background,
+        frame_ctx,
+        repaint_frames: REPAINT_FRAMES,
     });
 
     refresh(server); // tile any windows already belonging to this workspace
 
-    // Kick the first paint via a scheduled frame rather than rendering now: on a
-    // VT-switch resume the output isn't ready this instant, and an early render
-    // would present nothing and leave idle windows blank. The frame handler then
-    // does a full repaint once the output is actually ready.
+    // Kick the first paint via a scheduled frame rather than rendering now: the
+    // output may not be ready this instant (esp. on VT resume). The frame handler
+    // forces a full repaint for the first few frames, so idle windows reappear.
     snertwl_output_schedule_frame(output);
 
     println!(
@@ -444,16 +468,20 @@ unsafe extern "C" fn handle_output_destroy(userdata: *mut c_void, data: *mut c_v
         return;
     };
     let o = &server.outputs[pos];
+    // Remove the frame listener first (so no more frame callbacks), then it's
+    // safe to free the FrameCtx it referenced.
     snertwl_listener_remove(o.frame_listener);
     snertwl_listener_remove(o.destroy_listener);
     snertwl_scene_rect_destroy(o.background);
+    let frame_ctx = o.frame_ctx;
     server.outputs.remove(pos);
+    drop(Box::from_raw(frame_ctx));
     // Keep focused_output in range.
     if server.focused_output >= server.outputs.len() && !server.outputs.is_empty() {
         server.focused_output = server.outputs.len() - 1;
     }
     refresh(server);
-    println!("snertwl: output removed — {} left", server.outputs.len());
+    eprintln!("snertwl: output removed — {} left", server.outputs.len());
 }
 
 /// Called by the shim on every session active change (VT switch away/back).
@@ -464,21 +492,45 @@ unsafe extern "C" fn handle_output_destroy(userdata: *mut c_void, data: *mut c_v
 unsafe extern "C" fn handle_session_active(userdata: *mut c_void, _data: *mut c_void) {
     let server = &mut *(userdata as *mut Server);
     if !snertwl_session_is_active(server.session) {
-        return; // switched away; nothing to do
+        eprintln!("snertwl: session inactive (VT switched away)");
+        return;
     }
-    for o in &server.outputs {
+    // Arm a full repaint for the next few frames per output and kick the loop.
+    // The actual damage happens in handle_frame, which only runs once the output
+    // is presenting again — i.e. after the asynchronous resume modeset, so it
+    // isn't immediately overwritten by the backend's black modeset buffer.
+    for o in &mut server.outputs {
+        o.repaint_frames = REPAINT_FRAMES;
         snertwl_output_schedule_frame(o.wlr_output);
     }
-    println!(
+    eprintln!(
         "snertwl: session active — repainting {} output(s)",
         server.outputs.len()
     );
 }
 
-/// Called by the shim each time the output is ready for a new frame.
+/// Called by the shim each time the output is ready for a new frame. For the
+/// first few frames after the output comes up / the VT resumes, force a full
+/// repaint (toggle the full-screen background to damage the whole output) so
+/// idle windows — which generate no damage of their own — are re-presented.
 unsafe extern "C" fn handle_frame(userdata: *mut c_void, _data: *mut c_void) {
-    let scene_output = userdata as *mut wlr::wlr_scene_output;
-    snertwl_scene_output_render(scene_output);
+    let ctx = &*(userdata as *mut FrameCtx);
+    let server = &mut *ctx.server;
+    if let Some(pos) = server.outputs.iter().position(|o| o.wlr_output == ctx.wlr_output) {
+        if server.outputs[pos].repaint_frames > 0 {
+            let bg = server.outputs[pos].background;
+            snertwl_scene_rect_set_enabled(bg, false);
+            snertwl_scene_rect_set_enabled(bg, true);
+            server.outputs[pos].repaint_frames -= 1;
+            snertwl_scene_output_render(ctx.scene_output);
+            // Keep the loop alive until we've forced the full set of repaints.
+            if server.outputs[pos].repaint_frames > 0 {
+                snertwl_output_schedule_frame(ctx.wlr_output);
+            }
+            return;
+        }
+    }
+    snertwl_scene_output_render(ctx.scene_output);
 }
 
 /// Called by the shim when a client creates an application window (toplevel).
@@ -668,7 +720,7 @@ fn main() {
         let socket = CStr::from_ptr(socket_ptr).to_str().unwrap().to_owned();
 
         assert!(wlr::wlr_backend_start(backend), "failed to start backend");
-        println!("snertwl: socket ready — WAYLAND_DISPLAY={socket}");
+        eprintln!("snertwl: socket ready — WAYLAND_DISPLAY={socket}");
 
         // Clients we spawn should talk to *us*, not the host compositor. (Our
         // own backend already connected to the host before this point.)
@@ -683,7 +735,7 @@ fn main() {
             }
         }
 
-        println!("snertwl: entering event loop (Ctrl-C to quit)");
+        eprintln!("snertwl: entering event loop (Ctrl-C to quit)");
         wlr::wl_display_run(display);
 
         // Disconnect clients cleanly (this fires our per-window destroy
@@ -691,6 +743,6 @@ fn main() {
         // wlroots globals trips internal asserts about global listeners we
         // don't unregister, and the OS reclaims everything on process exit.
         wlr::wl_display_destroy_clients(display);
-        println!("snertwl: shut down");
+        eprintln!("snertwl: shut down");
     }
 }

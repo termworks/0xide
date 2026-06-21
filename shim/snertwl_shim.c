@@ -158,6 +158,14 @@ void snertwl_scene_rect_destroy(struct wlr_scene_rect *rect) {
     wlr_scene_node_destroy(&rect->node);
 }
 
+// Enable/disable a background rect. Toggling it off then on damages the whole
+// output region (the rect spans the output), which forces a full re-present —
+// used on VT resume so idle windows, which produce no damage of their own, get
+// flipped back to the screen instead of staying black.
+void snertwl_scene_rect_set_enabled(struct wlr_scene_rect *rect, bool enabled) {
+    wlr_scene_node_set_enabled(&rect->node, enabled);
+}
+
 // Read an output's box (position + size) in layout coordinates, so Rust can tile
 // windows within the correct monitor. (Touches wlr_box internals.)
 void snertwl_output_layout_get_box(struct wlr_output_layout *layout,

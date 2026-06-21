@@ -68,6 +68,8 @@ struct wlr_scene_rect *snertwl_scene_add_output_background(struct wlr_scene *sce
         struct wlr_output *output, int x, int y, float r, float g, float b);
 // Destroy a background rect created above.
 void snertwl_scene_rect_destroy(struct wlr_scene_rect *rect);
+// Enable/disable a background rect (toggle to force a full-output repaint).
+void snertwl_scene_rect_set_enabled(struct wlr_scene_rect *rect, bool enabled);
 // Read an output's layout box (position + pixel size) for per-output tiling.
 void snertwl_output_layout_get_box(struct wlr_output_layout *layout,
         struct wlr_output *output, int *x, int *y, int *width, int *height);
