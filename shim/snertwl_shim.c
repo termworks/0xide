@@ -5,6 +5,7 @@
 #include <wayland-server.h>
 #include <xkbcommon/xkbcommon.h>
 #include <wlr/backend.h>
+#include <wlr/backend/session.h>
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_input_device.h>
 #include <wlr/types/wlr_keyboard.h>
@@ -47,6 +48,16 @@ void snertwl_setup_signals(struct wl_event_loop *loop, struct wl_display *displa
     // Handled via the event loop's signalfd, so it's safe (not an async signal).
     wl_event_loop_add_signal(loop, SIGINT, handle_signal, display);
     wl_event_loop_add_signal(loop, SIGTERM, handle_signal, display);
+}
+
+// --- session / VT ----------------------------------------------------------
+
+// Switch to virtual terminal `vt` (1-based). No-op when there's no session
+// (e.g. running nested, where autocreate hands back a NULL session).
+void snertwl_session_change_vt(struct wlr_session *session, unsigned vt) {
+    if (session != NULL) {
+        wlr_session_change_vt(session, vt);
+    }
 }
 
 // --- listener glue ---------------------------------------------------------

@@ -12,7 +12,7 @@ mod wlr {
 
 mod config;
 
-use config::{Action, Config, MOD_MASK};
+use config::{Action, Config, MOD_ALT, MOD_CTRL, MOD_MASK};
 use std::env;
 use std::ffi::CStr;
 use std::os::raw::{c_char, c_void};
@@ -35,6 +35,7 @@ struct ShimListener {
 extern "C" {
     fn snertwl_log_init();
     fn snertwl_setup_signals(loop_: *mut wlr::wl_event_loop, display: *mut wlr::wl_display);
+    fn snertwl_session_change_vt(session: *mut wlr::wlr_session, vt: u32);
     fn snertwl_backend_add_new_output(
         backend: *mut wlr::wlr_backend,
         callback: ShimCallback,
@@ -124,6 +125,9 @@ extern "C" {
 /// and layout it needs to wire up each output.
 struct Server {
     display: *mut wlr::wl_display,
+    /// The login session (DRM/libseat); NULL when running nested. Used for VT
+    /// switching.
+    session: *mut wlr::wlr_session,
     scene: *mut wlr::wlr_scene,
     output_layout: *mut wlr::wlr_output_layout,
     scene_layout: *mut wlr::wlr_scene_output_layout,
@@ -214,6 +218,10 @@ unsafe fn active_workspace(server: &Server) -> usize {
 
 // --- keybindings -----------------------------------------------------------
 
+// Function-key keysyms (contiguous): F1 = 0xffbe … F12 = 0xffc9.
+const KEY_F1: u32 = 0xffbe;
+const KEY_F12: u32 = 0xffc9;
+
 /// Give keyboard focus to window `idx` (wrapped) of the focused output's
 /// workspace.
 unsafe fn focus_index(server: &mut Server, idx: usize) {
@@ -301,6 +309,13 @@ fn spawn(cmd: &str) {
 unsafe extern "C" fn handle_keybinding(userdata: *mut c_void, keysym: u32, modifiers: u32) -> bool {
     let server = &mut *(userdata as *mut Server);
     let mods = modifiers & MOD_MASK;
+
+    // VT switching (Ctrl+Alt+F1..F12). Handled before config binds and always
+    // consumed; the shim no-ops it when there's no session (nested).
+    if mods == MOD_CTRL | MOD_ALT && (KEY_F1..=KEY_F12).contains(&keysym) {
+        snertwl_session_change_vt(server.session, keysym - KEY_F1 + 1);
+        return true;
+    }
 
     // Find the matching bind, then act. We clone the action first so the
     // immutable borrow of `server.config` ends before we mutate `server`.
@@ -496,8 +511,11 @@ fn main() {
         snertwl_setup_signals(event_loop, display);
 
         // Autocreate picks a backend from the environment: a nested Wayland
-        // window here. NULL = we don't want the optional session handle.
-        let backend = wlr::wlr_backend_autocreate(event_loop, ptr::null_mut());
+        // window when we're inside a session, or DRM/KMS on a bare TTY. On DRM it
+        // also sets up a login session (libseat); we capture it for VT switching.
+        // It stays NULL for the nested backend, which has no session.
+        let mut session: *mut wlr::wlr_session = ptr::null_mut();
+        let backend = wlr::wlr_backend_autocreate(event_loop, &mut session);
         assert!(!backend.is_null(), "failed to create wlr_backend");
 
         let renderer = wlr::wlr_renderer_autocreate(backend);
@@ -538,6 +556,7 @@ fn main() {
         // below, so the pointer we hand the shim stays valid for the run.
         let mut server = Server {
             display,
+            session,
             scene,
             output_layout,
             scene_layout,

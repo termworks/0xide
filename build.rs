@@ -96,6 +96,7 @@ fn main() {
         .allowlist_function("wlr_xdg_toplevel_set_size")
         .allowlist_function("wlr_xdg_toplevel_send_close")
         .allowlist_type("wlr_xdg_toplevel")
+        .allowlist_type("wlr_session")
         .allowlist_type("wlr_seat")
         .allowlist_type("wlr_input_device")
         .allowlist_type("wlr_cursor")

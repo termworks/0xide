@@ -71,9 +71,15 @@
   - `LIBSEAT_BACKEND=logind` because user isn't in the `seat` group (logind grants the
     active VT its devices). Two GPUs here: Intel `card1` (panel), discrete `card0`;
     prepend `WLR_DRM_DEVICES=/dev/dri/card1` if it picks the wrong one.
-- **Single display works** (tile/focus/close/quit). **Multi-monitor is broken** —
-  `relayout()` only knows one output's size; proper multi-output + VT-switch handling
-  is deferred to full Stage 6.
+- **Single display works** (tile/focus/close/quit). Multi-output now tiles
+  per-monitor (Stage 6a).
+- **VT switching (Stage 6b):** `wlr_backend_autocreate` now hands us the
+  `wlr_session`; `Ctrl+Alt+F1..F12` calls `wlr_session_change_vt` (handled in
+  `handle_keybinding` before config binds; the shim no-ops it when nested). Test
+  on a TTY: launch snertwl on VT5, press `Ctrl+Alt+F1` to jump back to Hyprland on
+  tty1, then `Ctrl+Alt+F5` to return. Watch for a clean repaint on return — if it
+  comes back black/frozen, we need session active-event handling (re-render outputs
+  on resume), which is the planned follow-up.
 
 ## Headless verification recipe (for automated/agent checks)
 Because a nested run opens a window on the host and then blocks in `wl_display_run`,

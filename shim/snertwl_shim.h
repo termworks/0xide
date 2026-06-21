@@ -18,6 +18,7 @@ struct wlr_seat;
 struct wlr_input_device;
 struct wlr_cursor;
 struct wlr_output_layout;
+struct wlr_session;
 struct snertwl_listener;
 
 // Generic event callback handed to Rust: (userdata, signal-data).
@@ -38,6 +39,9 @@ uint32_t snertwl_keysym_from_name(const char *name);
 
 // Terminate the display loop on SIGINT/SIGTERM (graceful shutdown).
 void snertwl_setup_signals(struct wl_event_loop *loop, struct wl_display *display);
+
+// Switch to virtual terminal `vt` (1-based); no-op if `session` is NULL.
+void snertwl_session_change_vt(struct wlr_session *session, unsigned vt);
 
 // --- listener glue ---------------------------------------------------------
 struct snertwl_listener *snertwl_backend_add_new_output(
