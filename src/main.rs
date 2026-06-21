@@ -107,6 +107,7 @@ extern "C" {
     ) -> *mut ShimListener;
     fn snertwl_scene_tree_set_position(tree: *mut wlr::wlr_scene_tree, x: i32, y: i32);
     fn snertwl_scene_tree_set_enabled(tree: *mut wlr::wlr_scene_tree, enabled: bool);
+    fn snertwl_scene_tree_destroy(tree: *mut wlr::wlr_scene_tree);
     fn snertwl_focus_toplevel(
         seat: *mut wlr::wlr_seat,
         toplevel: *mut wlr::wlr_xdg_toplevel,
@@ -452,7 +453,7 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
     // forces a full repaint for the first few frames, so idle windows reappear.
     snertwl_output_schedule_frame(output);
 
-    println!(
+    eprintln!(
         "snertwl: output online @ {x},{y} {w}x{h} — workspace {}",
         workspace + 1
     );
@@ -495,10 +496,22 @@ unsafe extern "C" fn handle_session_active(userdata: *mut c_void, _data: *mut c_
         eprintln!("snertwl: session inactive (VT switched away)");
         return;
     }
-    // Arm a full repaint for the next few frames per output and kick the loop.
-    // The actual damage happens in handle_frame, which only runs once the output
-    // is presenting again — i.e. after the asynchronous resume modeset, so it
-    // isn't immediately overwritten by the backend's black modeset buffer.
+    // Rebuild every window's scene node. After the outputs are torn down and
+    // recreated on a VT switch, the original scene nodes stop presenting their
+    // surfaces (the client still has a valid buffer — confirmed — but the node
+    // never draws it). Recreating the node, exactly like a freshly-mapped
+    // window, makes it present the surface's current buffer again.
+    for ws in &mut server.workspaces {
+        for &tl in &ws.windows {
+            snertwl_scene_tree_destroy((*tl).scene_tree);
+            (*tl).scene_tree = snertwl_scene_add_xdg_toplevel(server.scene, (*tl).xdg_toplevel);
+        }
+    }
+
+    // Re-tile (enable + position + size the fresh nodes) and arm a few forced
+    // repaints per output so the rebuilt scene is presented once the output is
+    // back (handle_frame only runs after the async resume modeset).
+    refresh(server);
     for o in &mut server.outputs {
         o.repaint_frames = REPAINT_FRAMES;
         snertwl_output_schedule_frame(o.wlr_output);
@@ -522,6 +535,10 @@ unsafe extern "C" fn handle_frame(userdata: *mut c_void, _data: *mut c_void) {
             snertwl_scene_rect_set_enabled(bg, false);
             snertwl_scene_rect_set_enabled(bg, true);
             server.outputs[pos].repaint_frames -= 1;
+            eprintln!(
+                "snertwl: forced repaint (output {}, {} left)",
+                pos, server.outputs[pos].repaint_frames
+            );
             snertwl_scene_output_render(ctx.scene_output);
             // Keep the loop alive until we've forced the full set of repaints.
             if server.outputs[pos].repaint_frames > 0 {

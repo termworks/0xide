@@ -105,6 +105,8 @@ struct snertwl_listener *snertwl_xdg_add_destroy(struct wlr_xdg_toplevel *toplev
 // read an output's pixel size. (All touch wlroots struct internals.)
 void snertwl_scene_tree_set_position(struct wlr_scene_tree *tree, int x, int y);
 void snertwl_scene_tree_set_enabled(struct wlr_scene_tree *tree, bool enabled);
+// Destroy a window's scene tree (to rebuild it on VT resume).
+void snertwl_scene_tree_destroy(struct wlr_scene_tree *tree);
 void snertwl_focus_toplevel(struct wlr_seat *seat,
         struct wlr_xdg_toplevel *toplevel);
 void snertwl_output_get_size(struct wlr_output *output, int *width, int *height);

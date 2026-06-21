@@ -251,6 +251,13 @@ void snertwl_scene_tree_set_position(struct wlr_scene_tree *tree, int x, int y) 
     wlr_scene_node_set_position(&tree->node, x, y);
 }
 
+// Destroy a window's scene tree (used to rebuild it from scratch on VT resume,
+// where the original node stops presenting its surface after the outputs are
+// torn down and recreated).
+void snertwl_scene_tree_destroy(struct wlr_scene_tree *tree) {
+    wlr_scene_node_destroy(&tree->node);
+}
+
 void snertwl_scene_tree_set_enabled(struct wlr_scene_tree *tree, bool enabled) {
     wlr_scene_node_set_enabled(&tree->node, enabled);
 }
