@@ -1,4 +1,4 @@
-# Running & verifying snertwl (verified 2026-06-20)
+# Running & verifying 0xide (verified 2026-06-20)
 
 ## Nested (fast dev loop)
 - We run inside a Hyprland Wayland session, so `wlr_backend_autocreate` picks the
@@ -17,32 +17,32 @@
 - Note: `wlr_compositor_create` makes only wl_compositor; wl_shm + linux-dmabuf
   come from `wlr_renderer_init_wl_display(renderer, display)`.
 - Gotcha: real apps (e.g. `foot`) refuse to start without a `wl_seat` global
-  ("no seats available") — we create a minimal one via `snertwl_seat_create`.
+  ("no seats available") — we create a minimal one via `oxide_seat_create`.
 - Gotcha: wlroots' xdg-shell header #includes `xdg-shell-protocol.h`, which is
   NOT a system header — build.rs generates it with `wayland-scanner` into OUT_DIR.
 - Input verification: no `wtype`/`ydotool` installed, so keystrokes can't be
   injected from the agent. Verify keyboard *wiring* via log markers
   ("keyboard attached", "keyboard focus -> toplevel"); verify actual typing by
-  hand — focus the nested snertwl window in the host, then type into foot.
+  hand — focus the nested 0xide window in the host, then type into foot.
 - Nested keyboard caveat: the Wayland backend only receives keys when the host
-  (Hyprland) gives the snertwl window focus.
+  (Hyprland) gives the 0xide window focus.
 
 ## Config file (Stage 5d)
 - Parsed in Rust (`src/config.rs`), no extra crates. Path:
-  `$XDG_CONFIG_HOME/snertwl/snertwl.conf` (else `~/.config/snertwl/snertwl.conf`).
+  `$XDG_CONFIG_HOME/0xide/0xide.conf` (else `~/.config/0xide/0xide.conf`).
   No file → built-in defaults (Super, gap 10, the original keymap); a config with
   zero `bind=` lines also falls back to the default binds.
 - Format `key = value`, `#` comments. Scalars: `modifier`, `gap`, `background`.
   Binds: `bind = MODS, KEY, ACTION[, ARG]` (Hyprland-ish). `MOD`/`$mod` in a bind
   expands to the primary `modifier`. KEY names resolve via xkb
-  (`snertwl_keysym_from_name` shim → `xkb_keysym_from_name`, case-insensitive →
+  (`oxide_keysym_from_name` shim → `xkb_keysym_from_name`, case-insensitive →
   level-0 keysym, matching how `handle_key` reports presses).
-- `SNERTWL_MOD=alt` still overrides the modifier (applied *before* binds are
+- `OXIDE_MOD=alt` still overrides the modifier (applied *before* binds are
   parsed, so `MOD` resolves to Alt) — keep using it for nested dev.
 - An unparseable line warns on stderr (`config line N: …`) and is skipped; it
-  never stops startup. See `snertwl.conf.example` in the repo root.
+  never stops startup. See `0xide.conf.example` in the repo root.
 - Verify without a window: `XDG_CONFIG_HOME=/tmp/cfg WLR_BACKENDS=headless \
-  target/debug/snertwl >log 2>&1 &` then grep `snertwl: (loaded|no config|modifier|config line)`.
+  target/debug/0xide >log 2>&1 &` then grep `0xide: (loaded|no config|modifier|config line)`.
 
 ## Multi-output (Stage 6a)
 - Each output (monitor) is tracked in Rust (`Server.outputs: Vec<Output>` with its
@@ -52,11 +52,11 @@
 - `switch_workspace` acts on `focused_output`; if the target is already on another
   monitor the two outputs *swap* workspaces (so no workspace shows on two monitors).
 - Each output's background rect is positioned at its layout origin (the shim's
-  `snertwl_scene_add_output_background` now takes x,y) — without this a second
+  `oxide_scene_add_output_background` now takes x,y) — without this a second
   output's background sits at 0,0 and its window renders black.
 - Verify nested with two outputs: the Wayland backend honors `WLR_WL_OUTPUTS=2`,
   opening two host windows.
-  `WLR_WL_OUTPUTS=2 SNERTWL_MOD=alt target/debug/snertwl foot` →
+  `WLR_WL_OUTPUTS=2 OXIDE_MOD=alt target/debug/0xide foot` →
   output 0 shows the foot tiled (ws1), output 1 shows the bare background (ws2).
   Log: two `output online @ X,Y WxH — workspace N` lines.
 - Known gaps (full Stage 6, deferred): `focused_output` is always 0 (no
@@ -67,7 +67,7 @@
 ## Real hardware (TTY / DRM-KMS) — works as of 2026-06-20
 - `wlr_backend_autocreate` picks the DRM/KMS backend on a bare TTY (no WAYLAND_DISPLAY).
 - Recipe: log into a free VT, then
-  `LIBSEAT_BACKEND=logind ~/Projects/snertwl/target/debug/snertwl foot 2>~/snertwl-tty.log`
+  `LIBSEAT_BACKEND=logind ~/Projects/0xide/target/debug/0xide foot 2>~/0xide-tty.log`
   - `LIBSEAT_BACKEND=logind` because user isn't in the `seat` group (logind grants the
     active VT its devices). Two GPUs here: Intel `card1` (panel), discrete `card0`;
     prepend `WLR_DRM_DEVICES=/dev/dri/card1` if it picks the wrong one.
@@ -76,7 +76,7 @@
 - **VT switching (Stage 6b):** `wlr_backend_autocreate` now hands us the
   `wlr_session`; `Ctrl+Alt+F1..F12` calls `wlr_session_change_vt` (handled in
   `handle_keybinding` before config binds; the shim no-ops it when nested). Test
-  on a TTY: launch snertwl on VT5, press `Ctrl+Alt+F1` to jump back to Hyprland on
+  on a TTY: launch 0xide on VT5, press `Ctrl+Alt+F1` to jump back to Hyprland on
   tty1, then `Ctrl+Alt+F5` to return. Watch for a clean repaint on return — if it
   comes back black/frozen, we need session active-event handling (re-render outputs
   on resume), which is the planned follow-up.
@@ -85,15 +85,15 @@
 Because a nested run opens a window on the host and then blocks in `wl_display_run`,
 verify it like this:
 ```sh
-target/debug/snertwl >/tmp/snertwl.log 2>&1 &   # launch, capture wlroots debug log
+target/debug/0xide >/tmp/0xide.log 2>&1 &   # launch, capture wlroots debug log
 PID=$!; sleep 3
-grim /tmp/snertwl.png                            # screenshot the host screen (incl. our window)
+grim /tmp/0xide.png                            # screenshot the host screen (incl. our window)
 kill $PID
 ```
 Then read the PNG (our window is a solid-color rect) and grep the log for our
 `println!` markers + `Allocated ... GBM buffer` / `DMA-BUF imported` lines.
 
-- wlroots debug logging is on via `snertwl_log_init()` → very verbose (the first
+- wlroots debug logging is on via `oxide_log_init()` → very verbose (the first
   ~450 lines are EGL/DMA-BUF format enumeration; the interesting events are at the end).
 - A true headless backend run (`WLR_BACKENDS=headless`) creates **zero** outputs by
   default — needs `WLR_HEADLESS_OUTPUTS=1`, and has no window to screenshot. Deferred

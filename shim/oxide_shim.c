@@ -19,13 +19,13 @@
 #include <wlr/util/log.h>
 #include <wlr/version.h>
 
-#include "snertwl_shim.h"
+#include "oxide_shim.h"
 
-const char *snertwl_wlroots_version(void) {
+const char *oxide_wlroots_version(void) {
     return WLR_VERSION_STR;
 }
 
-void snertwl_log_init(void) {
+void oxide_log_init(void) {
     // Debug verbosity, default stderr sink. Done in C so the enum stays native.
     wlr_log_init(WLR_DEBUG, NULL);
 }
@@ -34,7 +34,7 @@ void snertwl_log_init(void) {
 // case-insensitively. Returns 0 (XKB_KEY_NoSymbol) for an unknown name. We match
 // bindings on level-0 keysyms, so case-insensitive lookup gives the unshifted
 // form (e.g. "Q" -> lowercase q), exactly what handle_key reports.
-uint32_t snertwl_keysym_from_name(const char *name) {
+uint32_t oxide_keysym_from_name(const char *name) {
     return xkb_keysym_from_name(name, XKB_KEYSYM_CASE_INSENSITIVE);
 }
 
@@ -44,7 +44,7 @@ static int handle_signal(int sig, void *data) {
     return 0;
 }
 
-void snertwl_setup_signals(struct wl_event_loop *loop, struct wl_display *display) {
+void oxide_setup_signals(struct wl_event_loop *loop, struct wl_display *display) {
     // Handled via the event loop's signalfd, so it's safe (not an async signal).
     wl_event_loop_add_signal(loop, SIGINT, handle_signal, display);
     wl_event_loop_add_signal(loop, SIGTERM, handle_signal, display);
@@ -54,14 +54,14 @@ void snertwl_setup_signals(struct wl_event_loop *loop, struct wl_display *displa
 
 // Switch to virtual terminal `vt` (1-based). No-op when there's no session
 // (e.g. running nested, where autocreate hands back a NULL session).
-void snertwl_session_change_vt(struct wlr_session *session, unsigned vt) {
+void oxide_session_change_vt(struct wlr_session *session, unsigned vt) {
     if (session != NULL) {
         wlr_session_change_vt(session, vt);
     }
 }
 
 // True if the session currently owns the VT (false while switched away).
-bool snertwl_session_is_active(struct wlr_session *session) {
+bool oxide_session_is_active(struct wlr_session *session) {
     return session != NULL && session->active;
 }
 
@@ -73,45 +73,45 @@ bool snertwl_session_is_active(struct wlr_session *session) {
 // We wrap that intrusive pattern once and expose a plain (userdata, data)
 // callback so Rust never touches the linked list or the pointer arithmetic.
 
-struct snertwl_listener {
+struct oxide_listener {
     struct wl_listener listener; // must stay put once added to a signal
-    snertwl_callback callback;   // Rust function to invoke
+    oxide_callback callback;   // Rust function to invoke
     void *userdata;              // opaque pointer Rust handed us
 };
 
-static void snertwl_listener_notify(struct wl_listener *listener, void *data) {
-    struct snertwl_listener *l = wl_container_of(listener, l, listener);
+static void oxide_listener_notify(struct wl_listener *listener, void *data) {
+    struct oxide_listener *l = wl_container_of(listener, l, listener);
     l->callback(l->userdata, data);
 }
 
-static struct snertwl_listener *signal_add(struct wl_signal *signal,
-        snertwl_callback callback, void *userdata) {
-    struct snertwl_listener *l = calloc(1, sizeof(*l));
-    l->listener.notify = snertwl_listener_notify;
+static struct oxide_listener *signal_add(struct wl_signal *signal,
+        oxide_callback callback, void *userdata) {
+    struct oxide_listener *l = calloc(1, sizeof(*l));
+    l->listener.notify = oxide_listener_notify;
     l->callback = callback;
     l->userdata = userdata;
     wl_signal_add(signal, &l->listener);
     return l;
 }
 
-struct snertwl_listener *snertwl_backend_add_new_output(
-        struct wlr_backend *backend, snertwl_callback callback, void *userdata) {
+struct oxide_listener *oxide_backend_add_new_output(
+        struct wlr_backend *backend, oxide_callback callback, void *userdata) {
     return signal_add(&backend->events.new_output, callback, userdata);
 }
 
 // Subscribe to the session active signal (fires on every VT switch, away and
-// back). The handler uses snertwl_session_is_active to tell direction. No-op
+// back). The handler uses oxide_session_is_active to tell direction. No-op
 // (NULL) when there's no session, e.g. nested.
-struct snertwl_listener *snertwl_session_add_active(struct wlr_session *session,
-        snertwl_callback callback, void *userdata) {
+struct oxide_listener *oxide_session_add_active(struct wlr_session *session,
+        oxide_callback callback, void *userdata) {
     if (session == NULL) {
         return NULL;
     }
     return signal_add(&session->events.active, callback, userdata);
 }
 
-struct snertwl_listener *snertwl_output_add_frame(
-        struct wlr_output *output, snertwl_callback callback, void *userdata) {
+struct oxide_listener *oxide_output_add_frame(
+        struct wlr_output *output, oxide_callback callback, void *userdata) {
     return signal_add(&output->events.frame, callback, userdata);
 }
 
@@ -119,14 +119,14 @@ struct snertwl_listener *snertwl_output_add_frame(
 // disables the seat on a VT switch (the DRM backend tears the output down).
 // Rust uses this to remove its frame listener (else wlr_output_finish asserts)
 // and drop the output from its list. `data` is the wlr_output.
-struct snertwl_listener *snertwl_output_add_destroy(
-        struct wlr_output *output, snertwl_callback callback, void *userdata) {
+struct oxide_listener *oxide_output_add_destroy(
+        struct wlr_output *output, oxide_callback callback, void *userdata) {
     return signal_add(&output->events.destroy, callback, userdata);
 }
 
 // --- output / scene helpers ------------------------------------------------
 
-void snertwl_output_enable(struct wlr_output *output) {
+void oxide_output_enable(struct wlr_output *output) {
     struct wlr_output_state state;
     wlr_output_state_init(&state);
     wlr_output_state_set_enabled(&state, true);
@@ -142,7 +142,7 @@ void snertwl_output_enable(struct wlr_output *output) {
     wlr_output_state_finish(&state);
 }
 
-struct wlr_scene_rect *snertwl_scene_add_output_background(struct wlr_scene *scene,
+struct wlr_scene_rect *oxide_scene_add_output_background(struct wlr_scene *scene,
         struct wlr_output *output, int x, int y, float r, float g, float b) {
     const float color[4] = {r, g, b, 1.0f};
     struct wlr_scene_rect *rect =
@@ -154,7 +154,7 @@ struct wlr_scene_rect *snertwl_scene_add_output_background(struct wlr_scene *sce
 }
 
 // Remove a background rectangle (when its output is destroyed).
-void snertwl_scene_rect_destroy(struct wlr_scene_rect *rect) {
+void oxide_scene_rect_destroy(struct wlr_scene_rect *rect) {
     wlr_scene_node_destroy(&rect->node);
 }
 
@@ -162,20 +162,20 @@ void snertwl_scene_rect_destroy(struct wlr_scene_rect *rect) {
 // output region (the rect spans the output), which forces a full re-present —
 // used on VT resume so idle windows, which produce no damage of their own, get
 // flipped back to the screen instead of staying black.
-void snertwl_scene_rect_set_enabled(struct wlr_scene_rect *rect, bool enabled) {
+void oxide_scene_rect_set_enabled(struct wlr_scene_rect *rect, bool enabled) {
     wlr_scene_node_set_enabled(&rect->node, enabled);
 }
 
 // Which output is under the cursor right now (NULL if none). Lets Rust target
 // the monitor the mouse is on for new windows / workspace switches.
-struct wlr_output *snertwl_output_at_cursor(struct wlr_cursor *cursor,
+struct wlr_output *oxide_output_at_cursor(struct wlr_cursor *cursor,
         struct wlr_output_layout *layout) {
     return wlr_output_layout_output_at(layout, cursor->x, cursor->y);
 }
 
 // Read an output's box (position + size) in layout coordinates, so Rust can tile
 // windows within the correct monitor. (Touches wlr_box internals.)
-void snertwl_output_layout_get_box(struct wlr_output_layout *layout,
+void oxide_output_layout_get_box(struct wlr_output_layout *layout,
         struct wlr_output *output, int *x, int *y, int *width, int *height) {
     struct wlr_box box;
     wlr_output_layout_get_box(layout, output, &box);
@@ -188,11 +188,11 @@ void snertwl_output_layout_get_box(struct wlr_output_layout *layout,
 // Ask the output to emit a `frame` event when it's ready to draw. Used to kick
 // the first paint of a (re)created output without rendering before it's ready —
 // the frame handler then does a full repaint, so resumed windows reappear.
-void snertwl_output_schedule_frame(struct wlr_output *output) {
+void oxide_output_schedule_frame(struct wlr_output *output) {
     wlr_output_schedule_frame(output);
 }
 
-void snertwl_scene_output_render(struct wlr_scene_output *scene_output) {
+void oxide_scene_output_render(struct wlr_scene_output *scene_output) {
     // The scene does the damage-tracked render pass internally, then we tell
     // clients their frame was shown so they can produce the next one.
     wlr_scene_output_commit(scene_output, NULL);
@@ -213,12 +213,12 @@ static void handle_xdg_initial_commit(void *userdata, void *data) {
     }
 }
 
-struct snertwl_listener *snertwl_xdg_shell_add_new_toplevel(
-        struct wlr_xdg_shell *shell, snertwl_callback callback, void *userdata) {
+struct oxide_listener *oxide_xdg_shell_add_new_toplevel(
+        struct wlr_xdg_shell *shell, oxide_callback callback, void *userdata) {
     return signal_add(&shell->events.new_toplevel, callback, userdata);
 }
 
-struct wlr_scene_tree *snertwl_scene_add_xdg_toplevel(struct wlr_scene *scene,
+struct wlr_scene_tree *oxide_scene_add_xdg_toplevel(struct wlr_scene *scene,
         struct wlr_xdg_toplevel *toplevel) {
     // A scene node that tracks this surface (and its popups) and follows its
     // map/unmap state automatically.
@@ -227,49 +227,49 @@ struct wlr_scene_tree *snertwl_scene_add_xdg_toplevel(struct wlr_scene *scene,
 
 // Configure the client on its initial commit so it can map. Returned so Rust
 // can remove it (with the other per-window listeners) on destroy.
-struct snertwl_listener *snertwl_xdg_add_commit(struct wlr_xdg_toplevel *toplevel) {
+struct oxide_listener *oxide_xdg_add_commit(struct wlr_xdg_toplevel *toplevel) {
     return signal_add(&toplevel->base->surface->events.commit,
             handle_xdg_initial_commit, toplevel);
 }
 
 // Unsubscribe and free a listener. Each per-window listener must be removed
 // before its object is destroyed (wlroots asserts an empty destroy list).
-void snertwl_listener_remove(struct snertwl_listener *l) {
+void oxide_listener_remove(struct oxide_listener *l) {
     wl_list_remove(&l->listener.link);
     free(l);
 }
 
-struct snertwl_listener *snertwl_xdg_add_map(struct wlr_xdg_toplevel *toplevel,
-        snertwl_callback callback, void *userdata) {
+struct oxide_listener *oxide_xdg_add_map(struct wlr_xdg_toplevel *toplevel,
+        oxide_callback callback, void *userdata) {
     return signal_add(&toplevel->base->surface->events.map, callback, userdata);
 }
 
-struct snertwl_listener *snertwl_xdg_add_unmap(struct wlr_xdg_toplevel *toplevel,
-        snertwl_callback callback, void *userdata) {
+struct oxide_listener *oxide_xdg_add_unmap(struct wlr_xdg_toplevel *toplevel,
+        oxide_callback callback, void *userdata) {
     return signal_add(&toplevel->base->surface->events.unmap, callback, userdata);
 }
 
-struct snertwl_listener *snertwl_xdg_add_destroy(struct wlr_xdg_toplevel *toplevel,
-        snertwl_callback callback, void *userdata) {
+struct oxide_listener *oxide_xdg_add_destroy(struct wlr_xdg_toplevel *toplevel,
+        oxide_callback callback, void *userdata) {
     return signal_add(&toplevel->events.destroy, callback, userdata);
 }
 
-void snertwl_scene_tree_set_position(struct wlr_scene_tree *tree, int x, int y) {
+void oxide_scene_tree_set_position(struct wlr_scene_tree *tree, int x, int y) {
     wlr_scene_node_set_position(&tree->node, x, y);
 }
 
 // Destroy a window's scene tree (used to rebuild it from scratch on VT resume,
 // where the original node stops presenting its surface after the outputs are
 // torn down and recreated).
-void snertwl_scene_tree_destroy(struct wlr_scene_tree *tree) {
+void oxide_scene_tree_destroy(struct wlr_scene_tree *tree) {
     wlr_scene_node_destroy(&tree->node);
 }
 
-void snertwl_scene_tree_set_enabled(struct wlr_scene_tree *tree, bool enabled) {
+void oxide_scene_tree_set_enabled(struct wlr_scene_tree *tree, bool enabled) {
     wlr_scene_node_set_enabled(&tree->node, enabled);
 }
 
-void snertwl_focus_toplevel(struct wlr_seat *seat,
+void oxide_focus_toplevel(struct wlr_seat *seat,
         struct wlr_xdg_toplevel *toplevel) {
     struct wlr_surface *surface = toplevel->base->surface;
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat);
@@ -281,14 +281,14 @@ void snertwl_focus_toplevel(struct wlr_seat *seat,
     }
 }
 
-void snertwl_output_get_size(struct wlr_output *output, int *width, int *height) {
+void oxide_output_get_size(struct wlr_output *output, int *width, int *height) {
     *width = output->width;
     *height = output->height;
 }
 
 // --- seat & input ----------------------------------------------------------
 
-struct wlr_seat *snertwl_seat_create(struct wl_display *display, const char *name) {
+struct wlr_seat *oxide_seat_create(struct wl_display *display, const char *name) {
     struct wlr_seat *seat = wlr_seat_create(display, name);
     // Advertise input capabilities so clients (e.g. foot) will start.
     wlr_seat_set_capabilities(seat,
@@ -300,18 +300,18 @@ struct wlr_seat *snertwl_seat_create(struct wl_display *display, const char *nam
 // Rust keybinding callback. We track our listeners so we can remove them when
 // the device is destroyed (e.g. on VT switch, when logind pauses input) —
 // otherwise wlroots asserts the keyboard's signal lists aren't empty.
-struct snertwl_keyboard {
+struct oxide_keyboard {
     struct wlr_seat *seat;
     struct wlr_keyboard *keyboard;
-    snertwl_key_callback key_callback;
+    oxide_key_callback key_callback;
     void *key_userdata;
-    struct snertwl_listener *key_listener;
-    struct snertwl_listener *mod_listener;
-    struct snertwl_listener *destroy_listener;
+    struct oxide_listener *key_listener;
+    struct oxide_listener *mod_listener;
+    struct oxide_listener *destroy_listener;
 };
 
 static void handle_key(void *userdata, void *data) {
-    struct snertwl_keyboard *kb = userdata;
+    struct oxide_keyboard *kb = userdata;
     struct wlr_keyboard_key_event *event = data;
 
     // Offer the press to Rust as a possible keybinding first. wlroots keycodes
@@ -344,7 +344,7 @@ static void handle_key(void *userdata, void *data) {
 
 static void handle_modifiers(void *userdata, void *data) {
     (void)data;
-    struct snertwl_keyboard *kb = userdata;
+    struct oxide_keyboard *kb = userdata;
     wlr_seat_set_keyboard(kb->seat, kb->keyboard);
     wlr_seat_keyboard_notify_modifiers(kb->seat, &kb->keyboard->modifiers);
 }
@@ -353,16 +353,16 @@ static void handle_modifiers(void *userdata, void *data) {
 // our listeners before wlroots tears the keyboard down, then free our context.
 static void handle_keyboard_destroy(void *userdata, void *data) {
     (void)data;
-    struct snertwl_keyboard *kb = userdata;
-    snertwl_listener_remove(kb->key_listener);
-    snertwl_listener_remove(kb->mod_listener);
-    snertwl_listener_remove(kb->destroy_listener);
+    struct oxide_keyboard *kb = userdata;
+    oxide_listener_remove(kb->key_listener);
+    oxide_listener_remove(kb->mod_listener);
+    oxide_listener_remove(kb->destroy_listener);
     free(kb);
-    wlr_log(WLR_INFO, "snertwl: keyboard removed");
+    wlr_log(WLR_INFO, "0xide: keyboard removed");
 }
 
 static void seat_add_keyboard(struct wlr_seat *seat,
-        struct wlr_input_device *device, snertwl_key_callback key_callback,
+        struct wlr_input_device *device, oxide_key_callback key_callback,
         void *key_userdata) {
     struct wlr_keyboard *keyboard = wlr_keyboard_from_input_device(device);
 
@@ -375,7 +375,7 @@ static void seat_add_keyboard(struct wlr_seat *seat,
     xkb_context_unref(context);
     wlr_keyboard_set_repeat_info(keyboard, 25, 600);
 
-    struct snertwl_keyboard *kb = calloc(1, sizeof(*kb));
+    struct oxide_keyboard *kb = calloc(1, sizeof(*kb));
     kb->seat = seat;
     kb->keyboard = keyboard;
     kb->key_callback = key_callback;
@@ -386,18 +386,18 @@ static void seat_add_keyboard(struct wlr_seat *seat,
     kb->destroy_listener = signal_add(&device->events.destroy, handle_keyboard_destroy, kb);
 
     wlr_seat_set_keyboard(seat, keyboard);
-    wlr_log(WLR_INFO, "snertwl: keyboard attached");
+    wlr_log(WLR_INFO, "0xide: keyboard attached");
 }
 
-struct snertwl_listener *snertwl_backend_add_new_input(
-        struct wlr_backend *backend, snertwl_callback callback, void *userdata) {
+struct oxide_listener *oxide_backend_add_new_input(
+        struct wlr_backend *backend, oxide_callback callback, void *userdata) {
     return signal_add(&backend->events.new_input, callback, userdata);
 }
 
 // --- pointer / cursor ------------------------------------------------------
 
 // Bundles everything the cursor event handlers need.
-struct snertwl_pointer {
+struct oxide_pointer {
     struct wlr_cursor *cursor;
     struct wlr_xcursor_manager *cursor_mgr;
     struct wlr_scene *scene;
@@ -406,7 +406,7 @@ struct snertwl_pointer {
 
 // Find the surface under the cursor (and the surface-local coords), via the
 // scene graph. Returns NULL when the cursor is over the bare background.
-static struct wlr_surface *surface_at(struct snertwl_pointer *p,
+static struct wlr_surface *surface_at(struct oxide_pointer *p,
         double *sx, double *sy) {
     struct wlr_scene_node *node = wlr_scene_node_at(&p->scene->tree.node,
             p->cursor->x, p->cursor->y, sx, sy);
@@ -418,7 +418,7 @@ static struct wlr_surface *surface_at(struct snertwl_pointer *p,
     return scene_surface ? scene_surface->surface : NULL;
 }
 
-static void process_motion(struct snertwl_pointer *p, uint32_t time) {
+static void process_motion(struct oxide_pointer *p, uint32_t time) {
     double sx, sy;
     struct wlr_surface *surface = surface_at(p, &sx, &sy);
     if (surface == NULL) {
@@ -432,21 +432,21 @@ static void process_motion(struct snertwl_pointer *p, uint32_t time) {
 }
 
 static void handle_cursor_motion(void *userdata, void *data) {
-    struct snertwl_pointer *p = userdata;
+    struct oxide_pointer *p = userdata;
     struct wlr_pointer_motion_event *e = data;
     wlr_cursor_move(p->cursor, &e->pointer->base, e->delta_x, e->delta_y);
     process_motion(p, e->time_msec);
 }
 
 static void handle_cursor_motion_absolute(void *userdata, void *data) {
-    struct snertwl_pointer *p = userdata;
+    struct oxide_pointer *p = userdata;
     struct wlr_pointer_motion_absolute_event *e = data;
     wlr_cursor_warp_absolute(p->cursor, &e->pointer->base, e->x, e->y);
     process_motion(p, e->time_msec);
 }
 
 static void handle_cursor_button(void *userdata, void *data) {
-    struct snertwl_pointer *p = userdata;
+    struct oxide_pointer *p = userdata;
     struct wlr_pointer_button_event *e = data;
     wlr_seat_pointer_notify_button(p->seat, e->time_msec, e->button, e->state);
     // Click-to-focus: on press, give keyboard focus to the window under cursor.
@@ -462,7 +462,7 @@ static void handle_cursor_button(void *userdata, void *data) {
 }
 
 static void handle_cursor_axis(void *userdata, void *data) {
-    struct snertwl_pointer *p = userdata;
+    struct oxide_pointer *p = userdata;
     struct wlr_pointer_axis_event *e = data;
     wlr_seat_pointer_notify_axis(p->seat, e->time_msec, e->orientation, e->delta,
             e->delta_discrete, e->source, e->relative_direction);
@@ -470,11 +470,11 @@ static void handle_cursor_axis(void *userdata, void *data) {
 
 static void handle_cursor_frame(void *userdata, void *data) {
     (void)data;
-    struct snertwl_pointer *p = userdata;
+    struct oxide_pointer *p = userdata;
     wlr_seat_pointer_notify_frame(p->seat);
 }
 
-struct wlr_cursor *snertwl_cursor_setup(struct wlr_output_layout *layout,
+struct wlr_cursor *oxide_cursor_setup(struct wlr_output_layout *layout,
         struct wlr_scene *scene, struct wlr_seat *seat) {
     struct wlr_cursor *cursor = wlr_cursor_create();
     wlr_cursor_attach_output_layout(cursor, layout);
@@ -482,7 +482,7 @@ struct wlr_cursor *snertwl_cursor_setup(struct wlr_output_layout *layout,
     struct wlr_xcursor_manager *cursor_mgr = wlr_xcursor_manager_create(NULL, 24);
     wlr_xcursor_manager_load(cursor_mgr, 1);
 
-    struct snertwl_pointer *p = calloc(1, sizeof(*p));
+    struct oxide_pointer *p = calloc(1, sizeof(*p));
     p->cursor = cursor;
     p->cursor_mgr = cursor_mgr;
     p->scene = scene;
@@ -497,8 +497,8 @@ struct wlr_cursor *snertwl_cursor_setup(struct wlr_output_layout *layout,
     return cursor;
 }
 
-void snertwl_handle_new_input(struct wlr_seat *seat, struct wlr_cursor *cursor,
-        struct wlr_input_device *device, snertwl_key_callback key_callback,
+void oxide_handle_new_input(struct wlr_seat *seat, struct wlr_cursor *cursor,
+        struct wlr_input_device *device, oxide_key_callback key_callback,
         void *key_userdata) {
     switch (device->type) {
     case WLR_INPUT_DEVICE_KEYBOARD:
@@ -506,7 +506,7 @@ void snertwl_handle_new_input(struct wlr_seat *seat, struct wlr_cursor *cursor,
         break;
     case WLR_INPUT_DEVICE_POINTER:
         wlr_cursor_attach_input_device(cursor, device);
-        wlr_log(WLR_INFO, "snertwl: pointer attached");
+        wlr_log(WLR_INFO, "0xide: pointer attached");
         break;
     default:
         break;

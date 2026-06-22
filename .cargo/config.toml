@@ -1,5 +1,5 @@
 # Project runners (mirrors snert's one-command style).
-# `cargo nested` runs snertwl in a nested Wayland window — our fast dev loop.
+# `cargo nested` runs 0xide in a nested Wayland window — our fast dev loop.
 # (More runners — headless, tty, vm — will arrive as those stages land.)
 [alias]
 nested = "run"

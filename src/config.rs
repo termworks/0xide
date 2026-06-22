@@ -1,4 +1,4 @@
-//! snertwl config: a tiny, dependency-free parser for `snertwl.conf`.
+//! 0xide config: a tiny, dependency-free parser for `0xide.conf`.
 //!
 //! Format is line-based `key = value`, `#` starts a comment. Scalars set the
 //! modifier, gap and background; `bind = MODS, KEY, ACTION[, ARG]` lines define
@@ -6,7 +6,7 @@
 //! and skipped, so a typo never stops the compositor from starting.
 //!
 //! If no config file exists we fall back to built-in defaults that reproduce the
-//! old hardcoded behavior, so snertwl is usable out of the box.
+//! old hardcoded behavior, so 0xide is usable out of the box.
 
 use std::env;
 use std::ffi::CString;
@@ -25,7 +25,7 @@ pub const MOD_LOGO: u32 = 1 << 6; // Super / Logo
 pub const MOD_MASK: u32 = MOD_SHIFT | MOD_CTRL | MOD_ALT | MOD_LOGO;
 
 extern "C" {
-    fn snertwl_keysym_from_name(name: *const c_char) -> u32;
+    fn oxide_keysym_from_name(name: *const c_char) -> u32;
 }
 
 /// What a keybinding does when triggered.
@@ -73,9 +73,9 @@ impl Default for Config {
 }
 
 impl Config {
-    /// Load config from `$XDG_CONFIG_HOME/snertwl/snertwl.conf` (or
-    /// `~/.config/snertwl/snertwl.conf`). Missing file -> built-in defaults.
-    /// `SNERTWL_MOD=alt` overrides the modifier (for nested dev under Hyprland,
+    /// Load config from `$XDG_CONFIG_HOME/0xide/0xide.conf` (or
+    /// `~/.config/0xide/0xide.conf`). Missing file -> built-in defaults.
+    /// `OXIDE_MOD=alt` overrides the modifier (for nested dev under Hyprland,
     /// which grabs Super-chords before us).
     pub fn load() -> Config {
         let mut cfg = Config::default();
@@ -83,14 +83,14 @@ impl Config {
         let contents = config_path().and_then(|p| fs::read_to_string(&p).ok());
         match &contents {
             Some(text) => {
-                println!("snertwl: loaded config");
+                println!("0xide: loaded config");
                 cfg.parse_scalars(text);
             }
-            None => println!("snertwl: no config file — using defaults"),
+            None => println!("0xide: no config file — using defaults"),
         }
 
         // Env override wins over the config's modifier line.
-        if let Ok("alt") = env::var("SNERTWL_MOD").as_deref() {
+        if let Ok("alt") = env::var("OXIDE_MOD").as_deref() {
             cfg.modifier = MOD_ALT;
         }
 
@@ -104,7 +104,7 @@ impl Config {
         }
 
         println!(
-            "snertwl: modifier = {}, gap = {}, {} bind(s)",
+            "0xide: modifier = {}, gap = {}, {} bind(s)",
             mod_name(cfg.modifier),
             cfg.gap,
             cfg.binds.len()
@@ -161,7 +161,7 @@ impl Config {
     }
 }
 
-/// The default binds, replicating snertwl's original hardcoded behavior.
+/// The default binds, replicating 0xide's original hardcoded behavior.
 fn default_binds(modifier: u32) -> Vec<Bind> {
     let m = modifier;
     let ms = modifier | MOD_SHIFT;
@@ -251,7 +251,7 @@ fn workspace_index(arg: &str) -> Option<usize> {
 /// Resolve a key name to a keysym, or None if xkb doesn't know it.
 fn keysym_from_name(name: &str) -> Option<u32> {
     let c = CString::new(name).ok()?;
-    let sym = unsafe { snertwl_keysym_from_name(c.as_ptr()) };
+    let sym = unsafe { oxide_keysym_from_name(c.as_ptr()) };
     (sym != 0).then_some(sym)
 }
 
@@ -269,15 +269,15 @@ fn mod_name(m: u32) -> &'static str {
 }
 
 fn warn(line: usize, msg: &str, raw: &str) {
-    eprintln!("snertwl: config line {line}: {msg}: `{raw}`");
+    eprintln!("0xide: config line {line}: {msg}: `{raw}`");
 }
 
 fn config_path() -> Option<PathBuf> {
     if let Ok(dir) = env::var("XDG_CONFIG_HOME") {
         if !dir.is_empty() {
-            return Some(PathBuf::from(dir).join("snertwl/snertwl.conf"));
+            return Some(PathBuf::from(dir).join("0xide/0xide.conf"));
         }
     }
     let home = env::var("HOME").ok()?;
-    Some(PathBuf::from(home).join(".config/snertwl/snertwl.conf"))
+    Some(PathBuf::from(home).join(".config/0xide/0xide.conf"))
 }

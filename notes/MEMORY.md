@@ -1,4 +1,4 @@
-# snertwl — memory index
+# 0xide — memory index
 
 One line per note; open the file for the full fact. Verify before asserting.
 

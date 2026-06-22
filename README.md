@@ -1,11 +1,11 @@
-# snertwl
+# 0xide
 
 **A from-scratch tiling Wayland compositor, written in Rust on top of [wlroots](https://gitlab.freedesktop.org/wlroots/wlroots).**
 
 A compositor is the program that *is* your Linux desktop: it draws every window to
 the screen, handles your mouse and keyboard, and decides where windows go. On Wayland
 (the modern replacement for X11) that's all **one** program — it merges the display
-server, the window manager, and the compositor into a single process. snertwl is that
+server, the window manager, and the compositor into a single process. 0xide is that
 program: a personal, learning-first compositor built directly on wlroots 0.19 rather
 than on top of any desktop. It's a **dynamic tiling** compositor — windows are arranged
 automatically to fill the screen instead of floating and overlapping.
@@ -29,7 +29,7 @@ automatically to fill the screen instead of floating and overlapping.
   (Ctrl+Alt+Fn away and back) without crashing or losing your windows.
 
 Out of scope (for now): animations, blur, rounded corners, an IPC/control socket, a
-plugin system, and config hot-reload. snertwl is **Linux-only** and is its own thing —
+plugin system, and config hot-reload. 0xide is **Linux-only** and is its own thing —
 not a drop-in for any existing compositor.
 
 ## Architecture
@@ -38,7 +38,7 @@ The split is deliberate:
 
 - **Rust owns all policy** — the window list, tiling layout, workspaces, keybindings,
   config parsing, and overall flow (`src/main.rs`, `src/config.rs`).
-- **A thin C shim** (`shim/snertwl_shim.{c,h}`) owns the parts that are awkward or
+- **A thin C shim** (`shim/oxide_shim.{c,h}`) owns the parts that are awkward or
   unsafe to model through FFI: the wlroots `wl_listener`/`wl_signal` glue (intrusive
   linked lists) and anything that needs to read wlroots struct fields directly. It
   exposes clean `(userdata, data)` callbacks to Rust.
@@ -46,7 +46,7 @@ The split is deliberate:
   renderer, libinput, the scene graph, protocol plumbing). We bind to it with
   `bindgen` + the shim; we don't rewrite it.
 
-In short: **wlroots = mechanism, snertwl = policy.** See
+In short: **wlroots = mechanism, 0xide = policy.** See
 [`notes/architecture.md`](notes/architecture.md) for the full division of labour.
 
 ## Build
@@ -71,22 +71,22 @@ The build script (`build.rs`) finds wlroots via `pkg-config`, generates the
 
 ### Nested (the fast dev loop)
 
-Inside an existing Wayland session, snertwl opens as a window:
+Inside an existing Wayland session, 0xide opens as a window:
 
 ```sh
-SNERTWL_MOD=alt cargo nested -- kitty
+OXIDE_MOD=alt cargo nested -- kitty
 ```
 
-`cargo nested` is an alias for `cargo run`. `SNERTWL_MOD=alt` makes the modifier key
-**Alt** instead of Super, because the host compositor grabs Super-chords before snertwl
-sees them. The trailing `-- kitty` launches a test client against snertwl's socket.
+`cargo nested` is an alias for `cargo run`. `OXIDE_MOD=alt` makes the modifier key
+**Alt** instead of Super, because the host compositor grabs Super-chords before 0xide
+sees them. The trailing `-- kitty` launches a test client against 0xide's socket.
 
 ### On a real display (TTY / DRM-KMS)
 
 From a free virtual terminal (e.g. Ctrl+Alt+F5), logged in:
 
 ```sh
-LIBSEAT_BACKEND=logind ~/Projects/snertwl/target/debug/snertwl kitty 2>~/snertwl-tty.log
+LIBSEAT_BACKEND=logind ~/Projects/0xide/target/debug/0xide kitty 2>~/0xide-tty.log
 ```
 
 `LIBSEAT_BACKEND=logind` lets logind grant the active VT its devices (no `seat` group
@@ -96,13 +96,13 @@ main session. More detail and verification recipes are in
 
 ## Default keybindings
 
-`Mod` is **Super** by default (**Alt** when running nested with `SNERTWL_MOD=alt`).
+`Mod` is **Super** by default (**Alt** when running nested with `OXIDE_MOD=alt`).
 
 | Keys                | Action                              |
 | ------------------- | ----------------------------------- |
 | `Mod + Return`      | Open the terminal                   |
 | `Mod + Q`           | Close the focused window            |
-| `Mod + Shift + Q`   | Quit snertwl                        |
+| `Mod + Shift + Q`   | Quit 0xide                        |
 | `Mod + J` / `Mod + K` | Focus next / previous window      |
 | `Mod + 1…9`         | Switch to workspace 1–9             |
 | `Mod + Shift + 1…9` | Move focused window to workspace 1–9 |
@@ -110,7 +110,7 @@ main session. More detail and verification recipes are in
 
 ## Configuration
 
-snertwl reads `~/.config/snertwl/snertwl.conf` (or `$XDG_CONFIG_HOME/snertwl/snertwl.conf`).
+0xide reads `~/.config/0xide/0xide.conf` (or `$XDG_CONFIG_HOME/0xide/0xide.conf`).
 With no config file it uses the built-in defaults above. The format is `key = value`
 with `#` comments, plus `bind` lines:
 
@@ -126,8 +126,8 @@ bind = MOD, 1, workspace, 1
 bind = MOD SHIFT, 1, movetoworkspace, 1
 ```
 
-A line snertwl can't parse is warned about on stderr and skipped — never fatal. See
-[`snertwl.conf.example`](snertwl.conf.example) for the full annotated example.
+A line 0xide can't parse is warned about on stderr and skipped — never fatal. See
+[`0xide.conf.example`](0xide.conf.example) for the full annotated example.
 
 ## Repository layout
 
@@ -135,7 +135,7 @@ A line snertwl can't parse is warned about on stderr and skipped — never fatal
 | ------------------------- | --------------------------------------------------------- |
 | `src/main.rs`             | Compositor orchestrator + all policy (layout, workspaces, input, keybindings) |
 | `src/config.rs`           | Dependency-free config-file parser                        |
-| `shim/snertwl_shim.{c,h}` | Thin C shim: wlroots listener glue + struct access        |
+| `shim/oxide_shim.{c,h}` | Thin C shim: wlroots listener glue + struct access        |
 | `build.rs`, `wrapper.h`   | The FFI pipeline (pkg-config, wayland-scanner, cc, bindgen) |
 | `notes/`                  | Architecture, toolchain, and run/verify notes             |
 | `KICKOFF.md`              | The project's mission and learning-first working rules    |
@@ -152,6 +152,6 @@ work), **XWayland** (legacy X11 apps), and **screenshots / screencopy**.
 
 ---
 
-snertwl is a personal, learning-first project — built concept-by-concept with every
+0xide is a personal, learning-first project — built concept-by-concept with every
 file and function understood rather than assembled. Its working rules live in
 [`KICKOFF.md`](KICKOFF.md). No license yet.

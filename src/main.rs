@@ -1,4 +1,4 @@
-//! snertwl — Stage 0b: open a backend and clear the screen to a solid color.
+//! 0xide — Stage 0b: open a backend and clear the screen to a solid color.
 //!
 //! This is the smallest real compositor: it brings up a wlroots backend (a
 //! nested Wayland window, since we run inside a Wayland session), a renderer and
@@ -25,35 +25,35 @@ type ShimCallback = unsafe extern "C" fn(*mut c_void, *mut c_void);
 /// Keybinding callback: (userdata, keysym, modifiers) -> was it consumed?
 type KeyCallback = unsafe extern "C" fn(*mut c_void, u32, u32) -> bool;
 
-/// Opaque handle to a `snertwl_listener` living on the C heap.
+/// Opaque handle to a `oxide_listener` living on the C heap.
 #[repr(C)]
 struct ShimListener {
     _opaque: [u8; 0],
 }
 
-// Functions implemented in shim/snertwl_shim.c.
+// Functions implemented in shim/oxide_shim.c.
 extern "C" {
-    fn snertwl_log_init();
-    fn snertwl_setup_signals(loop_: *mut wlr::wl_event_loop, display: *mut wlr::wl_display);
-    fn snertwl_session_change_vt(session: *mut wlr::wlr_session, vt: u32);
-    fn snertwl_session_add_active(
+    fn oxide_log_init();
+    fn oxide_setup_signals(loop_: *mut wlr::wl_event_loop, display: *mut wlr::wl_display);
+    fn oxide_session_change_vt(session: *mut wlr::wlr_session, vt: u32);
+    fn oxide_session_add_active(
         session: *mut wlr::wlr_session,
         callback: ShimCallback,
         userdata: *mut c_void,
     ) -> *mut ShimListener;
-    fn snertwl_session_is_active(session: *mut wlr::wlr_session) -> bool;
-    fn snertwl_backend_add_new_output(
+    fn oxide_session_is_active(session: *mut wlr::wlr_session) -> bool;
+    fn oxide_backend_add_new_output(
         backend: *mut wlr::wlr_backend,
         callback: ShimCallback,
         userdata: *mut c_void,
     ) -> *mut ShimListener;
-    fn snertwl_output_add_frame(
+    fn oxide_output_add_frame(
         output: *mut wlr::wlr_output,
         callback: ShimCallback,
         userdata: *mut c_void,
     ) -> *mut ShimListener;
-    fn snertwl_output_enable(output: *mut wlr::wlr_output);
-    fn snertwl_scene_add_output_background(
+    fn oxide_output_enable(output: *mut wlr::wlr_output);
+    fn oxide_scene_add_output_background(
         scene: *mut wlr::wlr_scene,
         output: *mut wlr::wlr_output,
         x: i32,
@@ -62,14 +62,14 @@ extern "C" {
         g: f32,
         b: f32,
     ) -> *mut c_void; // the background rect (opaque to Rust)
-    fn snertwl_scene_rect_destroy(rect: *mut c_void);
-    fn snertwl_scene_rect_set_enabled(rect: *mut c_void, enabled: bool);
-    fn snertwl_output_add_destroy(
+    fn oxide_scene_rect_destroy(rect: *mut c_void);
+    fn oxide_scene_rect_set_enabled(rect: *mut c_void, enabled: bool);
+    fn oxide_output_add_destroy(
         output: *mut wlr::wlr_output,
         callback: ShimCallback,
         userdata: *mut c_void,
     ) -> *mut ShimListener;
-    fn snertwl_output_layout_get_box(
+    fn oxide_output_layout_get_box(
         layout: *mut wlr::wlr_output_layout,
         output: *mut wlr::wlr_output,
         x: *mut i32,
@@ -77,62 +77,62 @@ extern "C" {
         width: *mut i32,
         height: *mut i32,
     );
-    fn snertwl_output_at_cursor(
+    fn oxide_output_at_cursor(
         cursor: *mut wlr::wlr_cursor,
         layout: *mut wlr::wlr_output_layout,
     ) -> *mut wlr::wlr_output;
-    fn snertwl_scene_output_render(scene_output: *mut wlr::wlr_scene_output);
-    fn snertwl_output_schedule_frame(output: *mut wlr::wlr_output);
-    fn snertwl_xdg_shell_add_new_toplevel(
+    fn oxide_scene_output_render(scene_output: *mut wlr::wlr_scene_output);
+    fn oxide_output_schedule_frame(output: *mut wlr::wlr_output);
+    fn oxide_xdg_shell_add_new_toplevel(
         shell: *mut wlr::wlr_xdg_shell,
         callback: ShimCallback,
         userdata: *mut c_void,
     ) -> *mut ShimListener;
-    fn snertwl_scene_add_xdg_toplevel(
+    fn oxide_scene_add_xdg_toplevel(
         scene: *mut wlr::wlr_scene,
         toplevel: *mut wlr::wlr_xdg_toplevel,
     ) -> *mut wlr::wlr_scene_tree;
-    fn snertwl_xdg_add_commit(toplevel: *mut wlr::wlr_xdg_toplevel) -> *mut ShimListener;
-    fn snertwl_listener_remove(listener: *mut ShimListener);
-    fn snertwl_xdg_add_map(
+    fn oxide_xdg_add_commit(toplevel: *mut wlr::wlr_xdg_toplevel) -> *mut ShimListener;
+    fn oxide_listener_remove(listener: *mut ShimListener);
+    fn oxide_xdg_add_map(
         toplevel: *mut wlr::wlr_xdg_toplevel,
         callback: ShimCallback,
         userdata: *mut c_void,
     ) -> *mut ShimListener;
-    fn snertwl_xdg_add_unmap(
+    fn oxide_xdg_add_unmap(
         toplevel: *mut wlr::wlr_xdg_toplevel,
         callback: ShimCallback,
         userdata: *mut c_void,
     ) -> *mut ShimListener;
-    fn snertwl_xdg_add_destroy(
+    fn oxide_xdg_add_destroy(
         toplevel: *mut wlr::wlr_xdg_toplevel,
         callback: ShimCallback,
         userdata: *mut c_void,
     ) -> *mut ShimListener;
-    fn snertwl_scene_tree_set_position(tree: *mut wlr::wlr_scene_tree, x: i32, y: i32);
-    fn snertwl_scene_tree_set_enabled(tree: *mut wlr::wlr_scene_tree, enabled: bool);
-    fn snertwl_scene_tree_destroy(tree: *mut wlr::wlr_scene_tree);
-    fn snertwl_focus_toplevel(
+    fn oxide_scene_tree_set_position(tree: *mut wlr::wlr_scene_tree, x: i32, y: i32);
+    fn oxide_scene_tree_set_enabled(tree: *mut wlr::wlr_scene_tree, enabled: bool);
+    fn oxide_scene_tree_destroy(tree: *mut wlr::wlr_scene_tree);
+    fn oxide_focus_toplevel(
         seat: *mut wlr::wlr_seat,
         toplevel: *mut wlr::wlr_xdg_toplevel,
     );
-    fn snertwl_seat_create(
+    fn oxide_seat_create(
         display: *mut wlr::wl_display,
         name: *const c_char,
     ) -> *mut wlr::wlr_seat;
-    fn snertwl_backend_add_new_input(
+    fn oxide_backend_add_new_input(
         backend: *mut wlr::wlr_backend,
         callback: ShimCallback,
         userdata: *mut c_void,
     ) -> *mut ShimListener;
-    fn snertwl_handle_new_input(
+    fn oxide_handle_new_input(
         seat: *mut wlr::wlr_seat,
         cursor: *mut wlr::wlr_cursor,
         device: *mut wlr::wlr_input_device,
         key_callback: KeyCallback,
         key_userdata: *mut c_void,
     );
-    fn snertwl_cursor_setup(
+    fn oxide_cursor_setup(
         layout: *mut wlr::wlr_output_layout,
         scene: *mut wlr::wlr_scene,
         seat: *mut wlr::wlr_seat,
@@ -227,7 +227,7 @@ unsafe fn refresh(server: &mut Server) {
     }
     for (wi, ws) in server.workspaces.iter().enumerate() {
         for &tl in &ws.windows {
-            snertwl_scene_tree_set_enabled((*tl).scene_tree, shown[wi]);
+            oxide_scene_tree_set_enabled((*tl).scene_tree, shown[wi]);
         }
     }
 
@@ -262,7 +262,7 @@ unsafe fn refresh(server: &mut Server) {
                 rh = (rh - half - gap).max(1);
             }
             split_vertical = !split_vertical;
-            snertwl_scene_tree_set_position((*tl).scene_tree, x, y);
+            oxide_scene_tree_set_position((*tl).scene_tree, x, y);
             wlr::wlr_xdg_toplevel_set_size((*tl).xdg_toplevel, w, h);
         }
     }
@@ -271,7 +271,7 @@ unsafe fn refresh(server: &mut Server) {
 /// The output the cursor is currently on (the target for new windows and
 /// workspace switches). Falls back to output 0 if the cursor is off all outputs.
 unsafe fn active_output(server: &Server) -> usize {
-    let out = snertwl_output_at_cursor(server.cursor, server.output_layout);
+    let out = oxide_output_at_cursor(server.cursor, server.output_layout);
     server.outputs.iter().position(|o| o.wlr_output == out).unwrap_or(0)
 }
 
@@ -299,7 +299,7 @@ unsafe fn focus_index(server: &mut Server, idx: usize) {
     }
     let i = idx % len;
     server.workspaces[a].focused = i;
-    snertwl_focus_toplevel(server.seat, (*server.workspaces[a].windows[i]).xdg_toplevel);
+    oxide_focus_toplevel(server.seat, (*server.workspaces[a].windows[i]).xdg_toplevel);
 }
 
 /// Ask the focused window of the focused output's workspace to close.
@@ -331,7 +331,7 @@ unsafe fn switch_workspace(server: &mut Server, target: usize) {
     refresh(server);
     let f = server.workspaces[target].focused;
     focus_index(server, f);
-    eprintln!("snertwl: output {} -> workspace {}", fo, target + 1);
+    eprintln!("0xide: output {} -> workspace {}", fo, target + 1);
 }
 
 /// Move the focused output's focused window to another workspace.
@@ -353,17 +353,17 @@ unsafe fn move_to_workspace(server: &mut Server, target: usize) {
     refresh(server); // recomputes visibility (target may or may not be displayed)
     let f = server.workspaces[a].focused;
     focus_index(server, f);
-    eprintln!("snertwl: moved window to workspace {}", target + 1);
+    eprintln!("0xide: moved window to workspace {}", target + 1);
 }
 
-/// Launch a program as a client of snertwl (inherits our WAYLAND_DISPLAY).
+/// Launch a program as a client of 0xide (inherits our WAYLAND_DISPLAY).
 /// The command is whitespace-split into program + args (e.g. "grim -g ...").
 fn spawn(cmd: &str) {
     let mut parts = cmd.split_whitespace();
     let Some(program) = parts.next() else { return };
     let args: Vec<&str> = parts.collect();
     if let Err(e) = Command::new(program).args(&args).spawn() {
-        eprintln!("snertwl: failed to spawn `{cmd}`: {e}");
+        eprintln!("0xide: failed to spawn `{cmd}`: {e}");
     }
 }
 
@@ -377,7 +377,7 @@ unsafe extern "C" fn handle_keybinding(userdata: *mut c_void, keysym: u32, modif
     // VT switching (Ctrl+Alt+F1..F12). Handled before config binds and always
     // consumed; the shim no-ops it when there's no session (nested).
     if mods == MOD_CTRL | MOD_ALT && (KEY_F1..=KEY_F12).contains(&keysym) {
-        snertwl_session_change_vt(server.session, keysym - KEY_F1 + 1);
+        oxide_session_change_vt(server.session, keysym - KEY_F1 + 1);
         return true;
     }
 
@@ -424,7 +424,7 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
     // Give the output our renderer + allocator so it can produce buffers, then
     // enable it (the shim owns the wlr_output_state dance).
     wlr::wlr_output_init_render(output, server.allocator, server.renderer);
-    snertwl_output_enable(output);
+    oxide_output_enable(output);
 
     // Place the output in the layout (auto = to the right of existing ones), and
     // tie that layout slot to a scene output so the scene knows where this
@@ -435,7 +435,7 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
 
     // Read this output's box (position + size) in layout coords for tiling.
     let (mut x, mut y, mut w, mut h) = (0, 0, 0, 0);
-    snertwl_output_layout_get_box(server.output_layout, output, &mut x, &mut y, &mut w, &mut h);
+    oxide_output_layout_get_box(server.output_layout, output, &mut x, &mut y, &mut w, &mut h);
 
     // Give the output the lowest-numbered workspace not already on a monitor.
     let mut workspace = 0;
@@ -447,7 +447,7 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
     }
     // Background node for this output, placed at its layout origin.
     let (r, g, b) = server.config.background;
-    let background = snertwl_scene_add_output_background(server.scene, output, x, y, r, g, b);
+    let background = oxide_scene_add_output_background(server.scene, output, x, y, r, g, b);
 
     // Render through the scene on every frame. The frame callback needs to find
     // this output (for repaint_frames), so hand it a heap FrameCtx. Track the
@@ -457,8 +457,8 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
         scene_output,
         wlr_output: output,
     }));
-    let frame_listener = snertwl_output_add_frame(output, handle_frame, frame_ctx as *mut c_void);
-    let destroy_listener = snertwl_output_add_destroy(output, handle_output_destroy, userdata);
+    let frame_listener = oxide_output_add_frame(output, handle_frame, frame_ctx as *mut c_void);
+    let destroy_listener = oxide_output_add_destroy(output, handle_output_destroy, userdata);
 
     server.outputs.push(Output {
         wlr_output: output,
@@ -479,10 +479,10 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
     // Kick the first paint via a scheduled frame rather than rendering now: the
     // output may not be ready this instant (esp. on VT resume). The frame handler
     // forces a full repaint for the first few frames, so idle windows reappear.
-    snertwl_output_schedule_frame(output);
+    oxide_output_schedule_frame(output);
 
     eprintln!(
-        "snertwl: output online @ {x},{y} {w}x{h} — workspace {}",
+        "0xide: output online @ {x},{y} {w}x{h} — workspace {}",
         workspace + 1
     );
 }
@@ -499,14 +499,14 @@ unsafe extern "C" fn handle_output_destroy(userdata: *mut c_void, data: *mut c_v
     let o = &server.outputs[pos];
     // Remove the frame listener first (so no more frame callbacks), then it's
     // safe to free the FrameCtx it referenced.
-    snertwl_listener_remove(o.frame_listener);
-    snertwl_listener_remove(o.destroy_listener);
-    snertwl_scene_rect_destroy(o.background);
+    oxide_listener_remove(o.frame_listener);
+    oxide_listener_remove(o.destroy_listener);
+    oxide_scene_rect_destroy(o.background);
     let frame_ctx = o.frame_ctx;
     server.outputs.remove(pos);
     drop(Box::from_raw(frame_ctx));
     refresh(server);
-    eprintln!("snertwl: output removed — {} left", server.outputs.len());
+    eprintln!("0xide: output removed — {} left", server.outputs.len());
 }
 
 /// Called by the shim on every session active change (VT switch away/back).
@@ -516,8 +516,8 @@ unsafe extern "C" fn handle_output_destroy(userdata: *mut c_void, data: *mut c_v
 /// the scene paints everything, not just damaged regions).
 unsafe extern "C" fn handle_session_active(userdata: *mut c_void, _data: *mut c_void) {
     let server = &mut *(userdata as *mut Server);
-    if !snertwl_session_is_active(server.session) {
-        eprintln!("snertwl: session inactive (VT switched away)");
+    if !oxide_session_is_active(server.session) {
+        eprintln!("0xide: session inactive (VT switched away)");
         return;
     }
     // Rebuild every window's scene node. After the outputs are torn down and
@@ -527,8 +527,8 @@ unsafe extern "C" fn handle_session_active(userdata: *mut c_void, _data: *mut c_
     // window, makes it present the surface's current buffer again.
     for ws in &mut server.workspaces {
         for &tl in &ws.windows {
-            snertwl_scene_tree_destroy((*tl).scene_tree);
-            (*tl).scene_tree = snertwl_scene_add_xdg_toplevel(server.scene, (*tl).xdg_toplevel);
+            oxide_scene_tree_destroy((*tl).scene_tree);
+            (*tl).scene_tree = oxide_scene_add_xdg_toplevel(server.scene, (*tl).xdg_toplevel);
         }
     }
 
@@ -538,10 +538,10 @@ unsafe extern "C" fn handle_session_active(userdata: *mut c_void, _data: *mut c_
     refresh(server);
     for o in &mut server.outputs {
         o.repaint_frames = REPAINT_FRAMES;
-        snertwl_output_schedule_frame(o.wlr_output);
+        oxide_output_schedule_frame(o.wlr_output);
     }
     eprintln!(
-        "snertwl: session active — repainting {} output(s)",
+        "0xide: session active — repainting {} output(s)",
         server.outputs.len()
     );
 }
@@ -556,22 +556,22 @@ unsafe extern "C" fn handle_frame(userdata: *mut c_void, _data: *mut c_void) {
     if let Some(pos) = server.outputs.iter().position(|o| o.wlr_output == ctx.wlr_output) {
         if server.outputs[pos].repaint_frames > 0 {
             let bg = server.outputs[pos].background;
-            snertwl_scene_rect_set_enabled(bg, false);
-            snertwl_scene_rect_set_enabled(bg, true);
+            oxide_scene_rect_set_enabled(bg, false);
+            oxide_scene_rect_set_enabled(bg, true);
             server.outputs[pos].repaint_frames -= 1;
             eprintln!(
-                "snertwl: forced repaint (output {}, {} left)",
+                "0xide: forced repaint (output {}, {} left)",
                 pos, server.outputs[pos].repaint_frames
             );
-            snertwl_scene_output_render(ctx.scene_output);
+            oxide_scene_output_render(ctx.scene_output);
             // Keep the loop alive until we've forced the full set of repaints.
             if server.outputs[pos].repaint_frames > 0 {
-                snertwl_output_schedule_frame(ctx.wlr_output);
+                oxide_output_schedule_frame(ctx.wlr_output);
             }
             return;
         }
     }
-    snertwl_scene_output_render(ctx.scene_output);
+    oxide_scene_output_render(ctx.scene_output);
 }
 
 /// Called by the shim when a client creates an application window (toplevel).
@@ -581,7 +581,7 @@ unsafe extern "C" fn handle_new_toplevel(userdata: *mut c_void, data: *mut c_voi
 
     // Give it a scene node, then track it in Rust. We don't add it to the
     // layout yet — that happens on map, when it actually has content.
-    let scene_tree = snertwl_scene_add_xdg_toplevel((*server).scene, toplevel);
+    let scene_tree = oxide_scene_add_xdg_toplevel((*server).scene, toplevel);
     let tl = Box::into_raw(Box::new(Toplevel {
         server,
         xdg_toplevel: toplevel,
@@ -595,10 +595,10 @@ unsafe extern "C" fn handle_new_toplevel(userdata: *mut c_void, data: *mut c_voi
     // Listen for its lifecycle so Rust can keep the window list current. We keep
     // the listener handles to unregister them on destroy.
     let ud = tl as *mut c_void;
-    (*tl).commit_listener = snertwl_xdg_add_commit(toplevel);
-    (*tl).map_listener = snertwl_xdg_add_map(toplevel, handle_map, ud);
-    (*tl).unmap_listener = snertwl_xdg_add_unmap(toplevel, handle_unmap, ud);
-    (*tl).destroy_listener = snertwl_xdg_add_destroy(toplevel, handle_destroy, ud);
+    (*tl).commit_listener = oxide_xdg_add_commit(toplevel);
+    (*tl).map_listener = oxide_xdg_add_map(toplevel, handle_map, ud);
+    (*tl).unmap_listener = oxide_xdg_add_unmap(toplevel, handle_unmap, ud);
+    (*tl).destroy_listener = oxide_xdg_add_destroy(toplevel, handle_destroy, ud);
 }
 
 /// A window's surface became mapped: add it to the focused output's workspace,
@@ -614,7 +614,7 @@ unsafe extern "C" fn handle_map(userdata: *mut c_void, _data: *mut c_void) {
     refresh(server);
     focus_index(server, server.workspaces[a].windows.len() - 1);
     println!(
-        "snertwl: window mapped — ws {} now {} tiled",
+        "0xide: window mapped — ws {} now {} tiled",
         a + 1,
         server.workspaces[a].windows.len()
     );
@@ -633,10 +633,10 @@ unsafe extern "C" fn handle_destroy(userdata: *mut c_void, _data: *mut c_void) {
     let tl = userdata as *mut Toplevel;
     let server = &mut *(*tl).server;
     // Remove every listener we put on this window before wlroots frees it.
-    snertwl_listener_remove((*tl).commit_listener);
-    snertwl_listener_remove((*tl).map_listener);
-    snertwl_listener_remove((*tl).unmap_listener);
-    snertwl_listener_remove((*tl).destroy_listener);
+    oxide_listener_remove((*tl).commit_listener);
+    oxide_listener_remove((*tl).map_listener);
+    oxide_listener_remove((*tl).unmap_listener);
+    oxide_listener_remove((*tl).destroy_listener);
     remove_window(server, tl);
     drop(Box::from_raw(tl));
 }
@@ -666,19 +666,19 @@ unsafe fn remove_window(server: &mut Server, tl: *mut Toplevel) {
 unsafe extern "C" fn handle_new_input(userdata: *mut c_void, data: *mut c_void) {
     let server = &mut *(userdata as *mut Server);
     let device = data as *mut wlr::wlr_input_device;
-    snertwl_handle_new_input(server.seat, server.cursor, device, handle_keybinding, userdata);
+    oxide_handle_new_input(server.seat, server.cursor, device, handle_keybinding, userdata);
 }
 
 fn main() {
     unsafe {
-        snertwl_log_init();
+        oxide_log_init();
 
         // The display owns the event loop and (later) the client socket.
         let display = wlr::wl_display_create();
         let event_loop = wlr::wl_display_get_event_loop(display);
 
         // Quit gracefully on Ctrl-C / SIGTERM (via the loop's signalfd).
-        snertwl_setup_signals(event_loop, display);
+        oxide_setup_signals(event_loop, display);
 
         // Autocreate picks a backend from the environment: a nested Wayland
         // window when we're inside a session, or DRM/KMS on a bare TTY. On DRM it
@@ -704,7 +704,7 @@ fn main() {
         wlr::wlr_data_device_manager_create(display);
 
         // Create the seat (wl_seat global). We wire input devices into it below.
-        let seat = snertwl_seat_create(display, c"seat0".as_ptr());
+        let seat = oxide_seat_create(display, c"seat0".as_ptr());
 
         // The scene graph holds everything that gets drawn; the output layout
         // arranges outputs in space. Attaching them lets the scene keep each
@@ -715,10 +715,10 @@ fn main() {
 
         // Cursor over the layout; the shim routes its events through scene
         // hit-testing to the seat. Pointer devices get attached in new_input.
-        let cursor = snertwl_cursor_setup(output_layout, scene, seat);
+        let cursor = oxide_cursor_setup(output_layout, scene, seat);
 
         // Load user config (modifier, gap, background, keybindings). Falls back
-        // to built-in defaults; `SNERTWL_MOD=alt` overrides the modifier for
+        // to built-in defaults; `OXIDE_MOD=alt` overrides the modifier for
         // nested dev (a nesting host like Hyprland grabs Super-chords before us).
         let config = Config::load();
 
@@ -744,15 +744,15 @@ fn main() {
             config,
         };
         let server_ptr = &mut server as *mut Server as *mut c_void;
-        snertwl_backend_add_new_output(backend, handle_new_output, server_ptr);
-        snertwl_backend_add_new_input(backend, handle_new_input, server_ptr);
+        oxide_backend_add_new_output(backend, handle_new_output, server_ptr);
+        oxide_backend_add_new_input(backend, handle_new_input, server_ptr);
         // Repaint outputs when we regain the VT (no-op when nested / no session).
-        snertwl_session_add_active(session, handle_session_active, server_ptr);
+        oxide_session_add_active(session, handle_session_active, server_ptr);
 
         // xdg-shell: the xdg_wm_base global apps bind to create windows. We hook
         // its new_toplevel signal so each app window enters our scene graph.
         let xdg_shell = wlr::wlr_xdg_shell_create(display, 6);
-        snertwl_xdg_shell_add_new_toplevel(xdg_shell, handle_new_toplevel, server_ptr);
+        oxide_xdg_shell_add_new_toplevel(xdg_shell, handle_new_toplevel, server_ptr);
 
         // Open the Unix socket clients connect through (e.g. "wayland-2").
         let socket_ptr = wlr::wl_display_add_socket_auto(display);
@@ -760,7 +760,7 @@ fn main() {
         let socket = CStr::from_ptr(socket_ptr).to_str().unwrap().to_owned();
 
         assert!(wlr::wlr_backend_start(backend), "failed to start backend");
-        eprintln!("snertwl: socket ready — WAYLAND_DISPLAY={socket}");
+        eprintln!("0xide: socket ready — WAYLAND_DISPLAY={socket}");
 
         // Clients we spawn should talk to *us*, not the host compositor. (Our
         // own backend already connected to the host before this point.)
@@ -770,12 +770,12 @@ fn main() {
         let mut args = env::args().skip(1);
         if let Some(program) = args.next() {
             match Command::new(&program).args(args).spawn() {
-                Ok(_) => println!("snertwl: spawned client `{program}`"),
-                Err(e) => eprintln!("snertwl: failed to spawn `{program}`: {e}"),
+                Ok(_) => println!("0xide: spawned client `{program}`"),
+                Err(e) => eprintln!("0xide: failed to spawn `{program}`: {e}"),
             }
         }
 
-        eprintln!("snertwl: entering event loop (Ctrl-C to quit)");
+        eprintln!("0xide: entering event loop (Ctrl-C to quit)");
         wlr::wl_display_run(display);
 
         // Disconnect clients cleanly (this fires our per-window destroy
@@ -783,6 +783,6 @@ fn main() {
         // wlroots globals trips internal asserts about global listeners we
         // don't unregister, and the OS reclaims everything on process exit.
         wlr::wl_display_destroy_clients(display);
-        eprintln!("snertwl: shut down");
+        eprintln!("0xide: shut down");
     }
 }

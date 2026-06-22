@@ -1,6 +1,6 @@
 # Architecture: Rust / C-shim division of labor (as of Stage 2)
 
-snertwl is Rust-first with a thin C shim (`shim/snertwl_shim.c`) for the FFI that
+0xide is Rust-first with a thin C shim (`shim/oxide_shim.c`) for the FFI that
 is unsafe or awkward over bindgen. The dividing line, learned in practice:
 
 **Rust (`src/main.rs`) owns the flow and clean pointer-passing:**
@@ -15,10 +15,10 @@ is unsafe or awkward over bindgen. The dividing line, learned in practice:
   exposed to Rust as a plain `(userdata, data)` callback
 - anything needing a wlroots **struct field** — Rust sees most wlroots types as
   *opaque* (bindgen emits only `_address`), e.g. `wlr_output.width/height`. Reading
-  fields happens in C (`snertwl_scene_add_output_background`, which sizes the bg rect).
+  fields happens in C (`oxide_scene_add_output_background`, which sizes the bg rect).
 - C-array / time params: `wlr_scene_rect_create`'s `const float[4]`, and
   `clock_gettime` + `timespec` for `wlr_scene_output_send_frame_done`
-  (both inside `snertwl_scene_output_render`).
+  (both inside `oxide_scene_output_render`).
 
 **bindgen** (allowlist in `build.rs`) generates only the functions Rust calls
 directly; types come along automatically and are opaque unless fully needed.

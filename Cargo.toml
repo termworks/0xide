@@ -1,8 +1,14 @@
 [package]
-name = "snertwl"
+name = "oxide"
 version = "0.1.0"
 edition = "2021"
-description = "A Wayland compositor in the spirit of Hyprland, built on wlroots"
+description = "0xide — a from-scratch tiling Wayland compositor in Rust, built on wlroots"
+
+# The crate is `oxide` (Cargo forbids a leading digit in package names), but the
+# binary keeps the brand spelling `0xide`.
+[[bin]]
+name = "0xide"
+path = "src/main.rs"
 
 [dependencies]
 

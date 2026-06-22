@@ -1,4 +1,4 @@
-//! Build script: the FFI pipeline for snertwl.
+//! Build script: the FFI pipeline for 0xide.
 //!
 //! 1. Locate wlroots 0.19 + wayland-server via pkg-config (emits linker flags).
 //! 2. Generate the xdg-shell protocol server header with wayland-scanner —
@@ -53,15 +53,15 @@ fn main() {
 
     // 3. Compile the C shim. WLR_USE_UNSTABLE is set inside the .c itself.
     let mut shim = cc::Build::new();
-    shim.file("shim/snertwl_shim.c");
+    shim.file("shim/oxide_shim.c");
     for path in &include_paths {
         shim.include(path);
     }
-    shim.compile("snertwl_shim");
+    shim.compile("oxide_shim");
 
     // 4. Generate Rust bindings. We allowlist exactly the functions Rust calls
     //    directly; bindgen pulls in the types they reference automatically. The
-    //    listener glue and helpers stay in C (declared in snertwl_shim.h).
+    //    listener glue and helpers stay in C (declared in oxide_shim.h).
     let clang_args: Vec<String> = include_paths
         .iter()
         .map(|p| format!("-I{}", p.display()))
@@ -110,6 +110,6 @@ fn main() {
         .expect("failed to write wlr_bindings.rs");
 
     println!("cargo:rerun-if-changed=wrapper.h");
-    println!("cargo:rerun-if-changed=shim/snertwl_shim.c");
-    println!("cargo:rerun-if-changed=shim/snertwl_shim.h");
+    println!("cargo:rerun-if-changed=shim/oxide_shim.c");
+    println!("cargo:rerun-if-changed=shim/oxide_shim.h");
 }
