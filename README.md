@@ -140,16 +140,6 @@ A line 0xide can't parse is warned about on stderr and skipped — never fatal. 
 | `notes/`                  | Architecture, toolchain, and run/verify notes             |
 | `KICKOFF.md`              | The project's mission and learning-first working rules    |
 
-## Roadmap
-
-Stages 0–6 are done: FFI toolchain → Wayland server up → scene render loop → first
-xdg-shell window → input (keyboard/pointer/cursor) → window management (tiling,
-workspaces, keybindings, config) → real display on DRM/KMS including VT switching and
-multi-monitor.
-
-Next is daily-driver polish: **layer-shell** (so a real status bar and wallpaper
-work), **XWayland** (legacy X11 apps), and **screenshots / screencopy**.
-
 ---
 
 0xide is a personal, learning-first project — built concept-by-concept with every
