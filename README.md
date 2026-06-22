@@ -2,11 +2,7 @@
 
 **A from-scratch tiling Wayland compositor, written in Rust on top of [wlroots](https://gitlab.freedesktop.org/wlroots/wlroots).**
 
-A compositor is the program that *is* your Linux desktop: it draws every window to
-the screen, handles your mouse and keyboard, and decides where windows go. On Wayland
-(the modern replacement for X11) that's all **one** program — it merges the display
-server, the window manager, and the compositor into a single process. 0xide is that
-program: a personal, learning-first compositor built directly on wlroots 0.19 rather
+0xide is a personal, learning-first compositor built directly on wlroots 0.19 rather
 than on top of any desktop. It's a **dynamic tiling** compositor — windows are arranged
 automatically to fill the screen instead of floating and overlapping.
 
@@ -27,10 +23,6 @@ automatically to fill the screen instead of floating and overlapping.
 - Runs real **xdg-shell apps** (terminals, browsers, …).
 - Runs on a **real TTY** via libseat/logind, and **survives VT switching**
   (Ctrl+Alt+Fn away and back) without crashing or losing your windows.
-
-Out of scope (for now): animations, blur, rounded corners, an IPC/control socket, a
-plugin system, and config hot-reload. 0xide is **Linux-only** and is its own thing —
-not a drop-in for any existing compositor.
 
 ## Architecture
 
