@@ -15,6 +15,9 @@ struct wlr_scene_tree;
 struct wlr_scene_rect;
 struct wlr_xdg_shell;
 struct wlr_xdg_toplevel;
+struct wlr_layer_shell_v1;
+struct wlr_layer_surface_v1;
+struct wlr_scene_layer_surface_v1;
 struct wlr_seat;
 struct wlr_input_device;
 struct wlr_cursor;
@@ -61,10 +64,15 @@ struct oxide_listener *oxide_output_add_destroy(
 // --- output / scene helpers ------------------------------------------------
 // Enable the output (owns the wlr_output_state init/commit/finish dance).
 void oxide_output_enable(struct wlr_output *output);
+// Create an ordered child tree directly under the scene root. Rust calls this
+// once per z-layer at startup (bg_fallback, layer_bg, layer_bottom, normal,
+// layer_top, layer_overlay); creation order is paint order (later = on top).
+struct wlr_scene_tree *oxide_scene_add_layer_tree(struct wlr_scene *scene);
 // Add a solid-color background rectangle, sized to `output`, positioned at the
-// output's (x, y) in the layout so multiple outputs don't overlap at the origin.
-// Returns the rect so Rust can destroy it when the output goes away.
-struct wlr_scene_rect *oxide_scene_add_output_background(struct wlr_scene *scene,
+// output's (x, y) in the layout so multiple outputs don't overlap at the
+// origin, under `tree` (the bg_fallback layer). Returns the rect so Rust can
+// destroy it when the output goes away.
+struct wlr_scene_rect *oxide_scene_add_output_background(struct wlr_scene_tree *tree,
         struct wlr_output *output, int x, int y, float r, float g, float b);
 // Destroy a background rect created above.
 void oxide_scene_rect_destroy(struct wlr_scene_rect *rect);
@@ -84,9 +92,10 @@ void oxide_output_schedule_frame(struct wlr_output *output);
 // --- xdg-shell (app windows) ----------------------------------------------
 struct oxide_listener *oxide_xdg_shell_add_new_toplevel(
         struct wlr_xdg_shell *shell, oxide_callback callback, void *userdata);
-// Add a toplevel to the scene graph. Returns the scene tree node so Rust can
-// position it. (Use oxide_xdg_add_commit for the initial-configure listener.)
-struct wlr_scene_tree *oxide_scene_add_xdg_toplevel(struct wlr_scene *scene,
+// Add a toplevel to the scene graph, under `tree` (the normal/app-window
+// layer). Returns the scene tree node so Rust can position it. (Use
+// oxide_xdg_add_commit for the initial-configure listener.)
+struct wlr_scene_tree *oxide_scene_add_xdg_toplevel(struct wlr_scene_tree *tree,
         struct wlr_xdg_toplevel *toplevel);
 
 // Register the initial-commit handler (lets the client map). Returns the
@@ -113,6 +122,47 @@ void oxide_scene_tree_destroy(struct wlr_scene_tree *tree);
 void oxide_focus_toplevel(struct wlr_seat *seat,
         struct wlr_xdg_toplevel *toplevel);
 void oxide_output_get_size(struct wlr_output *output, int *width, int *height);
+
+// --- layer-shell (bars, panels, wallpaper) ----------------------------------
+//
+// Mirrors the xdg-shell wiring above: wlroots implements the protocol and a
+// scene helper that does anchor/margin math and exclusive-zone bookkeeping;
+// we expose that plus lifecycle listeners. Rust owns which tree (z-layer) and
+// output each surface lands on.
+
+// The zwlr_layer_shell_v1 global is created directly from Rust via bindgen's
+// wlr_layer_shell_v1_create binding (same pattern as wlr_xdg_shell_create).
+struct oxide_listener *oxide_layer_shell_add_new_surface(
+        struct wlr_layer_shell_v1 *shell, oxide_callback callback, void *userdata);
+
+// NULL if the client didn't request a specific output; Rust must assign one
+// before returning from the new_surface handler.
+struct wlr_output *oxide_layer_surface_output(struct wlr_layer_surface_v1 *ls);
+void oxide_layer_surface_set_output(struct wlr_layer_surface_v1 *ls,
+        struct wlr_output *output);
+// Requested z-layer: 0=background, 1=bottom, 2=top, 3=overlay
+// (zwlr_layer_shell_v1_layer).
+uint32_t oxide_layer_surface_layer(struct wlr_layer_surface_v1 *ls);
+
+// Add the layer surface (and its sub-surfaces/popups) to the scene, under the
+// tree matching its layer.
+struct wlr_scene_layer_surface_v1 *oxide_scene_layer_surface_create(
+        struct wlr_scene_tree *tree, struct wlr_layer_surface_v1 *ls);
+// Position/size the surface per its anchors+margins within the output box
+// (fx,fy,fw,fh), and shrink the usable box (ux,uy,uw,uh, in/out) by its
+// exclusive zone. Also sends the layer_surface.configure event to the client.
+void oxide_scene_layer_surface_configure(struct wlr_scene_layer_surface_v1 *scene_ls,
+        int fx, int fy, int fw, int fh, int *ux, int *uy, int *uw, int *uh);
+
+// Lifecycle listeners on a layer surface (Rust drives arrange + tiling).
+struct oxide_listener *oxide_layer_surface_add_commit(struct wlr_layer_surface_v1 *ls,
+        oxide_callback callback, void *userdata);
+struct oxide_listener *oxide_layer_surface_add_map(struct wlr_layer_surface_v1 *ls,
+        oxide_callback callback, void *userdata);
+struct oxide_listener *oxide_layer_surface_add_unmap(struct wlr_layer_surface_v1 *ls,
+        oxide_callback callback, void *userdata);
+struct oxide_listener *oxide_layer_surface_add_destroy(struct wlr_layer_surface_v1 *ls,
+        oxide_callback callback, void *userdata);
 
 // --- seat & input ----------------------------------------------------------
 // Create the wl_seat global; returns the seat so Rust can wire input/focus.

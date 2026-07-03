@@ -16,6 +16,7 @@
 #include <wlr/types/wlr_seat.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_xdg_shell.h>
+#include <wlr/types/wlr_layer_shell_v1.h>
 #include <wlr/util/log.h>
 #include <wlr/version.h>
 
@@ -142,11 +143,18 @@ void oxide_output_enable(struct wlr_output *output) {
     wlr_output_state_finish(&state);
 }
 
-struct wlr_scene_rect *oxide_scene_add_output_background(struct wlr_scene *scene,
+// Create an ordered child tree directly under the scene root. Creation order
+// is paint order (later = on top) — this is how we get correct layer-shell
+// z-ordering without touching wlroots' internals.
+struct wlr_scene_tree *oxide_scene_add_layer_tree(struct wlr_scene *scene) {
+    return wlr_scene_tree_create(&scene->tree);
+}
+
+struct wlr_scene_rect *oxide_scene_add_output_background(struct wlr_scene_tree *tree,
         struct wlr_output *output, int x, int y, float r, float g, float b) {
     const float color[4] = {r, g, b, 1.0f};
     struct wlr_scene_rect *rect =
-            wlr_scene_rect_create(&scene->tree, output->width, output->height, color);
+            wlr_scene_rect_create(tree, output->width, output->height, color);
     // Scene nodes share one coordinate space; place this output's background at
     // the output's position in the layout so multiple monitors don't overlap.
     wlr_scene_node_set_position(&rect->node, x, y);
@@ -218,11 +226,11 @@ struct oxide_listener *oxide_xdg_shell_add_new_toplevel(
     return signal_add(&shell->events.new_toplevel, callback, userdata);
 }
 
-struct wlr_scene_tree *oxide_scene_add_xdg_toplevel(struct wlr_scene *scene,
+struct wlr_scene_tree *oxide_scene_add_xdg_toplevel(struct wlr_scene_tree *tree,
         struct wlr_xdg_toplevel *toplevel) {
     // A scene node that tracks this surface (and its popups) and follows its
     // map/unmap state automatically.
-    return wlr_scene_xdg_surface_create(&scene->tree, toplevel->base);
+    return wlr_scene_xdg_surface_create(tree, toplevel->base);
 }
 
 // Configure the client on its initial commit so it can map. Returned so Rust
@@ -284,6 +292,75 @@ void oxide_focus_toplevel(struct wlr_seat *seat,
 void oxide_output_get_size(struct wlr_output *output, int *width, int *height) {
     *width = output->width;
     *height = output->height;
+}
+
+// --- layer-shell (bars, panels, wallpaper) ----------------------------------
+//
+// The global itself is created directly from Rust via the bindgen binding for
+// wlr_layer_shell_v1_create (same pattern as wlr_xdg_shell_create) — no shim
+// wrapper needed for a plain creation call.
+
+struct oxide_listener *oxide_layer_shell_add_new_surface(
+        struct wlr_layer_shell_v1 *shell, oxide_callback callback, void *userdata) {
+    return signal_add(&shell->events.new_surface, callback, userdata);
+}
+
+// The output may be NULL if the client didn't request a specific one; Rust
+// must assign one before returning from the new_surface handler.
+struct wlr_output *oxide_layer_surface_output(struct wlr_layer_surface_v1 *ls) {
+    return ls->output;
+}
+
+void oxide_layer_surface_set_output(struct wlr_layer_surface_v1 *ls,
+        struct wlr_output *output) {
+    ls->output = output;
+}
+
+// Requested z-layer (0=background..3=overlay, zwlr_layer_shell_v1_layer). Set
+// directly by the get_layer_surface request, so it's already valid when
+// new_surface fires.
+uint32_t oxide_layer_surface_layer(struct wlr_layer_surface_v1 *ls) {
+    return ls->pending.layer;
+}
+
+struct wlr_scene_layer_surface_v1 *oxide_scene_layer_surface_create(
+        struct wlr_scene_tree *tree, struct wlr_layer_surface_v1 *ls) {
+    return wlr_scene_layer_surface_v1_create(tree, ls);
+}
+
+// Position/size `scene_ls` per its anchors+margins within the output box
+// (fx,fy,fw,fh), and shrink the usable box (ux,uy,uw,uh, in/out) by its
+// exclusive zone. wlr_scene_layer_surface_v1_configure also sends the
+// layer_surface.configure event that lets the client map.
+void oxide_scene_layer_surface_configure(struct wlr_scene_layer_surface_v1 *scene_ls,
+        int fx, int fy, int fw, int fh, int *ux, int *uy, int *uw, int *uh) {
+    struct wlr_box full = {.x = fx, .y = fy, .width = fw, .height = fh};
+    struct wlr_box usable = {.x = *ux, .y = *uy, .width = *uw, .height = *uh};
+    wlr_scene_layer_surface_v1_configure(scene_ls, &full, &usable);
+    *ux = usable.x;
+    *uy = usable.y;
+    *uw = usable.width;
+    *uh = usable.height;
+}
+
+struct oxide_listener *oxide_layer_surface_add_commit(struct wlr_layer_surface_v1 *ls,
+        oxide_callback callback, void *userdata) {
+    return signal_add(&ls->surface->events.commit, callback, userdata);
+}
+
+struct oxide_listener *oxide_layer_surface_add_map(struct wlr_layer_surface_v1 *ls,
+        oxide_callback callback, void *userdata) {
+    return signal_add(&ls->surface->events.map, callback, userdata);
+}
+
+struct oxide_listener *oxide_layer_surface_add_unmap(struct wlr_layer_surface_v1 *ls,
+        oxide_callback callback, void *userdata) {
+    return signal_add(&ls->surface->events.unmap, callback, userdata);
+}
+
+struct oxide_listener *oxide_layer_surface_add_destroy(struct wlr_layer_surface_v1 *ls,
+        oxide_callback callback, void *userdata) {
+    return signal_add(&ls->events.destroy, callback, userdata);
 }
 
 // --- seat & input ----------------------------------------------------------

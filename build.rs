@@ -40,6 +40,25 @@ fn main() {
         .expect("failed to run wayland-scanner");
     assert!(status.success(), "wayland-scanner failed on {xdg_xml}");
 
+    // Same idea for wlr-layer-shell-unstable-v1: wlroots' wlr_layer_shell_v1.h
+    // #includes the generated protocol header, but the protocol isn't shipped
+    // as a system header. We vendor its XML in-repo (protocols/) instead of
+    // depending on the wlr-protocols package, so the build stays self-contained.
+    let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+    let layer_shell_xml = manifest_dir.join("protocols/wlr-layer-shell-unstable-v1.xml");
+    let layer_shell_header = out_dir.join("wlr-layer-shell-unstable-v1-protocol.h");
+    let status = Command::new("wayland-scanner")
+        .arg("server-header")
+        .arg(&layer_shell_xml)
+        .arg(&layer_shell_header)
+        .status()
+        .expect("failed to run wayland-scanner");
+    assert!(
+        status.success(),
+        "wayland-scanner failed on {}",
+        layer_shell_xml.display()
+    );
+
     // Include dirs shared by the shim build (cc) and bindgen (clang): the
     // library headers plus OUT_DIR for our generated protocol header.
     let mut include_paths: Vec<PathBuf> = wlroots
@@ -95,6 +114,7 @@ fn main() {
         .allowlist_function("wlr_xdg_shell_create")
         .allowlist_function("wlr_xdg_toplevel_set_size")
         .allowlist_function("wlr_xdg_toplevel_send_close")
+        .allowlist_function("wlr_layer_shell_v1_create")
         .allowlist_type("wlr_xdg_toplevel")
         .allowlist_type("wlr_session")
         .allowlist_type("wlr_seat")
@@ -112,4 +132,5 @@ fn main() {
     println!("cargo:rerun-if-changed=wrapper.h");
     println!("cargo:rerun-if-changed=shim/oxide_shim.c");
     println!("cargo:rerun-if-changed=shim/oxide_shim.h");
+    println!("cargo:rerun-if-changed=protocols/wlr-layer-shell-unstable-v1.xml");
 }

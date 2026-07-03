@@ -53,8 +53,9 @@ extern "C" {
         userdata: *mut c_void,
     ) -> *mut ShimListener;
     fn oxide_output_enable(output: *mut wlr::wlr_output);
+    fn oxide_scene_add_layer_tree(scene: *mut wlr::wlr_scene) -> *mut wlr::wlr_scene_tree;
     fn oxide_scene_add_output_background(
-        scene: *mut wlr::wlr_scene,
+        tree: *mut wlr::wlr_scene_tree,
         output: *mut wlr::wlr_output,
         x: i32,
         y: i32,
@@ -89,7 +90,7 @@ extern "C" {
         userdata: *mut c_void,
     ) -> *mut ShimListener;
     fn oxide_scene_add_xdg_toplevel(
-        scene: *mut wlr::wlr_scene,
+        tree: *mut wlr::wlr_scene_tree,
         toplevel: *mut wlr::wlr_xdg_toplevel,
     ) -> *mut wlr::wlr_scene_tree;
     fn oxide_xdg_add_commit(toplevel: *mut wlr::wlr_xdg_toplevel) -> *mut ShimListener;
@@ -137,6 +138,53 @@ extern "C" {
         scene: *mut wlr::wlr_scene,
         seat: *mut wlr::wlr_seat,
     ) -> *mut wlr::wlr_cursor;
+
+    // Layer-shell (bars, panels, wallpaper). Layer surfaces and the scene
+    // helper wrapping them stay opaque `*mut c_void` in Rust, same as the
+    // background rect above — we only ever pass them back into these helpers.
+    fn oxide_layer_shell_add_new_surface(
+        shell: *mut wlr::wlr_layer_shell_v1,
+        callback: ShimCallback,
+        userdata: *mut c_void,
+    ) -> *mut ShimListener;
+    fn oxide_layer_surface_output(ls: *mut c_void) -> *mut wlr::wlr_output;
+    fn oxide_layer_surface_set_output(ls: *mut c_void, output: *mut wlr::wlr_output);
+    fn oxide_layer_surface_layer(ls: *mut c_void) -> u32;
+    fn oxide_scene_layer_surface_create(
+        tree: *mut wlr::wlr_scene_tree,
+        ls: *mut c_void,
+    ) -> *mut c_void;
+    fn oxide_scene_layer_surface_configure(
+        scene_ls: *mut c_void,
+        fx: i32,
+        fy: i32,
+        fw: i32,
+        fh: i32,
+        ux: *mut i32,
+        uy: *mut i32,
+        uw: *mut i32,
+        uh: *mut i32,
+    );
+    fn oxide_layer_surface_add_commit(
+        ls: *mut c_void,
+        callback: ShimCallback,
+        userdata: *mut c_void,
+    ) -> *mut ShimListener;
+    fn oxide_layer_surface_add_map(
+        ls: *mut c_void,
+        callback: ShimCallback,
+        userdata: *mut c_void,
+    ) -> *mut ShimListener;
+    fn oxide_layer_surface_add_unmap(
+        ls: *mut c_void,
+        callback: ShimCallback,
+        userdata: *mut c_void,
+    ) -> *mut ShimListener;
+    fn oxide_layer_surface_add_destroy(
+        ls: *mut c_void,
+        callback: ShimCallback,
+        userdata: *mut c_void,
+    ) -> *mut ShimListener;
 }
 
 /// Long-lived compositor state. We hand a pointer to this to the shim as the
@@ -154,6 +202,17 @@ struct Server {
     cursor: *mut wlr::wlr_cursor,
     renderer: *mut wlr::wlr_renderer,
     allocator: *mut wlr::wlr_allocator,
+    /// Ordered scene trees for z-layering. Creation order is paint order
+    /// (later = on top): the config background, then layer-shell background,
+    /// bottom, app windows (normal), layer-shell top, then overlay.
+    tree_bg_fallback: *mut wlr::wlr_scene_tree,
+    tree_layer_bg: *mut wlr::wlr_scene_tree,
+    tree_layer_bottom: *mut wlr::wlr_scene_tree,
+    tree_normal: *mut wlr::wlr_scene_tree,
+    tree_layer_top: *mut wlr::wlr_scene_tree,
+    tree_layer_overlay: *mut wlr::wlr_scene_tree,
+    /// Layer-shell surfaces (bars, panels, wallpaper) from any output.
+    layers: Vec<*mut LayerSurface>,
     /// Virtual workspaces; each is shown on at most one output at a time.
     workspaces: Vec<Workspace>,
     /// Connected outputs (monitors), each displaying one workspace.
@@ -216,6 +275,21 @@ struct Toplevel {
     destroy_listener: *mut ShimListener,
 }
 
+/// One layer-shell surface (bar, panel, wallpaper — e.g. quickshell). Heap-
+/// allocated; a raw pointer to it is the `userdata` for its commit/map/unmap/
+/// destroy listeners. Modeled on `Toplevel`.
+struct LayerSurface {
+    server: *mut Server,
+    wlr_layer_surface: *mut c_void,
+    /// The `wlr_scene_layer_surface_v1` scene helper (opaque to Rust).
+    scene_ls: *mut c_void,
+    wlr_output: *mut wlr::wlr_output,
+    commit_listener: *mut ShimListener,
+    map_listener: *mut ShimListener,
+    unmap_listener: *mut ShimListener,
+    destroy_listener: *mut ShimListener,
+}
+
 /// Recompute the whole picture: hide windows whose workspace isn't on any
 /// output, then tile each output's workspace as a spiral (dwindle). Called after
 /// any change to windows, workspaces or outputs.
@@ -264,6 +338,30 @@ unsafe fn refresh(server: &mut Server) {
             split_vertical = !split_vertical;
             oxide_scene_tree_set_position((*tl).scene_tree, x, y);
             wlr::wlr_xdg_toplevel_set_size((*tl).xdg_toplevel, w, h);
+        }
+    }
+}
+
+/// Recompute one output's layer-shell placement: walk its layer surfaces in
+/// background -> overlay order, positioning each per its anchors/margins and
+/// shrinking a running "usable" box by any exclusive zone. Called after any
+/// layer-surface commit/map/unmap/destroy on that output. (The usable box
+/// isn't fed into tiling yet — that's Stage B.)
+unsafe fn arrange_layers(server: &mut Server, output_idx: usize) {
+    let o = &server.outputs[output_idx];
+    let (fx, fy, fw, fh) = (o.x, o.y, o.w, o.h);
+    let wlr_output = o.wlr_output;
+    let (mut ux, mut uy, mut uw, mut uh) = (fx, fy, fw, fh);
+
+    for layer in 0u32..=3 {
+        for &ls in &server.layers {
+            let l = &*ls;
+            if l.wlr_output != wlr_output || oxide_layer_surface_layer(l.wlr_layer_surface) != layer {
+                continue;
+            }
+            oxide_scene_layer_surface_configure(
+                l.scene_ls, fx, fy, fw, fh, &mut ux, &mut uy, &mut uw, &mut uh,
+            );
         }
     }
 }
@@ -447,7 +545,8 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
     }
     // Background node for this output, placed at its layout origin.
     let (r, g, b) = server.config.background;
-    let background = oxide_scene_add_output_background(server.scene, output, x, y, r, g, b);
+    let background =
+        oxide_scene_add_output_background(server.tree_bg_fallback, output, x, y, r, g, b);
 
     // Render through the scene on every frame. The frame callback needs to find
     // this output (for repaint_frames), so hand it a heap FrameCtx. Track the
@@ -528,7 +627,7 @@ unsafe extern "C" fn handle_session_active(userdata: *mut c_void, _data: *mut c_
     for ws in &mut server.workspaces {
         for &tl in &ws.windows {
             oxide_scene_tree_destroy((*tl).scene_tree);
-            (*tl).scene_tree = oxide_scene_add_xdg_toplevel(server.scene, (*tl).xdg_toplevel);
+            (*tl).scene_tree = oxide_scene_add_xdg_toplevel(server.tree_normal, (*tl).xdg_toplevel);
         }
     }
 
@@ -581,7 +680,7 @@ unsafe extern "C" fn handle_new_toplevel(userdata: *mut c_void, data: *mut c_voi
 
     // Give it a scene node, then track it in Rust. We don't add it to the
     // layout yet — that happens on map, when it actually has content.
-    let scene_tree = oxide_scene_add_xdg_toplevel((*server).scene, toplevel);
+    let scene_tree = oxide_scene_add_xdg_toplevel((*server).tree_normal, toplevel);
     let tl = Box::into_raw(Box::new(Toplevel {
         server,
         xdg_toplevel: toplevel,
@@ -662,6 +761,92 @@ unsafe fn remove_window(server: &mut Server, tl: *mut Toplevel) {
     }
 }
 
+/// Called by the shim when a client creates a layer-shell surface (a bar,
+/// panel, or wallpaper — e.g. quickshell). Assigns an output if the client
+/// didn't request one, places it in the scene tree matching its layer, and
+/// registers its lifecycle listeners.
+unsafe extern "C" fn handle_new_layer_surface(userdata: *mut c_void, data: *mut c_void) {
+    let server = &mut *(userdata as *mut Server);
+    let ls = data;
+
+    let mut wlr_output = oxide_layer_surface_output(ls);
+    if wlr_output.is_null() {
+        if server.outputs.is_empty() {
+            eprintln!("0xide: layer surface arrived with no output available yet, ignoring");
+            return;
+        }
+        wlr_output = server.outputs[active_output(server)].wlr_output;
+        oxide_layer_surface_set_output(ls, wlr_output);
+    }
+
+    let tree = match oxide_layer_surface_layer(ls) {
+        0 => server.tree_layer_bg,
+        1 => server.tree_layer_bottom,
+        3 => server.tree_layer_overlay,
+        _ => server.tree_layer_top, // 2 (top), and any unknown value
+    };
+    let scene_ls = oxide_scene_layer_surface_create(tree, ls);
+
+    let lsurf = Box::into_raw(Box::new(LayerSurface {
+        server: userdata as *mut Server,
+        wlr_layer_surface: ls,
+        scene_ls,
+        wlr_output,
+        commit_listener: ptr::null_mut(),
+        map_listener: ptr::null_mut(),
+        unmap_listener: ptr::null_mut(),
+        destroy_listener: ptr::null_mut(),
+    }));
+    let ud = lsurf as *mut c_void;
+    (*lsurf).commit_listener = oxide_layer_surface_add_commit(ls, handle_layer_commit, ud);
+    (*lsurf).map_listener = oxide_layer_surface_add_map(ls, handle_layer_map, ud);
+    (*lsurf).unmap_listener = oxide_layer_surface_add_unmap(ls, handle_layer_unmap, ud);
+    (*lsurf).destroy_listener = oxide_layer_surface_add_destroy(ls, handle_layer_destroy, ud);
+
+    server.layers.push(lsurf);
+}
+
+/// Re-arrange the layer surface's output whenever one of its lifecycle events
+/// fires. The initial commit's configure is what lets the client map.
+unsafe fn rearrange_layer_output(l: &LayerSurface) {
+    let server = &mut *l.server;
+    if let Some(idx) = server.outputs.iter().position(|o| o.wlr_output == l.wlr_output) {
+        arrange_layers(server, idx);
+    }
+    refresh(server);
+}
+
+unsafe extern "C" fn handle_layer_commit(userdata: *mut c_void, _data: *mut c_void) {
+    rearrange_layer_output(&*(userdata as *mut LayerSurface));
+}
+
+unsafe extern "C" fn handle_layer_map(userdata: *mut c_void, _data: *mut c_void) {
+    rearrange_layer_output(&*(userdata as *mut LayerSurface));
+}
+
+unsafe extern "C" fn handle_layer_unmap(userdata: *mut c_void, _data: *mut c_void) {
+    rearrange_layer_output(&*(userdata as *mut LayerSurface));
+}
+
+/// The layer surface was destroyed: unregister its listeners, drop it from
+/// tracking, and re-arrange the output it was on.
+unsafe extern "C" fn handle_layer_destroy(userdata: *mut c_void, _data: *mut c_void) {
+    let l = userdata as *mut LayerSurface;
+    oxide_listener_remove((*l).commit_listener);
+    oxide_listener_remove((*l).map_listener);
+    oxide_listener_remove((*l).unmap_listener);
+    oxide_listener_remove((*l).destroy_listener);
+
+    let server = &mut *(*l).server;
+    let wlr_output = (*l).wlr_output;
+    server.layers.retain(|&x| x != l);
+    if let Some(idx) = server.outputs.iter().position(|o| o.wlr_output == wlr_output) {
+        arrange_layers(server, idx);
+    }
+    refresh(server);
+    drop(Box::from_raw(l));
+}
+
 /// Called by the shim when an input device (keyboard, pointer, …) appears.
 unsafe extern "C" fn handle_new_input(userdata: *mut c_void, data: *mut c_void) {
     let server = &mut *(userdata as *mut Server);
@@ -713,6 +898,16 @@ fn main() {
         let output_layout = wlr::wlr_output_layout_create(display);
         let scene_layout = wlr::wlr_scene_attach_output_layout(scene, output_layout);
 
+        // Ordered z-layers for the scene: each is a direct child of the scene
+        // root, and creation order is paint order (later = on top). Layer-shell
+        // surfaces (bars, panels, wallpaper) slot in around our own content.
+        let tree_bg_fallback = oxide_scene_add_layer_tree(scene);
+        let tree_layer_bg = oxide_scene_add_layer_tree(scene);
+        let tree_layer_bottom = oxide_scene_add_layer_tree(scene);
+        let tree_normal = oxide_scene_add_layer_tree(scene);
+        let tree_layer_top = oxide_scene_add_layer_tree(scene);
+        let tree_layer_overlay = oxide_scene_add_layer_tree(scene);
+
         // Cursor over the layout; the shim routes its events through scene
         // hit-testing to the seat. Pointer devices get attached in new_input.
         let cursor = oxide_cursor_setup(output_layout, scene, seat);
@@ -734,6 +929,13 @@ fn main() {
             cursor,
             renderer,
             allocator,
+            tree_bg_fallback,
+            tree_layer_bg,
+            tree_layer_bottom,
+            tree_normal,
+            tree_layer_top,
+            tree_layer_overlay,
+            layers: Vec::new(),
             workspaces: (0..WORKSPACE_COUNT)
                 .map(|_| Workspace {
                     windows: Vec::new(),
@@ -753,6 +955,12 @@ fn main() {
         // its new_toplevel signal so each app window enters our scene graph.
         let xdg_shell = wlr::wlr_xdg_shell_create(display, 6);
         oxide_xdg_shell_add_new_toplevel(xdg_shell, handle_new_toplevel, server_ptr);
+
+        // wlr-layer-shell-unstable-v1: the global bars/panels/wallpaper (e.g.
+        // quickshell) bind to place themselves in a z-layer above or below our
+        // app windows. Version 4 = latest without the v5 exclusive_edge request.
+        let layer_shell = wlr::wlr_layer_shell_v1_create(display, 4);
+        oxide_layer_shell_add_new_surface(layer_shell, handle_new_layer_surface, server_ptr);
 
         // Open the Unix socket clients connect through (e.g. "wayland-2").
         let socket_ptr = wlr::wl_display_add_socket_auto(display);

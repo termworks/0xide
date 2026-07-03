@@ -23,6 +23,9 @@ automatically to fill the screen instead of floating and overlapping.
 - Runs real **xdg-shell apps** (terminals, browsers, …).
 - Runs on a **real TTY** via libseat/logind, and **survives VT switching**
   (Ctrl+Alt+Fn away and back) without crashing or losing your windows.
+- **Layer-shell** (`wlr-layer-shell-unstable-v1`) — bars, panels and wallpaper (e.g.
+  [quickshell](https://quickshell.org)) render in the correct z-order and reserve their
+  screen space, so tiled windows never sit underneath them.
 
 ## Architecture
 

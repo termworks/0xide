@@ -18,5 +18,6 @@
 #include <wlr/types/wlr_scene.h>          // wlr_scene_*
 #include <wlr/types/wlr_seat.h>           // wlr_seat (opaque to Rust)
 #include <wlr/types/wlr_xdg_shell.h>      // wlr_xdg_shell_create, wlr_xdg_toplevel
+#include <wlr/types/wlr_layer_shell_v1.h> // wlr_layer_shell_v1_create, wlr_layer_surface_v1
 #include <wlr/util/log.h>            // wlr_log_*
 #include <wlr/version.h>             // WLR_VERSION_STR
