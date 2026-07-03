@@ -70,9 +70,19 @@ fn main() {
         .collect();
     include_paths.push(out_dir.clone());
 
-    // 3. Compile the C shim. WLR_USE_UNSTABLE is set inside the .c itself.
+    // 3. Compile the C shim. WLR_USE_UNSTABLE is set inside each .c file. Split
+    //    by protocol (core listener glue, then one file per Wayland protocol)
+    //    so no single file covers more than one concern.
+    let shim_files = [
+        "shim/core.c",
+        "shim/output.c",
+        "shim/xdg_shell.c",
+        "shim/layer_shell.c",
+        "shim/decoration.c",
+        "shim/input.c",
+    ];
     let mut shim = cc::Build::new();
-    shim.file("shim/oxide_shim.c");
+    shim.files(shim_files);
     for path in &include_paths {
         shim.include(path);
     }
@@ -131,7 +141,10 @@ fn main() {
         .expect("failed to write wlr_bindings.rs");
 
     println!("cargo:rerun-if-changed=wrapper.h");
-    println!("cargo:rerun-if-changed=shim/oxide_shim.c");
+    for file in &shim_files {
+        println!("cargo:rerun-if-changed={file}");
+    }
     println!("cargo:rerun-if-changed=shim/oxide_shim.h");
+    println!("cargo:rerun-if-changed=shim/oxide_shim_internal.h");
     println!("cargo:rerun-if-changed=protocols/wlr-layer-shell-unstable-v1.xml");
 }
