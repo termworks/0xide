@@ -238,6 +238,13 @@ struct Output {
     y: i32,
     w: i32,
     h: i32,
+    /// Usable area left after layer-shell surfaces reserve their exclusive
+    /// zones (e.g. a bar strip). Starts equal to the full box; recomputed by
+    /// `arrange_layers`. App windows tile within this, not the full box.
+    ux: i32,
+    uy: i32,
+    uw: i32,
+    uh: i32,
     workspace: usize,
     /// Listeners + background node + frame context to tear down on destroy.
     frame_listener: *mut ShimListener,
@@ -316,8 +323,8 @@ unsafe fn refresh(server: &mut Server) {
         // Spiral layout: each window except the last splits the remaining rect,
         // alternating vertical (left/right) then horizontal (top/bottom). The
         // window takes the first half; the rest recurse into the second half.
-        let (mut rx, mut ry) = (o.x + gap, o.y + gap);
-        let (mut rw, mut rh) = ((o.w - gap * 2).max(1), (o.h - gap * 2).max(1));
+        let (mut rx, mut ry) = (o.ux + gap, o.uy + gap);
+        let (mut rw, mut rh) = ((o.uw - gap * 2).max(1), (o.uh - gap * 2).max(1));
         let mut split_vertical = true;
         for (i, &tl) in ws.windows.iter().enumerate() {
             let (x, y, w, h);
@@ -344,9 +351,9 @@ unsafe fn refresh(server: &mut Server) {
 
 /// Recompute one output's layer-shell placement: walk its layer surfaces in
 /// background -> overlay order, positioning each per its anchors/margins and
-/// shrinking a running "usable" box by any exclusive zone. Called after any
-/// layer-surface commit/map/unmap/destroy on that output. (The usable box
-/// isn't fed into tiling yet — that's Stage B.)
+/// shrinking a running "usable" box by any exclusive zone. Stores the result
+/// on the `Output` so `refresh()` can tile app windows within it. Called after
+/// any layer-surface commit/map/unmap/destroy on that output.
 unsafe fn arrange_layers(server: &mut Server, output_idx: usize) {
     let o = &server.outputs[output_idx];
     let (fx, fy, fw, fh) = (o.x, o.y, o.w, o.h);
@@ -364,6 +371,9 @@ unsafe fn arrange_layers(server: &mut Server, output_idx: usize) {
             );
         }
     }
+
+    let o = &mut server.outputs[output_idx];
+    (o.ux, o.uy, o.uw, o.uh) = (ux, uy, uw, uh);
 }
 
 /// The output the cursor is currently on (the target for new windows and
@@ -565,6 +575,11 @@ unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *mut c_void)
         y,
         w,
         h,
+        // No layer surfaces yet; usable area starts as the full box.
+        ux: x,
+        uy: y,
+        uw: w,
+        uh: h,
         workspace,
         frame_listener,
         destroy_listener,
