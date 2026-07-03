@@ -26,6 +26,8 @@ automatically to fill the screen instead of floating and overlapping.
 - **Layer-shell** (`wlr-layer-shell-unstable-v1`) — bars, panels and wallpaper (e.g.
   [quickshell](https://quickshell.org)) render in the correct z-order and reserve their
   screen space, so tiled windows never sit underneath them.
+- **Server-side decorations** (`xdg-decoration-unstable-v1`) — 0xide always claims
+  decoration, so clients don't draw their own title bar/border: bare, borderless windows.
 
 ## Architecture
 

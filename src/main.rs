@@ -185,6 +185,16 @@ extern "C" {
         callback: ShimCallback,
         userdata: *mut c_void,
     ) -> *mut ShimListener;
+
+    // xdg-decoration: force server-side mode so clients skip drawing their
+    // own title bar. The decoration object stays opaque `*mut c_void`, same
+    // treatment as the layer-shell surface above.
+    fn oxide_xdg_decoration_manager_add_new_toplevel_decoration(
+        manager: *mut wlr::wlr_xdg_decoration_manager_v1,
+        callback: ShimCallback,
+        userdata: *mut c_void,
+    ) -> *mut ShimListener;
+    fn oxide_xdg_toplevel_decoration_set_server_side(decoration: *mut c_void);
 }
 
 /// Long-lived compositor state. We hand a pointer to this to the shim as the
@@ -862,6 +872,13 @@ unsafe extern "C" fn handle_layer_destroy(userdata: *mut c_void, _data: *mut c_v
     drop(Box::from_raw(l));
 }
 
+/// Called by the shim when a client creates an xdg-decoration object for one
+/// of its toplevels. We always force server-side mode and draw nothing —
+/// bare, borderless windows — so there's nothing else to track here.
+unsafe extern "C" fn handle_new_decoration(_userdata: *mut c_void, data: *mut c_void) {
+    oxide_xdg_toplevel_decoration_set_server_side(data);
+}
+
 /// Called by the shim when an input device (keyboard, pointer, …) appears.
 unsafe extern "C" fn handle_new_input(userdata: *mut c_void, data: *mut c_void) {
     let server = &mut *(userdata as *mut Server);
@@ -970,6 +987,15 @@ fn main() {
         // its new_toplevel signal so each app window enters our scene graph.
         let xdg_shell = wlr::wlr_xdg_shell_create(display, 6);
         oxide_xdg_shell_add_new_toplevel(xdg_shell, handle_new_toplevel, server_ptr);
+
+        // xdg-decoration: force server-side mode on every toplevel so clients
+        // skip drawing their own CSD title bar. We draw nothing in its place.
+        let decoration_manager = wlr::wlr_xdg_decoration_manager_v1_create(display);
+        oxide_xdg_decoration_manager_add_new_toplevel_decoration(
+            decoration_manager,
+            handle_new_decoration,
+            server_ptr,
+        );
 
         // wlr-layer-shell-unstable-v1: the global bars/panels/wallpaper (e.g.
         // quickshell) bind to place themselves in a z-layer above or below our

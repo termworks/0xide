@@ -18,6 +18,7 @@ struct wlr_xdg_toplevel;
 struct wlr_layer_shell_v1;
 struct wlr_layer_surface_v1;
 struct wlr_scene_layer_surface_v1;
+struct wlr_xdg_decoration_manager_v1;
 struct wlr_seat;
 struct wlr_input_device;
 struct wlr_cursor;
@@ -163,6 +164,20 @@ struct oxide_listener *oxide_layer_surface_add_unmap(struct wlr_layer_surface_v1
         oxide_callback callback, void *userdata);
 struct oxide_listener *oxide_layer_surface_add_destroy(struct wlr_layer_surface_v1 *ls,
         oxide_callback callback, void *userdata);
+
+// --- xdg-decoration (server-side window decoration negotiation) ------------
+//
+// The manager global is created directly from Rust via bindgen's
+// wlr_xdg_decoration_manager_v1_create binding (same pattern as
+// wlr_xdg_shell_create) — no shim wrapper needed for a plain creation call.
+
+struct oxide_listener *oxide_xdg_decoration_manager_add_new_toplevel_decoration(
+        struct wlr_xdg_decoration_manager_v1 *manager, oxide_callback callback,
+        void *userdata);
+// Force server-side mode: the client stops drawing its own title bar/border.
+// We draw nothing in its place (bare windows), so this is a one-shot,
+// fire-and-forget call — no per-decoration state to track or clean up.
+void oxide_xdg_toplevel_decoration_set_server_side(void *decoration);
 
 // --- seat & input ----------------------------------------------------------
 // Create the wl_seat global; returns the seat so Rust can wire input/focus.
