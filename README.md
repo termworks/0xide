@@ -139,4 +139,4 @@ A line 0xide can't parse is warned about on stderr and skipped — never fatal. 
 
 0xide is a personal, learning-first project — built concept-by-concept with every
 file and function understood rather than assembled. Its working rules live in
-[`KICKOFF.md`](KICKOFF.md). No license yet.
+[`KICKOFF.md`](KICKOFF.md). No license yet!
