@@ -65,7 +65,7 @@ impl Default for Config {
     fn default() -> Self {
         Config {
             modifier: MOD_LOGO,
-            gap: 10,
+            gap: 2,
             background: (0.0, 0.6, 0.6),
             binds: Vec::new(),
         }
