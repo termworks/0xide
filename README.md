@@ -112,7 +112,10 @@ main session. More detail and verification recipes are in
 
 0xide reads `~/.config/0xide/0xide.conf` (or `$XDG_CONFIG_HOME/0xide/0xide.conf`).
 With no config file it uses the built-in defaults above. The format is `key = value`
-with `#` comments, plus `bind` lines:
+with `#` comments, plus `bind` lines. Binds always start from the defaults above;
+each `bind` line in your config overrides just that key combination and leaves every
+other default bind in place — so a config with only a couple of `bind` lines still
+has working workspace switches, close/quit, etc:
 
 ```
 modifier   = super

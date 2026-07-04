@@ -5,8 +5,11 @@
 //! keybindings (Hyprland-ish syntax). Anything we can't parse is warned about
 //! and skipped, so a typo never stops the compositor from starting.
 //!
-//! If no config file exists we fall back to built-in defaults that reproduce the
-//! old hardcoded behavior, so 0xide is usable out of the box.
+//! Binds always start from the built-in defaults; a config's `bind =` lines
+//! override whichever chord (mods+key) they name and leave every other
+//! default bind in place — never a wholesale replacement. So a config with
+//! just a couple of `bind =` lines still has working workspace switches,
+//! etc. If no config file exists at all, the defaults apply unchanged.
 
 use std::env;
 use std::ffi::CString;
@@ -109,13 +112,13 @@ impl Config {
             cfg.modifier = MOD_ALT;
         }
 
-        // Binds are parsed after the modifier is final, so `MOD` resolves right.
-        match &contents {
-            Some(text) => cfg.parse_binds(text),
-            None => cfg.binds = default_binds(cfg.modifier),
-        }
-        if cfg.binds.is_empty() {
-            cfg.binds = default_binds(cfg.modifier);
+        // Binds always start from the defaults for the final modifier; a
+        // config's own `bind =` lines (parsed after the modifier is final,
+        // so `MOD` resolves right) override matching chords or add new
+        // ones — see the module doc comment.
+        cfg.binds = default_binds(cfg.modifier);
+        if let Some(text) = &contents {
+            cfg.apply_binds(text);
         }
 
         println!(
@@ -150,15 +153,21 @@ impl Config {
         }
     }
 
-    /// Second pass: `bind = MODS, KEY, ACTION[, ARG]`.
-    fn parse_binds(&mut self, text: &str) {
+    /// Second pass: `bind = MODS, KEY, ACTION[, ARG]`. Each parsed bind
+    /// overrides any existing bind on the same chord (mods+keysym) — from
+    /// the defaults or an earlier line in this same file — or is appended
+    /// if the chord is new.
+    fn apply_binds(&mut self, text: &str) {
         for (n, raw) in lines(text) {
             let Some((key, val)) = split_kv(raw) else { continue };
             if key != "bind" {
                 continue;
             }
             match self.parse_bind(val) {
-                Some(b) => self.binds.push(b),
+                Some(b) => match self.binds.iter_mut().find(|e| e.mods == b.mods && e.keysym == b.keysym) {
+                    Some(existing) => *existing = b,
+                    None => self.binds.push(b),
+                },
                 None => warn(n, "invalid bind", raw),
             }
         }
@@ -320,4 +329,44 @@ fn config_path() -> Option<PathBuf> {
     }
     let home = env::var("HOME").ok()?;
     Some(PathBuf::from(home).join(".config/0xide/0xide.conf"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn config_binds_override_only_named_chords() {
+        let mut cfg = Config::default();
+        cfg.binds = default_binds(cfg.modifier);
+        let before = cfg.binds.len();
+
+        // Overrides Mod+J (a default MoveFocus bind) back to the old
+        // cyclic focusnext, without touching any other default bind.
+        cfg.apply_binds("bind = MOD, J, focusnext\n");
+        assert_eq!(cfg.binds.len(), before, "override must not grow the bind table");
+
+        let j = key("J");
+        let overridden = cfg.binds.iter().find(|b| b.mods == cfg.modifier && b.keysym == j).unwrap();
+        assert!(matches!(overridden.action, Action::FocusNext));
+
+        // An untouched chord (workspace 3) still resolves to its default.
+        let three = key("3");
+        let untouched = cfg
+            .binds
+            .iter()
+            .find(|b| b.mods == cfg.modifier && b.keysym == three)
+            .unwrap();
+        assert!(matches!(untouched.action, Action::Workspace(2)));
+    }
+
+    #[test]
+    fn config_binds_append_new_chords() {
+        let mut cfg = Config::default();
+        cfg.binds = default_binds(cfg.modifier);
+        let before = cfg.binds.len();
+
+        cfg.apply_binds("bind = , Print, spawn, grim\n");
+        assert_eq!(cfg.binds.len(), before + 1, "a new chord must be appended, not replace one");
+    }
 }
