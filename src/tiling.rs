@@ -63,10 +63,19 @@ pub(crate) unsafe fn refresh(server: &mut Server) {
 
 /// Find whichever window in workspace `ws_idx` is spatially adjacent to
 /// `from_idx` in direction `dir` (by their rects as of the last `refresh()`),
-/// or `None` if nothing qualifies (no wraparound). Filters to windows whose
-/// center lies on the correct side, then picks the closest by a
-/// primary-axis-weighted distance so a roughly-aligned neighbor wins over a
-/// diagonal one.
+/// or `None` if nothing qualifies (no wraparound).
+///
+/// Filters to windows whose center lies on the correct side, then — like
+/// i3/sway's directional focus — prefers whichever candidate shares the most
+/// overlapping border with the focused window on the axis perpendicular to
+/// `dir` (most overlap wins; primary-axis gap breaks ties). That's a much
+/// stronger signal for "the window actually next to me" than raw
+/// center-to-center distance: the dwindle spiral often puts one window
+/// spanning much more area than its neighbors, and center-distance alone can
+/// pick a window that doesn't really border the focused one, in a way that
+/// isn't even reversible (A's right neighbor being B doesn't imply B's left
+/// neighbor is A). Falls back to raw center-distance only when no candidate
+/// has any border overlap at all (e.g. windows that meet only at a corner).
 pub(crate) unsafe fn spatial_neighbor(
     server: &Server,
     ws_idx: usize,
@@ -74,29 +83,45 @@ pub(crate) unsafe fn spatial_neighbor(
     dir: Direction,
 ) -> Option<usize> {
     let windows = &server.workspaces[ws_idx].windows;
-    let center = |tl: *mut Toplevel| ((*tl).x + (*tl).w / 2, (*tl).y + (*tl).h / 2);
-    let (fx, fy) = center(windows[from_idx]);
+    let rect = |tl: *mut Toplevel| ((*tl).x, (*tl).y, (*tl).w, (*tl).h);
+    let (fx, fy, fw, fh) = rect(windows[from_idx]);
+    let (fcx, fcy) = (fx + fw / 2, fy + fh / 2);
 
-    windows
+    let candidates: Vec<(usize, i32, i32)> = windows
         .iter()
         .enumerate()
         .filter(|&(i, _)| i != from_idx)
         .filter_map(|(i, &tl)| {
-            let (cx, cy) = center(tl);
-            let (dx, dy) = (cx - fx, cy - fy);
+            let (cx, cy, cw, ch) = rect(tl);
+            let (ccx, ccy) = (cx + cw / 2, cy + ch / 2);
+            let (dx, dy) = (ccx - fcx, ccy - fcy);
             let on_side = match dir {
                 Direction::Left => dx < 0,
                 Direction::Right => dx > 0,
                 Direction::Up => dy < 0,
                 Direction::Down => dy > 0,
             };
-            on_side.then_some((i, dx, dy))
+            if !on_side {
+                return None;
+            }
+            let overlap = match dir {
+                Direction::Left | Direction::Right => (fy + fh).min(cy + ch) - fy.max(cy),
+                Direction::Up | Direction::Down => (fx + fw).min(cx + cw) - fx.max(cx),
+            }
+            .max(0);
+            let gap = match dir {
+                Direction::Left | Direction::Right => dx.abs(),
+                Direction::Up | Direction::Down => dy.abs(),
+            };
+            Some((i, overlap, gap))
         })
-        .min_by_key(|&(_, dx, dy)| match dir {
-            Direction::Left | Direction::Right => dx.abs() * 2 + dy.abs(),
-            Direction::Up | Direction::Down => dy.abs() * 2 + dx.abs(),
-        })
-        .map(|(i, ..)| i)
+        .collect();
+
+    if candidates.iter().any(|&(_, overlap, _)| overlap > 0) {
+        candidates.into_iter().max_by_key(|&(_, overlap, gap)| (overlap, -gap)).map(|(i, ..)| i)
+    } else {
+        candidates.into_iter().min_by_key(|&(_, _, gap)| gap).map(|(i, ..)| i)
+    }
 }
 
 /// Recompute one output's layer-shell placement: walk its layer surfaces in
@@ -143,6 +168,81 @@ mod tests {
     use super::*;
     use crate::config::Config;
     use std::ptr;
+
+    // Compute the exact spiral rects `refresh()` would produce for `n`
+    // windows on an `ow`x`oh` output with no gap — lets tests build a
+    // realistic multi-window fixture without a live Server/output.
+    fn spiral_rects(n: usize, ow: i32, oh: i32) -> Vec<(i32, i32, i32, i32)> {
+        let (mut rx, mut ry) = (0, 0);
+        let (mut rw, mut rh) = (ow, oh);
+        let mut split_vertical = true;
+        let mut rects = Vec::new();
+        for i in 0..n {
+            let (x, y, w, h);
+            if i == n - 1 {
+                (x, y, w, h) = (rx, ry, rw, rh);
+            } else if split_vertical {
+                let half = (rw / 2).max(1);
+                (x, y, w, h) = (rx, ry, half, rh);
+                rx += half;
+                rw = (rw - half).max(1);
+            } else {
+                let half = (rh / 2).max(1);
+                (x, y, w, h) = (rx, ry, rw, half);
+                ry += half;
+                rh = (rh - half).max(1);
+            }
+            split_vertical = !split_vertical;
+            rects.push((x, y, w, h));
+        }
+        rects
+    }
+
+    unsafe fn server_from_rects(rects: &[(i32, i32, i32, i32)]) -> Server {
+        let windows = rects.iter().map(|&(x, y, w, h)| toplevel_at(x, y, w, h)).collect();
+        server_with(windows)
+    }
+
+    // The bug this test guards against: at 4+ windows the spiral produces one
+    // window (W2) whose only positive-overlap neighbor above it is W1, but the
+    // old center-distance heuristic picked W0 instead (W0 spans the full
+    // output height, so its center can be "closer" even with zero shared
+    // border) — not reversible with W1's own Down pick. Confirmed via a
+    // throwaway diagnostic dump of every window/direction pair at n=2..6
+    // before writing this fix.
+    #[test]
+    fn spatial_neighbor_prefers_overlapping_border_at_4_windows() {
+        unsafe {
+            let rects = spiral_rects(4, 1280, 720);
+            let server = server_from_rects(&rects);
+            assert_eq!(spatial_neighbor(&server, 0, 2, Direction::Up), Some(1));
+            assert_eq!(spatial_neighbor(&server, 0, 1, Direction::Down), Some(3));
+            for &tl in &server.workspaces[0].windows {
+                drop(Box::from_raw(tl));
+            }
+        }
+    }
+
+    // Known, accepted limitation: the dwindle spiral can put two windows that
+    // only touch at a single point (a "corner"), not a shared border — no
+    // geometric heuristic makes that reversible, since neither window is
+    // really "beside" the other. W1 and W3 meet only at (1280, 360) here, so
+    // W1's Right neighbor (only candidate: W3) doesn't imply W3's Left
+    // neighbor is W1 (it has real overlapping-border candidates, W0 and W2,
+    // and correctly prefers one of those instead). Documented so a future
+    // change to this heuristic doesn't have to silently re-discover this.
+    #[test]
+    fn spatial_neighbor_corner_touch_is_not_reversible() {
+        unsafe {
+            let rects = spiral_rects(4, 1280, 720);
+            let server = server_from_rects(&rects);
+            assert_eq!(spatial_neighbor(&server, 0, 1, Direction::Right), Some(3));
+            assert_ne!(spatial_neighbor(&server, 0, 3, Direction::Left), Some(1));
+            for &tl in &server.workspaces[0].windows {
+                drop(Box::from_raw(tl));
+            }
+        }
+    }
 
     // spatial_neighbor only reads Toplevel.{x,y,w,h} and Server.workspaces, so
     // every other field can be a dangling/null placeholder for this test.
