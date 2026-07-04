@@ -114,6 +114,7 @@ fn main() {
         .allowlist_function("wlr_output_init_render")
         .allowlist_function("wlr_output_layout_create")
         .allowlist_function("wlr_output_layout_add_auto")
+        .allowlist_function("wlr_output_layout_add")
         .allowlist_function("wlr_scene_create")
         .allowlist_function("wlr_scene_attach_output_layout")
         .allowlist_function("wlr_scene_output_create")

@@ -27,7 +27,7 @@ struct oxide_listener *oxide_output_add_frame(
     return signal_add(&output->events.frame, callback, userdata);
 }
 
-void oxide_output_enable(struct wlr_output *output) {
+void oxide_output_enable(struct wlr_output *output, float scale) {
     struct wlr_output_state state;
     wlr_output_state_init(&state);
     wlr_output_state_set_enabled(&state, true);
@@ -39,8 +39,17 @@ void oxide_output_enable(struct wlr_output *output) {
         wlr_output_state_set_mode(&state, mode);
     }
 
+    wlr_output_state_set_scale(&state, scale);
+
     wlr_output_commit_state(output, &state);
     wlr_output_state_finish(&state);
+}
+
+// The connector name (e.g. "eDP-1", "HDMI-A-1") — read once by Rust and
+// converted to an owned String immediately, so there's no pointer lifetime to
+// worry about on the Rust side.
+const char *oxide_output_name(struct wlr_output *output) {
+    return output->name;
 }
 
 // Create an ordered child tree directly under the scene root. Creation order

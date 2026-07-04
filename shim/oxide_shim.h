@@ -63,8 +63,12 @@ struct oxide_listener *oxide_output_add_destroy(
         struct wlr_output *output, oxide_callback callback, void *userdata);
 
 // --- output / scene helpers ------------------------------------------------
-// Enable the output (owns the wlr_output_state init/commit/finish dance).
-void oxide_output_enable(struct wlr_output *output);
+// Enable the output (owns the wlr_output_state init/commit/finish dance),
+// applying `scale` (1.0 if the config doesn't set one).
+void oxide_output_enable(struct wlr_output *output, float scale);
+// The connector name (e.g. "eDP-1", "HDMI-A-1"), for matching against a
+// `monitor = NAME, ...` config entry.
+const char *oxide_output_name(struct wlr_output *output);
 // Create an ordered child tree directly under the scene root. Rust calls this
 // once per z-layer at startup (bg_fallback, layer_bg, layer_bottom, normal,
 // layer_top, layer_overlay); creation order is paint order (later = on top).

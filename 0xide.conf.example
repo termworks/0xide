@@ -17,6 +17,20 @@ gap = 10
 # Background color of empty space, as `r g b` floats in 0..1.
 background = 0.0 0.6 0.6
 
+# --- monitors ----------------------------------------------------------------
+#
+# monitor = NAME, XxY[, SCALE]
+#   NAME   the connector name, as logged on startup ("output <name> online...")
+#          e.g. eDP-1, HDMI-A-1, WL-1 (nested).
+#   XxY    explicit layout position in pixels (scale-aware — matches where
+#          the output visually starts). Negative values allowed, e.g. `0x-1080`
+#          to place an output directly above one that's 1080px tall at 0,0.
+#   SCALE  optional, defaults to 1.0.
+# An output with no matching `monitor` line keeps the default auto-placement
+# (lined up to the right of existing outputs, scale 1.0).
+#
+# monitor = HDMI-A-1, 0x-1080, 1.0
+
 # --- keybindings -----------------------------------------------------------
 #
 # bind = MODS, KEY, ACTION[, ARG]

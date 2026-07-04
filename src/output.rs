@@ -4,6 +4,7 @@ use crate::ffi::*;
 use crate::state::*;
 use crate::tiling::{arrange_layers, refresh};
 use crate::wlr;
+use std::ffi::CStr;
 use std::os::raw::c_void;
 
 /// Called by the shim when the backend produces an output (one window, here).
@@ -11,15 +12,26 @@ pub(crate) unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *
     let server = &mut *(userdata as *mut Server);
     let output = data as *mut wlr::wlr_output;
 
-    // Give the output our renderer + allocator so it can produce buffers, then
-    // enable it (the shim owns the wlr_output_state dance).
+    // Give the output our renderer + allocator so it can produce buffers.
     wlr::wlr_output_init_render(output, server.allocator, server.renderer);
-    oxide_output_enable(output);
 
-    // Place the output in the layout (auto = to the right of existing ones), and
-    // tie that layout slot to a scene output so the scene knows where this
-    // output sits and what to repaint.
-    let layout_output = wlr::wlr_output_layout_add_auto(server.output_layout, output);
+    // A `monitor = NAME, XxY[, SCALE]` config entry for this connector name
+    // (e.g. "HDMI-A-1") gives it an explicit position/scale; otherwise it
+    // keeps the default auto-placement/scale below.
+    let name = CStr::from_ptr(oxide_output_name(output)).to_string_lossy().into_owned();
+    let monitor_cfg = server.config.monitors.iter().find(|m| m.name == name).cloned();
+    let scale = monitor_cfg.as_ref().map_or(1.0, |m| m.scale);
+
+    oxide_output_enable(output, scale);
+
+    // Place the output in the layout — explicit position if configured,
+    // else auto (to the right of existing ones) — and tie that layout slot
+    // to a scene output so the scene knows where this output sits and what
+    // to repaint.
+    let layout_output = match &monitor_cfg {
+        Some(m) => wlr::wlr_output_layout_add(server.output_layout, output, m.x, m.y),
+        None => wlr::wlr_output_layout_add_auto(server.output_layout, output),
+    };
     let scene_output = wlr::wlr_scene_output_create(server.scene, output);
     wlr::wlr_scene_output_layout_add_output(server.scene_layout, layout_output, scene_output);
 
@@ -92,7 +104,7 @@ pub(crate) unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *
     oxide_output_schedule_frame(output);
 
     eprintln!(
-        "0xide: output online @ {x},{y} {w}x{h} — workspace {}",
+        "0xide: output {name} online @ {x},{y} {w}x{h} — workspace {}",
         workspace + 1
     );
 }

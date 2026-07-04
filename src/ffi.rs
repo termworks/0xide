@@ -39,7 +39,8 @@ extern "C" {
         callback: ShimCallback,
         userdata: *mut c_void,
     ) -> *mut ShimListener;
-    pub(crate) fn oxide_output_enable(output: *mut wlr::wlr_output);
+    pub(crate) fn oxide_output_enable(output: *mut wlr::wlr_output, scale: f32);
+    pub(crate) fn oxide_output_name(output: *mut wlr::wlr_output) -> *const c_char;
     pub(crate) fn oxide_scene_add_layer_tree(scene: *mut wlr::wlr_scene) -> *mut wlr::wlr_scene_tree;
     pub(crate) fn oxide_scene_add_output_background(
         tree: *mut wlr::wlr_scene_tree,

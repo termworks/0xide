@@ -66,6 +66,17 @@ pub struct Bind {
     pub action: Action,
 }
 
+/// An explicit position + scale for one named output (connector name, e.g.
+/// `HDMI-A-1`). An output with no matching entry keeps the default
+/// `wlr_output_layout_add_auto` placement — this is opt-in per monitor.
+#[derive(Clone)]
+pub struct MonitorConfig {
+    pub name: String,
+    pub x: i32,
+    pub y: i32,
+    pub scale: f32,
+}
+
 /// Parsed compositor configuration.
 pub struct Config {
     /// The primary modifier (`$mod` / `MOD` in binds); Super by default.
@@ -75,6 +86,9 @@ pub struct Config {
     /// Background color of empty workspace area (r, g, b in 0..1).
     pub background: (f32, f32, f32),
     pub binds: Vec<Bind>,
+    /// Per-output explicit position/scale (`monitor =` lines); empty means
+    /// every output uses auto-placement.
+    pub monitors: Vec<MonitorConfig>,
 }
 
 impl Default for Config {
@@ -84,6 +98,7 @@ impl Default for Config {
             gap: 2,
             background: (0.0, 0.6, 0.6),
             binds: Vec::new(),
+            monitors: Vec::new(),
         }
     }
 }
@@ -146,6 +161,13 @@ impl Config {
                 "background" => match parse_color(val) {
                     Some(c) => self.background = c,
                     None => warn(n, "invalid background (want `r g b`)", raw),
+                },
+                "monitor" => match parse_monitor(val) {
+                    Some(m) => match self.monitors.iter_mut().find(|e| e.name == m.name) {
+                        Some(existing) => *existing = m,
+                        None => self.monitors.push(m),
+                    },
+                    None => warn(n, "invalid monitor (want `NAME, XxY[, SCALE]`)", raw),
                 },
                 "bind" => {} // handled in parse_binds
                 _ => warn(n, "unknown setting", raw),
@@ -259,6 +281,27 @@ fn parse_color(spec: &str) -> Option<(f32, f32, f32)> {
     Some((r, g, b))
 }
 
+/// Parse `NAME, XxY[, SCALE]` for a `monitor =` line.
+fn parse_monitor(spec: &str) -> Option<MonitorConfig> {
+    let mut parts = spec.splitn(3, ',');
+    let name = parts.next()?.trim().to_string();
+    let (x, y) = parse_xy(parts.next()?.trim())?;
+    let scale = match parts.next() {
+        Some(s) => s.trim().parse().ok()?,
+        None => 1.0,
+    };
+    if name.is_empty() || scale <= 0.0 {
+        return None;
+    }
+    Some(MonitorConfig { name, x, y, scale })
+}
+
+/// Parse `XxY` (e.g. `0x0`, `1920x-1080`) into layout coordinates.
+fn parse_xy(spec: &str) -> Option<(i32, i32)> {
+    let (xs, ys) = spec.split_once('x')?;
+    Some((xs.trim().parse().ok()?, ys.trim().parse().ok()?))
+}
+
 fn parse_action(name: &str, arg: Option<&str>) -> Option<Action> {
     match name.to_ascii_lowercase().as_str() {
         "spawn" | "exec" => Some(Action::Spawn(arg?.to_string())),
@@ -368,5 +411,29 @@ mod tests {
 
         cfg.apply_binds("bind = , Print, spawn, grim\n");
         assert_eq!(cfg.binds.len(), before + 1, "a new chord must be appended, not replace one");
+    }
+
+    #[test]
+    fn monitor_line_parses_position_and_default_scale() {
+        let mut cfg = Config::default();
+        cfg.parse_scalars("monitor = HDMI-A-1, 0x-1080\n");
+        let m = cfg.monitors.iter().find(|m| m.name == "HDMI-A-1").unwrap();
+        assert_eq!((m.x, m.y), (0, -1080));
+        assert_eq!(m.scale, 1.0);
+
+        cfg.parse_scalars("monitor = eDP-1, 0x0, 1.5\n");
+        let m = cfg.monitors.iter().find(|m| m.name == "eDP-1").unwrap();
+        assert_eq!((m.x, m.y), (0, 0));
+        assert_eq!(m.scale, 1.5);
+    }
+
+    #[test]
+    fn monitor_line_overrides_same_name_instead_of_duplicating() {
+        let mut cfg = Config::default();
+        cfg.parse_scalars("monitor = HDMI-A-1, 0x0, 1.0\nmonitor = HDMI-A-1, 1920x0, 2.0\n");
+        assert_eq!(cfg.monitors.len(), 1);
+        let m = &cfg.monitors[0];
+        assert_eq!((m.x, m.y), (1920, 0));
+        assert_eq!(m.scale, 2.0);
     }
 }

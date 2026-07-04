@@ -16,7 +16,8 @@ automatically to fill the screen instead of floating and overlapping.
   vertical (left/right) then horizontal (top/bottom).
 - **9 workspaces** — switch between them and move windows across them from the keyboard.
 - **Multi-monitor** with **focus-follows-monitor** — new windows open on the monitor
-  your cursor is on; each monitor shows its own workspace.
+  your cursor is on; each monitor shows its own workspace. Position/scale per
+  named output are configurable (`monitor =` lines), otherwise auto-placed.
 - **Keyboard-driven**, configured by a small **Rust-parsed config file** (modifier,
   gaps, background colour, keybindings, terminal command).
 - **Pointer + cursor** with click-to-focus.
@@ -129,6 +130,11 @@ bind = MOD, H, movefocus, l
 bind = MOD SHIFT, H, movewindow, l
 bind = MOD, 1, workspace, 1
 bind = MOD SHIFT, 1, movetoworkspace, 1
+
+# monitor = NAME, XxY[, SCALE] — explicit position for a named output
+# (connector name, as logged: "output <name> online..."). Unlisted outputs
+# keep the default auto-placement.
+monitor = HDMI-A-1, 0x-1080, 1.0
 ```
 
 A line 0xide can't parse is warned about on stderr and skipped — never fatal. See
