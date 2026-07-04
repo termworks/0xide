@@ -154,6 +154,16 @@ fn main() {
         let layer_shell = wlr::wlr_layer_shell_v1_create(display, 4);
         oxide_layer_shell_add_new_surface(layer_shell, handle_new_layer_surface, server_ptr);
 
+        // wlr-screencopy-unstable-v1: lets clients (grim, wf-recorder) capture
+        // our own composited output. wlroots does all the work internally
+        // once the global exists — no signals to hook on our side.
+        wlr::wlr_screencopy_manager_v1_create(display);
+
+        // xdg-output: without this, screenshot tools can't learn each
+        // output's logical position/size (grim fails with a 0x0 capture) —
+        // wlroots tracks it automatically from our existing output_layout.
+        wlr::wlr_xdg_output_manager_v1_create(display, output_layout);
+
         // Open the Unix socket clients connect through (e.g. "wayland-2").
         let socket_ptr = wlr::wl_display_add_socket_auto(display);
         assert!(!socket_ptr.is_null(), "failed to open a Wayland socket");

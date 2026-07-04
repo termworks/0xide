@@ -73,10 +73,12 @@ impl Default for Config {
 }
 
 impl Config {
-    /// Load config from `$XDG_CONFIG_HOME/0xide/0xide.conf` (or
-    /// `~/.config/0xide/0xide.conf`). Missing file -> built-in defaults.
-    /// `OXIDE_MOD=alt` overrides the modifier (for nested dev under Hyprland,
-    /// which grabs Super-chords before us).
+    /// Load config from `$OXIDE_CONFIG` (an exact file path, if set — handy
+    /// for testing a config from the repo without touching `~/.config`), else
+    /// `$XDG_CONFIG_HOME/0xide/0xide.conf`, else `~/.config/0xide/0xide.conf`.
+    /// Missing file -> built-in defaults. `OXIDE_MOD=alt` overrides the
+    /// modifier (for nested dev under Hyprland, which grabs Super-chords
+    /// before us).
     pub fn load() -> Config {
         let mut cfg = Config::default();
 
@@ -273,6 +275,11 @@ fn warn(line: usize, msg: &str, raw: &str) {
 }
 
 fn config_path() -> Option<PathBuf> {
+    if let Ok(path) = env::var("OXIDE_CONFIG") {
+        if !path.is_empty() {
+            return Some(PathBuf::from(path));
+        }
+    }
     if let Ok(dir) = env::var("XDG_CONFIG_HOME") {
         if !dir.is_empty() {
             return Some(PathBuf::from(dir).join("0xide/0xide.conf"));

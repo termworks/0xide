@@ -28,6 +28,8 @@ automatically to fill the screen instead of floating and overlapping.
   screen space, so tiled windows never sit underneath them.
 - **Server-side decorations** (`xdg-decoration-unstable-v1`) — 0xide always claims
   decoration, so clients don't draw their own title bar/border: bare, borderless windows.
+- **Screenshots/screen recording** (`wlr-screencopy-unstable-v1` + `xdg-output`) — tools
+  like `grim` and `wf-recorder` capture 0xide's real composited output directly.
 
 ## Architecture
 

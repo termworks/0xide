@@ -82,13 +82,12 @@ unsafe fn move_to_workspace(server: &mut Server, target: usize) {
     eprintln!("0xide: moved window to workspace {}", target + 1);
 }
 
-/// Launch a program as a client of 0xide (inherits our WAYLAND_DISPLAY).
-/// The command is whitespace-split into program + args (e.g. "grim -g ...").
+/// Launch a program as a client of 0xide (inherits our WAYLAND_DISPLAY). Runs
+/// through a shell (like Hyprland's `exec`) so `~`, env vars, `&&`, and quoting
+/// in bind commands work as expected — a plain `execvp` doesn't expand any of
+/// that.
 fn spawn(cmd: &str) {
-    let mut parts = cmd.split_whitespace();
-    let Some(program) = parts.next() else { return };
-    let args: Vec<&str> = parts.collect();
-    if let Err(e) = Command::new(program).args(&args).spawn() {
+    if let Err(e) = Command::new("sh").arg("-c").arg(cmd).spawn() {
         eprintln!("0xide: failed to spawn `{cmd}`: {e}");
     }
 }
