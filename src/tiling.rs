@@ -1,5 +1,6 @@
 //! The tiling engine: recomputing window and layer-surface layout.
 
+use crate::config::Direction;
 use crate::ffi::*;
 use crate::state::*;
 use crate::wlr;
@@ -52,8 +53,50 @@ pub(crate) unsafe fn refresh(server: &mut Server) {
             split_vertical = !split_vertical;
             oxide_scene_tree_set_position((*tl).scene_tree, x, y);
             wlr::wlr_xdg_toplevel_set_size((*tl).xdg_toplevel, w, h);
+            (*tl).x = x;
+            (*tl).y = y;
+            (*tl).w = w;
+            (*tl).h = h;
         }
     }
+}
+
+/// Find whichever window in workspace `ws_idx` is spatially adjacent to
+/// `from_idx` in direction `dir` (by their rects as of the last `refresh()`),
+/// or `None` if nothing qualifies (no wraparound). Filters to windows whose
+/// center lies on the correct side, then picks the closest by a
+/// primary-axis-weighted distance so a roughly-aligned neighbor wins over a
+/// diagonal one.
+pub(crate) unsafe fn spatial_neighbor(
+    server: &Server,
+    ws_idx: usize,
+    from_idx: usize,
+    dir: Direction,
+) -> Option<usize> {
+    let windows = &server.workspaces[ws_idx].windows;
+    let center = |tl: *mut Toplevel| ((*tl).x + (*tl).w / 2, (*tl).y + (*tl).h / 2);
+    let (fx, fy) = center(windows[from_idx]);
+
+    windows
+        .iter()
+        .enumerate()
+        .filter(|&(i, _)| i != from_idx)
+        .filter_map(|(i, &tl)| {
+            let (cx, cy) = center(tl);
+            let (dx, dy) = (cx - fx, cy - fy);
+            let on_side = match dir {
+                Direction::Left => dx < 0,
+                Direction::Right => dx > 0,
+                Direction::Up => dy < 0,
+                Direction::Down => dy > 0,
+            };
+            on_side.then_some((i, dx, dy))
+        })
+        .min_by_key(|&(_, dx, dy)| match dir {
+            Direction::Left | Direction::Right => dx.abs() * 2 + dy.abs(),
+            Direction::Up | Direction::Down => dy.abs() * 2 + dx.abs(),
+        })
+        .map(|(i, ..)| i)
 }
 
 /// Recompute one output's layer-shell placement: walk its layer surfaces in
@@ -93,4 +136,100 @@ pub(crate) unsafe fn active_output(server: &Server) -> usize {
 /// The workspace currently displayed on the active (cursor's) output.
 pub(crate) unsafe fn active_workspace(server: &Server) -> usize {
     server.outputs[active_output(server)].workspace
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config::Config;
+    use std::ptr;
+
+    // spatial_neighbor only reads Toplevel.{x,y,w,h} and Server.workspaces, so
+    // every other field can be a dangling/null placeholder for this test.
+    unsafe fn toplevel_at(x: i32, y: i32, w: i32, h: i32) -> *mut Toplevel {
+        Box::into_raw(Box::new(Toplevel {
+            server: ptr::null_mut(),
+            xdg_toplevel: ptr::null_mut(),
+            scene_tree: ptr::null_mut(),
+            x,
+            y,
+            w,
+            h,
+            commit_listener: ptr::null_mut(),
+            map_listener: ptr::null_mut(),
+            unmap_listener: ptr::null_mut(),
+            destroy_listener: ptr::null_mut(),
+        }))
+    }
+
+    unsafe fn server_with(windows: Vec<*mut Toplevel>) -> Server {
+        Server {
+            display: ptr::null_mut(),
+            session: ptr::null_mut(),
+            scene: ptr::null_mut(),
+            output_layout: ptr::null_mut(),
+            scene_layout: ptr::null_mut(),
+            seat: ptr::null_mut(),
+            cursor: ptr::null_mut(),
+            renderer: ptr::null_mut(),
+            allocator: ptr::null_mut(),
+            tree_bg_fallback: ptr::null_mut(),
+            tree_layer_bg: ptr::null_mut(),
+            tree_layer_bottom: ptr::null_mut(),
+            tree_normal: ptr::null_mut(),
+            tree_layer_top: ptr::null_mut(),
+            tree_layer_overlay: ptr::null_mut(),
+            layers: Vec::new(),
+            workspaces: vec![Workspace { windows, focused: 0 }],
+            outputs: Vec::new(),
+            config: Config::default(),
+        }
+    }
+
+    #[test]
+    fn spatial_neighbor_2x2_grid() {
+        unsafe {
+            // top-left(0) top-right(1)
+            // bot-left(2) bot-right(3)
+            let windows = vec![
+                toplevel_at(0, 0, 100, 100),
+                toplevel_at(100, 0, 100, 100),
+                toplevel_at(0, 100, 100, 100),
+                toplevel_at(100, 100, 100, 100),
+            ];
+            let server = server_with(windows);
+
+            assert_eq!(spatial_neighbor(&server, 0, 0, Direction::Right), Some(1));
+            assert_eq!(spatial_neighbor(&server, 0, 0, Direction::Down), Some(2));
+            assert_eq!(spatial_neighbor(&server, 0, 3, Direction::Left), Some(2));
+            assert_eq!(spatial_neighbor(&server, 0, 3, Direction::Up), Some(1));
+            // No neighbor further right/up from the top-right window.
+            assert_eq!(spatial_neighbor(&server, 0, 1, Direction::Right), None);
+            assert_eq!(spatial_neighbor(&server, 0, 1, Direction::Up), None);
+
+            for &tl in &server.workspaces[0].windows {
+                drop(Box::from_raw(tl));
+            }
+        }
+    }
+
+    #[test]
+    fn spatial_neighbor_prefers_aligned_over_diagonal() {
+        unsafe {
+            // focused(0) at left; a slightly-offset-down neighbor(1) directly
+            // right, and a far-diagonal neighbor(2) — same primary distance
+            // but larger perpendicular offset. Right should pick (1).
+            let windows = vec![
+                toplevel_at(0, 0, 100, 100),
+                toplevel_at(100, 10, 100, 100),
+                toplevel_at(100, 500, 100, 100),
+            ];
+            let server = server_with(windows);
+            assert_eq!(spatial_neighbor(&server, 0, 0, Direction::Right), Some(1));
+
+            for &tl in &server.workspaces[0].windows {
+                drop(Box::from_raw(tl));
+            }
+        }
+    }
 }

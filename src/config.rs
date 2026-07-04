@@ -28,6 +28,15 @@ extern "C" {
     fn oxide_keysym_from_name(name: *const c_char) -> u32;
 }
 
+/// A screen-relative direction, for directional focus/move (`Mod+hjkl`).
+#[derive(Clone, Copy)]
+pub enum Direction {
+    Left,
+    Right,
+    Up,
+    Down,
+}
+
 /// What a keybinding does when triggered.
 #[derive(Clone)]
 pub enum Action {
@@ -36,6 +45,10 @@ pub enum Action {
     Quit,
     FocusNext,
     FocusPrev,
+    /// Focus whichever window is spatially adjacent in this direction.
+    MoveFocus(Direction),
+    /// Swap the focused window's tiling position with its spatial neighbor.
+    MoveWindow(Direction),
     /// Switch to workspace (0-based index).
     Workspace(usize),
     /// Move the focused window to a workspace (0-based index).
@@ -171,8 +184,14 @@ fn default_binds(modifier: u32) -> Vec<Bind> {
         Bind { mods: m, keysym: key("Return"), action: Action::Spawn("kitty".into()) },
         Bind { mods: m, keysym: key("Q"), action: Action::Close },
         Bind { mods: ms, keysym: key("Q"), action: Action::Quit },
-        Bind { mods: m, keysym: key("J"), action: Action::FocusNext },
-        Bind { mods: m, keysym: key("K"), action: Action::FocusPrev },
+        Bind { mods: m, keysym: key("H"), action: Action::MoveFocus(Direction::Left) },
+        Bind { mods: m, keysym: key("J"), action: Action::MoveFocus(Direction::Down) },
+        Bind { mods: m, keysym: key("K"), action: Action::MoveFocus(Direction::Up) },
+        Bind { mods: m, keysym: key("L"), action: Action::MoveFocus(Direction::Right) },
+        Bind { mods: ms, keysym: key("H"), action: Action::MoveWindow(Direction::Left) },
+        Bind { mods: ms, keysym: key("J"), action: Action::MoveWindow(Direction::Down) },
+        Bind { mods: ms, keysym: key("K"), action: Action::MoveWindow(Direction::Up) },
+        Bind { mods: ms, keysym: key("L"), action: Action::MoveWindow(Direction::Right) },
     ];
     for i in 0..9u32 {
         let name = (b'1' + i as u8) as char;
@@ -238,6 +257,8 @@ fn parse_action(name: &str, arg: Option<&str>) -> Option<Action> {
         "quit" | "exit" => Some(Action::Quit),
         "focusnext" => Some(Action::FocusNext),
         "focusprev" => Some(Action::FocusPrev),
+        "movefocus" => Some(Action::MoveFocus(direction_from_arg(arg?)?)),
+        "movewindow" => Some(Action::MoveWindow(direction_from_arg(arg?)?)),
         "workspace" => Some(Action::Workspace(workspace_index(arg?)?)),
         "movetoworkspace" => Some(Action::MoveToWorkspace(workspace_index(arg?)?)),
         _ => None,
@@ -248,6 +269,18 @@ fn parse_action(name: &str, arg: Option<&str>) -> Option<Action> {
 fn workspace_index(arg: &str) -> Option<usize> {
     let n: usize = arg.trim().parse().ok()?;
     (1..=9).contains(&n).then(|| n - 1)
+}
+
+/// Parse a direction arg (`l`/`r`/`u`/`d`, case-insensitive; also accepts the
+/// full words) for `movefocus`/`movewindow`.
+fn direction_from_arg(arg: &str) -> Option<Direction> {
+    match arg.trim().to_ascii_lowercase().as_str() {
+        "l" | "left" => Some(Direction::Left),
+        "r" | "right" => Some(Direction::Right),
+        "u" | "up" => Some(Direction::Up),
+        "d" | "down" => Some(Direction::Down),
+        _ => None,
+    }
 }
 
 /// Resolve a key name to a keysym, or None if xkb doesn't know it.

@@ -102,7 +102,8 @@ main session. More detail and verification recipes are in
 | `Mod + Return`      | Open the terminal                   |
 | `Mod + Q`           | Close the focused window            |
 | `Mod + Shift + Q`   | Quit 0xide                        |
-| `Mod + J` / `Mod + K` | Focus next / previous window      |
+| `Mod + H/J/K/L`     | Focus the window left/down/up/right |
+| `Mod + Shift + H/J/K/L` | Move the focused window left/down/up/right |
 | `Mod + 1…9`         | Switch to workspace 1–9             |
 | `Mod + Shift + 1…9` | Move focused window to workspace 1–9 |
 | `Ctrl + Alt + F1…F12` | Switch virtual terminal           |
@@ -121,6 +122,8 @@ background = 0.0 0.6 0.6
 bind = MOD, Return, spawn, kitty
 bind = MOD, Q, close
 bind = MOD SHIFT, Q, quit
+bind = MOD, H, movefocus, l
+bind = MOD SHIFT, H, movewindow, l
 bind = MOD, 1, workspace, 1
 bind = MOD SHIFT, 1, movetoworkspace, 1
 ```

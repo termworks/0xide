@@ -3,7 +3,7 @@
 use crate::config::{Action, MOD_ALT, MOD_CTRL, MOD_MASK};
 use crate::ffi::*;
 use crate::state::*;
-use crate::tiling::{active_output, active_workspace, refresh};
+use crate::tiling::{active_output, active_workspace, refresh, spatial_neighbor};
 use crate::wlr;
 use std::os::raw::c_void;
 use std::process::Command;
@@ -139,6 +139,23 @@ pub(crate) unsafe extern "C" fn handle_keybinding(
             focus_index(server, f + n - 1);
         }
         Action::FocusNext | Action::FocusPrev => {}
+        Action::MoveFocus(dir) if n > 0 => {
+            let a = active_workspace(server);
+            let f = server.workspaces[a].focused;
+            if let Some(i) = spatial_neighbor(server, a, f, dir) {
+                focus_index(server, i);
+            }
+        }
+        Action::MoveWindow(dir) if n > 0 => {
+            let a = active_workspace(server);
+            let f = server.workspaces[a].focused;
+            if let Some(i) = spatial_neighbor(server, a, f, dir) {
+                server.workspaces[a].windows.swap(f, i);
+                server.workspaces[a].focused = i;
+                refresh(server);
+            }
+        }
+        Action::MoveFocus(_) | Action::MoveWindow(_) => {}
         Action::Workspace(ws) => switch_workspace(server, ws),
         Action::MoveToWorkspace(ws) => move_to_workspace(server, ws),
     }

@@ -23,13 +23,22 @@ background = 0.0 0.6 0.6
 #   MODS   space/`+` separated: MOD (=primary), SUPER, ALT, SHIFT, CTRL
 #   KEY    an xkb key name: Return, Q, 1, space, F1, ... (case-insensitive)
 #   ACTION spawn <cmd> | close | quit | focusnext | focusprev
+#          | movefocus <l|r|u|d> | movewindow <l|r|u|d>
 #          | workspace <n> | movetoworkspace <n>      (n = 1..9)
 
 bind = MOD, Return, spawn, kitty
 bind = MOD, Q, close
 bind = MOD SHIFT, Q, quit
-bind = MOD, J, focusnext
-bind = MOD, K, focusprev
+
+# Directional focus / move, screen-relative (spatial neighbor, no wraparound).
+bind = MOD, H, movefocus, l
+bind = MOD, J, movefocus, d
+bind = MOD, K, movefocus, u
+bind = MOD, L, movefocus, r
+bind = MOD SHIFT, H, movewindow, l
+bind = MOD SHIFT, J, movewindow, d
+bind = MOD SHIFT, K, movewindow, u
+bind = MOD SHIFT, L, movewindow, r
 
 bind = MOD, 1, workspace, 1
 bind = MOD, 2, workspace, 2

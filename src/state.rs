@@ -92,6 +92,13 @@ pub(crate) struct Toplevel {
     pub(crate) server: *mut Server,
     pub(crate) xdg_toplevel: *mut wlr::wlr_xdg_toplevel,
     pub(crate) scene_tree: *mut wlr::wlr_scene_tree,
+    /// This window's rect as of the last `tiling::refresh()` pass. Not
+    /// authoritative (the scene node / xdg_toplevel size are) — just a cache
+    /// for directional focus/move to compare windows against each other.
+    pub(crate) x: i32,
+    pub(crate) y: i32,
+    pub(crate) w: i32,
+    pub(crate) h: i32,
     // Listeners we registered; removed+freed on destroy so wlroots doesn't
     // assert on a non-empty destroy list.
     pub(crate) commit_listener: *mut ShimListener,
