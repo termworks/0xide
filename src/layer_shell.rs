@@ -17,11 +17,15 @@ pub(crate) unsafe extern "C" fn handle_new_layer_surface(userdata: *mut c_void, 
     let mut wlr_output = oxide_layer_surface_output(ls);
     if wlr_output.is_null() {
         if server.outputs.is_empty() {
-            eprintln!("0xide: layer surface arrived with no output available yet, ignoring");
-            return;
+            // No output to assign yet (e.g. right after a VT-switch tore one
+            // down). Track it with a null output — handle_new_output attaches
+            // it once an output actually appears, instead of it hanging
+            // forever waiting for a configure that never comes.
+            eprintln!("0xide: layer surface arrived with no output yet, deferring");
+        } else {
+            wlr_output = server.outputs[active_output(server)].wlr_output;
+            oxide_layer_surface_set_output(ls, wlr_output);
         }
-        wlr_output = server.outputs[active_output(server)].wlr_output;
-        oxide_layer_surface_set_output(ls, wlr_output);
     }
 
     let tree = match oxide_layer_surface_layer(ls) {

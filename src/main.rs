@@ -149,9 +149,12 @@ fn main() {
         );
 
         // wlr-layer-shell-unstable-v1: the global bars/panels/wallpaper (e.g.
-        // quickshell) bind to place themselves in a z-layer above or below our
-        // app windows. Version 4 = latest without the v5 exclusive_edge request.
-        let layer_shell = wlr::wlr_layer_shell_v1_create(display, 4);
+        // quickshell, hyprpaper) bind to place themselves in a z-layer above
+        // or below our app windows. Version 5 adds set_exclusive_edge; we
+        // don't act on it (arrange_layers treats exclusive zones uniformly),
+        // but wlroots handles that request at the wire level regardless, and
+        // some clients (hyprpaper) refuse to bind below v5.
+        let layer_shell = wlr::wlr_layer_shell_v1_create(display, 5);
         oxide_layer_shell_add_new_surface(layer_shell, handle_new_layer_surface, server_ptr);
 
         // wlr-screencopy-unstable-v1: lets clients (grim, wf-recorder) capture

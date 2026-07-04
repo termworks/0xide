@@ -2,7 +2,7 @@
 
 use crate::ffi::*;
 use crate::state::*;
-use crate::tiling::refresh;
+use crate::tiling::{arrange_layers, refresh};
 use crate::wlr;
 use std::os::raw::c_void;
 
@@ -69,6 +69,20 @@ pub(crate) unsafe extern "C" fn handle_new_output(userdata: *mut c_void, data: *
         frame_ctx,
         repaint_frames: REPAINT_FRAMES,
     });
+
+    // Any layer surface that arrived before an output existed is pending (see
+    // layer_shell.rs) — either because it had no output request at all, or
+    // because it named this exact output before we started tracking it.
+    // Attach the pending ones now and (re-)arrange every layer targeting this
+    // output, so tiling below accounts for their exclusive zones.
+    let idx = server.outputs.len() - 1;
+    for &ls in &server.layers {
+        if (*ls).wlr_output.is_null() {
+            (*ls).wlr_output = output;
+            oxide_layer_surface_set_output((*ls).wlr_layer_surface, output);
+        }
+    }
+    arrange_layers(server, idx);
 
     refresh(server); // tile any windows already belonging to this workspace
 
