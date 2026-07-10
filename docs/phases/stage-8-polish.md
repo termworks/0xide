@@ -1,11 +1,15 @@
-# Stage 8 — Polish & Compat
+# Stage 8 — Protocol Compat
 
-**What it is.** The catch-all final stage in `KICKOFF.md`'s roadmap: the
-things that make a compositor pleasant and compatible to actually live in,
-rather than strictly necessary to tile windows at all.
+**What it is.** The protocols that make the everyday app ecosystem run:
+bars and wallpaper, decoration control, screenshots, fullscreen, and
+eventually X11 apps. Originally a broader "polish" catch-all, this stage
+was narrowed once the daily-driver work outgrew it — features like floating
+windows and layout rework now have their own stages
+([9](stage-9-floating.md)–[11](stage-11-runtime-control.md)) with their own
+gates, keeping the one-stage-one-deliverable rule honest.
 
-**Deliverable** (from `KICKOFF.md`): *XWayland, server-side decorations,
-layer-shell (bar/wallpaper), animations, screenshot/screencopy.*
+**Deliverable** (from `KICKOFF.md`): *the everyday app ecosystem runs —
+bars, screenshots, fullscreen video, X11 apps.*
 
 ## How it's gone so far
 
@@ -42,10 +46,10 @@ layer-shell support arrived well before this stage was "next":
   hint, and clients with a remembered window size (browsers especially)
   would map at their own size and overflow across outputs.
 
-**Not yet started:** XWayland (X11 app compatibility) and animations.
+**Not yet started:** XWayland (X11 app compatibility) — the one remaining
+gate for this stage.
 
 ## Status
 
-**Partially done**, and likely to keep being partially done for a while —
-this is explicitly the "as needed" stage rather than one with a single
-clean finish line.
+**Substantially done.** Layer-shell, decorations, screencopy, and
+fullscreen are all in daily use; XWayland closes it out.

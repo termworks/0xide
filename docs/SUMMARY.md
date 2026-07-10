@@ -18,4 +18,7 @@
 - [Stage 5 — Window Management](phases/stage-5-window-management.md)
 - [Stage 6 — Real Display (DRM/KMS)](phases/stage-6-real-display.md)
 - [Stage 7 — Boot-into-VM](phases/stage-7-boot-vm.md)
-- [Stage 8 — Polish & Compat](phases/stage-8-polish.md)
+- [Stage 8 — Protocol Compat](phases/stage-8-polish.md)
+- [Stage 9 — Floating Windows](phases/stage-9-floating.md)
+- [Stage 10 — Split-Tree Layout](phases/stage-10-split-tree.md)
+- [Stage 11 — Runtime Control](phases/stage-11-runtime-control.md)

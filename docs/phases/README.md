@@ -40,7 +40,14 @@ advance — VT-switch black-screen bugs, opaque-struct FFI surprises, a
 reversibility bug in directional window navigation that only appears at four
 or more windows. The gate isn't the plan; it's the verified result.
 
-Stages 0–5 are done and described in full. Stages 6–8 are in progress or not
-yet started — those chapters are short and will grow as the work happens,
-the same way the rest of this book grows: after the fact, from what was
-actually built, not written speculatively in advance.
+Stages 0–5 are done and described in full; 6 and 8 are substantially
+working. The rest are open — those chapters are short and will grow as the
+work happens, the same way the rest of this book grows: after the fact,
+from what was actually built, not written speculatively in advance.
+
+The roadmap itself also grows. Stages 0–8 were the bootstrap era — from
+"a window shows a solid color" to a compositor that runs real hardware and
+real apps. Stages 9–11 are the daily-driver era: floating windows, a
+split-tree layout, runtime control. New stages get added when new work
+earns a gate of its own; what never changes is the rule that each stage has
+exactly one concrete, testable deliverable.

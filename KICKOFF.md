@@ -47,7 +47,10 @@ Wayland model (clients, `wl_display`, the event loop, `wl_compositor`, surfaces,
 - **Stage 5 — Window management (the heart of it).** Multiple windows, a tiling layout + workspaces, move/resize, keybindings, a config file. *Deliverable:* usable tiling WM behavior.
 - **Stage 6 — Real display (DRM/KMS).** Run on a VT via seatd/libseat; multi-output layout and modesetting. *Deliverable:* 0xide as a real session on hardware/VM.
 - **Stage 7 — Boot-into-it VM.** Minimal Linux + initramfs boots straight into 0xide on virtio-gpu. *Deliverable:* "boot a Linux kernel, then our userspace."
-- **Stage 8 — Polish/compat.** XWayland, server-side decorations, layer-shell (bar/wallpaper), animations, screenshot/screencopy.
+- **Stage 8 — Protocol compat.** Server-side decorations, layer-shell (bar/wallpaper), screenshot/screencopy, fullscreen, XWayland. *Deliverable:* the everyday app ecosystem runs — bars, screenshots, fullscreen video, X11 apps.
+- **Stage 9 — Floating windows.** Dialog/utility windows float instead of tiling; per-app float rules. *Deliverable:* a file picker opens floating and centered instead of being tiled.
+- **Stage 10 — Split-tree layout.** Replace the flat list-order layout with an explicit split tree: per-window ratios, interactive resize, fully reversible directional navigation. *Deliverable:* resize a window from the keyboard and the layout keeps it.
+- **Stage 11 — Runtime control.** A socket/IPC to query and script the compositor. *Deliverable:* a shell script lists windows and switches workspaces without touching a keybinding.
 
 *(Out of scope for now: running on the snert kernel. Linux-only. We may revisit much later once snert grows a sufficient syscall/driver surface — don't constrain the design for it yet.)*
 
