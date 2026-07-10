@@ -65,6 +65,13 @@ void oxide_scene_tree_set_enabled(struct wlr_scene_tree *tree, bool enabled) {
     wlr_scene_node_set_enabled(&tree->node, enabled);
 }
 
+// The toplevel's root wlr_surface — what scene hit-testing resolves clicks to
+// (via wlr_surface_get_root_surface), so Rust can match a clicked surface
+// back to the Toplevel it tracks.
+struct wlr_surface *oxide_xdg_toplevel_surface(struct wlr_xdg_toplevel *toplevel) {
+    return toplevel->base->surface;
+}
+
 void oxide_focus_toplevel(struct wlr_seat *seat,
         struct wlr_xdg_toplevel *toplevel) {
     struct wlr_surface *surface = toplevel->base->surface;

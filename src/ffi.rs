@@ -126,6 +126,19 @@ extern "C" {
         scene: *mut wlr::wlr_scene,
         seat: *mut wlr::wlr_seat,
     ) -> *mut wlr::wlr_cursor;
+    // Click-focus hook: the callback's `data` is the clicked root wlr_surface
+    // (opaque `*mut c_void` in Rust, matched by pointer identity against
+    // oxide_xdg_toplevel_surface). Registered separately from cursor setup
+    // because the Server userdata doesn't exist yet at that point.
+    pub(crate) fn oxide_cursor_set_focus_callback(
+        cursor: *mut wlr::wlr_cursor,
+        callback: ShimCallback,
+        userdata: *mut c_void,
+    );
+    // A toplevel's root wlr_surface, for matching clicks back to windows.
+    pub(crate) fn oxide_xdg_toplevel_surface(
+        toplevel: *mut wlr::wlr_xdg_toplevel,
+    ) -> *mut c_void;
 
     // Layer-shell (bars, panels, wallpaper). Layer surfaces and the scene
     // helper wrapping them stay opaque `*mut c_void` in Rust, same as the

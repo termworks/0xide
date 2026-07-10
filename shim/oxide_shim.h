@@ -126,6 +126,8 @@ void oxide_scene_tree_set_enabled(struct wlr_scene_tree *tree, bool enabled);
 void oxide_scene_tree_destroy(struct wlr_scene_tree *tree);
 void oxide_focus_toplevel(struct wlr_seat *seat,
         struct wlr_xdg_toplevel *toplevel);
+// The toplevel's root wlr_surface (for matching a clicked surface to a window).
+struct wlr_surface *oxide_xdg_toplevel_surface(struct wlr_xdg_toplevel *toplevel);
 void oxide_output_get_size(struct wlr_output *output, int *width, int *height);
 
 // --- layer-shell (bars, panels, wallpaper) ----------------------------------
@@ -201,5 +203,12 @@ void oxide_handle_new_input(struct wlr_seat *seat, struct wlr_cursor *cursor,
 // so Rust can attach pointer devices to it.
 struct wlr_cursor *oxide_cursor_setup(struct wlr_output_layout *layout,
         struct wlr_scene *scene, struct wlr_seat *seat);
+
+// Register a hook called on every click with the clicked root wlr_surface,
+// so Rust's focus bookkeeping (Workspace.focused) follows mouse focus.
+// Separate from oxide_cursor_setup: its userdata (the Server) is only
+// constructed after the cursor exists.
+void oxide_cursor_set_focus_callback(struct wlr_cursor *cursor,
+        oxide_callback callback, void *userdata);
 
 #endif // OXIDE_SHIM_H

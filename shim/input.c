@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <xkbcommon/xkbcommon.h>
 #include <wlr/backend.h>
+#include <wlr/types/wlr_compositor.h>
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_input_device.h>
 #include <wlr/types/wlr_keyboard.h>
@@ -129,6 +130,10 @@ struct oxide_pointer {
     struct wlr_xcursor_manager *cursor_mgr;
     struct wlr_scene *scene;
     struct wlr_seat *seat;
+    // Rust click-focus hook: called with the clicked root wlr_surface so the
+    // Rust side can keep its own focus bookkeeping in sync with the seat.
+    oxide_callback focus_callback;
+    void *focus_userdata;
 };
 
 // Find the surface under the cursor (and the surface-local coords), via the
@@ -185,6 +190,14 @@ static void handle_cursor_button(void *userdata, void *data) {
             wlr_seat_keyboard_notify_enter(p->seat, surface, kb->keycodes,
                     kb->num_keycodes, &kb->modifiers);
         }
+        // Tell Rust which root surface was clicked (the hit may be a
+        // subsurface), so Workspace.focused follows mouse focus too —
+        // otherwise close/movefocus/movewindow keep acting on the window
+        // that last got focus via the keyboard.
+        if (surface != NULL && p->focus_callback != NULL) {
+            p->focus_callback(p->focus_userdata,
+                    wlr_surface_get_root_surface(surface));
+        }
     }
 }
 
@@ -221,7 +234,22 @@ struct wlr_cursor *oxide_cursor_setup(struct wlr_output_layout *layout,
     signal_add(&cursor->events.axis, handle_cursor_axis, p);
     signal_add(&cursor->events.frame, handle_cursor_frame, p);
 
+    // Stash our context on the cursor so oxide_cursor_set_focus_callback can
+    // find it later (the Rust Server, the callback's userdata, doesn't exist
+    // yet when the cursor is created).
+    cursor->data = p;
+
     return cursor;
+}
+
+// Register the Rust click-focus hook (see handle_cursor_button). Separate
+// from oxide_cursor_setup because the Server pointer used as userdata is
+// only constructed after the cursor.
+void oxide_cursor_set_focus_callback(struct wlr_cursor *cursor,
+        oxide_callback callback, void *userdata) {
+    struct oxide_pointer *p = cursor->data;
+    p->focus_callback = callback;
+    p->focus_userdata = userdata;
 }
 
 void oxide_handle_new_input(struct wlr_seat *seat, struct wlr_cursor *cursor,
