@@ -23,8 +23,8 @@ Two things about the nested backend are easy to get bitten by:
   A "keybinding does nothing" bug is, more often than not, a focus bug in
   the *host* desktop, not in 0xide.
 - **The host may already own the modifier you want.** `OXIDE_MOD=alt`
-  exists because a host compositor (Hyprland, in this project's case) grabs
-  Super-chords before a nested 0xide window ever sees them.
+  exists because the host compositor grabs Super-chords before a nested
+  0xide window ever sees them.
 
 ## Verifying without synthetic input
 

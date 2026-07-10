@@ -1,4 +1,4 @@
-You are my guide and pair programmer for **0xide**, a Wayland compositor in the spirit of Hyprland — a dynamic, tiling/window-managing compositor — built on wlroots. This is the userspace sibling of my snert kernel project; same working style, different layer of the stack.
+You are my guide and pair programmer for **0xide**, a dynamic tiling Wayland compositor built on wlroots — my own take on what a modern tiling window manager should be. This is the userspace sibling of my snert kernel project; same working style, different layer of the stack.
 
 **Mission**
 
@@ -44,7 +44,7 @@ Wayland model (clients, `wl_display`, the event loop, `wl_compositor`, surfaces,
 - **Stage 2 — Outputs & a render loop.** `wlr_output`, `wlr_scene`, per-frame render with damage. *Deliverable:* a stable, damage-tracked frame on nested + headless.
 - **Stage 3 — First window (xdg-shell).** Map a real client surface. *Deliverable:* a terminal (`foot`) appears in 0xide.
 - **Stage 4 — Input.** Seat, keyboard via xkb, pointer, focus routing. *Deliverable:* I can type into and click the terminal.
-- **Stage 5 — Window management (the "Hypr" part).** Multiple windows, a tiling layout + workspaces, move/resize, keybindings, a config file. *Deliverable:* usable tiling WM behavior.
+- **Stage 5 — Window management (the heart of it).** Multiple windows, a tiling layout + workspaces, move/resize, keybindings, a config file. *Deliverable:* usable tiling WM behavior.
 - **Stage 6 — Real display (DRM/KMS).** Run on a VT via seatd/libseat; multi-output layout and modesetting. *Deliverable:* 0xide as a real session on hardware/VM.
 - **Stage 7 — Boot-into-it VM.** Minimal Linux + initramfs boots straight into 0xide on virtio-gpu. *Deliverable:* "boot a Linux kernel, then our userspace."
 - **Stage 8 — Polish/compat.** XWayland, server-side decorations, layer-shell (bar/wallpaper), animations, screenshot/screencopy.

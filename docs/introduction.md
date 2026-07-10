@@ -5,13 +5,13 @@ of [wlroots](https://gitlab.freedesktop.org/wlroots/wlroots). It's the
 userspace sibling of [`snert`](https://github.com/sn3rt), a from-scratch
 kernel project — same working style, one layer up the stack.
 
-Most people who want a Hyprland-style tiling compositor use Hyprland. 0xide
-exists for a different reason: to understand, concept by concept, what a
-Wayland compositor actually *is* — the backend, the Wayland server, the
-renderer, `xdg-shell`, input routing, tiling, real display output — by
-building each one instead of importing it. It's a learning project first and
-a daily driver second, though it's grown into something usable on real
-hardware.
+Most people who want a tiling Wayland compositor install one. 0xide exists
+for a different reason: to understand, concept by concept, what a Wayland
+compositor actually *is* — the backend, the Wayland server, the renderer,
+`xdg-shell`, input routing, tiling, real display output — by building each
+one instead of importing it. It's a learning project first and a daily
+driver second, though it's grown into something usable on real hardware.
+Design decisions are collected in [Design & ideas](design.md).
 
 ## The mental model
 

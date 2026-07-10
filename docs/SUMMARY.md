@@ -3,6 +3,7 @@
 [Introduction](introduction.md)
 
 - [Architecture](architecture.md)
+- [Design & Ideas](design.md)
 - [Environment & Toolchain](environment.md)
 - [Running & Verifying](running.md)
 

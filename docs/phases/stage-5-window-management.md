@@ -1,4 +1,4 @@
-# Stage 5 — Window Management (the "Hypr" part)
+# Stage 5 — Window Management (the heart of it)
 
 **What it is.** The stage that turns 0xide from "a compositor that can show
 one window" into an actual **tiling window manager**: multiple windows
@@ -7,7 +7,7 @@ keybindings to drive all of it. This is the largest stage by far, and the
 one that's kept growing well past its original deliverable.
 
 **Why it matters.** This is the whole point of the project's shape — a
-Hyprland-style dynamic tiler, not a floating WM. Everything here is policy
+dynamic tiler, not a floating WM. Everything here is policy
 (see [Architecture](../architecture.md)), which is why it all lives in Rust
 with no shim involvement beyond the scene-node calls tiling needs to
 position windows.
@@ -48,8 +48,8 @@ author computes and writes the offsets themselves.
 ## Config file
 
 `src/config.rs` is a dependency-free, line-based parser — no external crate
-— for `key = value` lines plus `bind = MODS, KEY, ACTION[, ARG]` lines
-(Hyprland-flavored syntax). Keybinding config merges with, rather than
+— for `key = value` lines plus a compact `bind = MODS, KEY, ACTION[, ARG]`
+syntax. Keybinding config merges with, rather than
 replaces, the built-in defaults: `Config::load()` always seeds the full
 default bind set first, then each `bind` line in the user's config overrides
 just that one key combination and leaves every other default in place — so
