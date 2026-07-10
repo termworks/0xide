@@ -23,19 +23,30 @@ pub(crate) unsafe fn refresh(server: &mut Server) {
     let gap = server.config.gap;
     for o in &server.outputs {
         let ws = &server.workspaces[o.workspace];
-        let n = ws.windows.len();
-        if n == 0 {
+        if ws.windows.is_empty() {
             continue;
         }
 
-        let rects = spiral_rects(n, o.ux, o.uy, o.uw, o.uh, gap);
-        for (&tl, &(x, y, w, h)) in ws.windows.iter().zip(&rects) {
+        let place = |tl: *mut Toplevel, x: i32, y: i32, w: i32, h: i32| {
             oxide_scene_tree_set_position((*tl).scene_tree, x, y);
             wlr::wlr_xdg_toplevel_set_size((*tl).xdg_toplevel, w, h);
             (*tl).x = x;
             (*tl).y = y;
             (*tl).w = w;
             (*tl).h = h;
+        };
+
+        // Fullscreen windows cover the output's full box (over bars — their
+        // scene trees live in tree_fullscreen, above layer-shell top); the
+        // rest tile in the usable area beneath them as usual.
+        let tiled: Vec<*mut Toplevel> =
+            ws.windows.iter().copied().filter(|&tl| !(*tl).fullscreen).collect();
+        for &tl in ws.windows.iter().filter(|&&tl| (*tl).fullscreen) {
+            place(tl, o.x, o.y, o.w, o.h);
+        }
+        let rects = spiral_rects(tiled.len(), o.ux, o.uy, o.uw, o.uh, gap);
+        for (&tl, &(x, y, w, h)) in tiled.iter().zip(&rects) {
+            place(tl, x, y, w, h);
         }
     }
 }
@@ -245,10 +256,12 @@ mod tests {
             y,
             w,
             h,
+            fullscreen: false,
             commit_listener: ptr::null_mut(),
             map_listener: ptr::null_mut(),
             unmap_listener: ptr::null_mut(),
             destroy_listener: ptr::null_mut(),
+            fullscreen_listener: ptr::null_mut(),
         }))
     }
 
@@ -268,6 +281,7 @@ mod tests {
             tree_layer_bottom: ptr::null_mut(),
             tree_normal: ptr::null_mut(),
             tree_layer_top: ptr::null_mut(),
+            tree_fullscreen: ptr::null_mut(),
             tree_layer_overlay: ptr::null_mut(),
             layers: Vec::new(),
             workspaces: vec![Workspace { windows, focused: 0 }],

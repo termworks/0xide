@@ -89,6 +89,8 @@ fn main() {
         let tree_layer_bottom = oxide_scene_add_layer_tree(scene);
         let tree_normal = oxide_scene_add_layer_tree(scene);
         let tree_layer_top = oxide_scene_add_layer_tree(scene);
+        // Fullscreen windows paint over bars (layer top) but under overlay.
+        let tree_fullscreen = oxide_scene_add_layer_tree(scene);
         let tree_layer_overlay = oxide_scene_add_layer_tree(scene);
 
         // Cursor over the layout; the shim routes its events through scene
@@ -117,6 +119,7 @@ fn main() {
             tree_layer_bottom,
             tree_normal,
             tree_layer_top,
+            tree_fullscreen,
             tree_layer_overlay,
             layers: Vec::new(),
             workspaces: (0..WORKSPACE_COUNT)

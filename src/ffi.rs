@@ -98,6 +98,18 @@ extern "C" {
         callback: ShimCallback,
         userdata: *mut c_void,
     ) -> *mut ShimListener;
+    pub(crate) fn oxide_xdg_add_request_fullscreen(
+        toplevel: *mut wlr::wlr_xdg_toplevel,
+        callback: ShimCallback,
+        userdata: *mut c_void,
+    ) -> *mut ShimListener;
+    pub(crate) fn oxide_xdg_toplevel_requested_fullscreen(
+        toplevel: *mut wlr::wlr_xdg_toplevel,
+    ) -> bool;
+    pub(crate) fn oxide_scene_tree_reparent(
+        tree: *mut wlr::wlr_scene_tree,
+        new_parent: *mut wlr::wlr_scene_tree,
+    );
     pub(crate) fn oxide_scene_tree_set_position(tree: *mut wlr::wlr_scene_tree, x: i32, y: i32);
     pub(crate) fn oxide_scene_tree_set_enabled(tree: *mut wlr::wlr_scene_tree, enabled: bool);
     pub(crate) fn oxide_scene_tree_destroy(tree: *mut wlr::wlr_scene_tree);

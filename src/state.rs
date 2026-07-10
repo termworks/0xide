@@ -34,6 +34,10 @@ pub(crate) struct Server {
     pub(crate) tree_layer_bottom: *mut wlr::wlr_scene_tree,
     pub(crate) tree_normal: *mut wlr::wlr_scene_tree,
     pub(crate) tree_layer_top: *mut wlr::wlr_scene_tree,
+    /// Fullscreen windows: above layer-shell top (covers bars) but below
+    /// overlay (lock screens stay on top). Windows are reparented in and
+    /// out of here as they enter/leave fullscreen.
+    pub(crate) tree_fullscreen: *mut wlr::wlr_scene_tree,
     pub(crate) tree_layer_overlay: *mut wlr::wlr_scene_tree,
     /// Layer-shell surfaces (bars, panels, wallpaper) from any output.
     pub(crate) layers: Vec<*mut LayerSurface>,
@@ -99,12 +103,16 @@ pub(crate) struct Toplevel {
     pub(crate) y: i32,
     pub(crate) w: i32,
     pub(crate) h: i32,
+    /// Whether this window is fullscreen (covers its output's full box,
+    /// scene tree parented under `Server.tree_fullscreen`).
+    pub(crate) fullscreen: bool,
     // Listeners we registered; removed+freed on destroy so wlroots doesn't
     // assert on a non-empty destroy list.
     pub(crate) commit_listener: *mut ShimListener,
     pub(crate) map_listener: *mut ShimListener,
     pub(crate) unmap_listener: *mut ShimListener,
     pub(crate) destroy_listener: *mut ShimListener,
+    pub(crate) fullscreen_listener: *mut ShimListener,
 }
 
 /// One layer-shell surface (bar, panel, wallpaper — e.g. quickshell). Heap-

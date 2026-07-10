@@ -52,6 +52,8 @@ pub enum Action {
     MoveFocus(Direction),
     /// Swap the focused window's tiling position with its spatial neighbor.
     MoveWindow(Direction),
+    /// Toggle the focused window fullscreen (full output box, above bars).
+    Fullscreen,
     /// Switch to workspace (0-based index).
     Workspace(usize),
     /// Move the focused window to a workspace (0-based index).
@@ -223,6 +225,7 @@ fn default_binds(modifier: u32) -> Vec<Bind> {
         Bind { mods: ms, keysym: key("J"), action: Action::MoveWindow(Direction::Down) },
         Bind { mods: ms, keysym: key("K"), action: Action::MoveWindow(Direction::Up) },
         Bind { mods: ms, keysym: key("L"), action: Action::MoveWindow(Direction::Right) },
+        Bind { mods: m, keysym: key("F"), action: Action::Fullscreen },
     ];
     for i in 0..9u32 {
         let name = (b'1' + i as u8) as char;
@@ -311,6 +314,7 @@ fn parse_action(name: &str, arg: Option<&str>) -> Option<Action> {
         "focusprev" => Some(Action::FocusPrev),
         "movefocus" => Some(Action::MoveFocus(direction_from_arg(arg?)?)),
         "movewindow" => Some(Action::MoveWindow(direction_from_arg(arg?)?)),
+        "fullscreen" | "togglefullscreen" => Some(Action::Fullscreen),
         "workspace" => Some(Action::Workspace(workspace_index(arg?)?)),
         "movetoworkspace" => Some(Action::MoveToWorkspace(workspace_index(arg?)?)),
         _ => None,
@@ -411,6 +415,26 @@ mod tests {
 
         cfg.apply_binds("bind = , Print, spawn, grim\n");
         assert_eq!(cfg.binds.len(), before + 1, "a new chord must be appended, not replace one");
+    }
+
+    #[test]
+    fn fullscreen_action_parses_and_has_default_bind() {
+        let mut cfg = Config::default();
+        cfg.binds = default_binds(cfg.modifier);
+
+        // Default: Mod+F toggles fullscreen.
+        let f = key("F");
+        let default = cfg.binds.iter().find(|b| b.mods == cfg.modifier && b.keysym == f).unwrap();
+        assert!(matches!(default.action, Action::Fullscreen));
+
+        // Both config spellings parse, with no argument required.
+        cfg.apply_binds("bind = MOD SHIFT, F, togglefullscreen\n");
+        let msf = cfg
+            .binds
+            .iter()
+            .find(|b| b.mods == (cfg.modifier | MOD_SHIFT) && b.keysym == f)
+            .unwrap();
+        assert!(matches!(msf.action, Action::Fullscreen));
     }
 
     #[test]

@@ -150,7 +150,10 @@ pub(crate) unsafe extern "C" fn handle_session_active(userdata: *mut c_void, _da
     for ws in &mut server.workspaces {
         for &tl in &ws.windows {
             oxide_scene_tree_destroy((*tl).scene_tree);
-            (*tl).scene_tree = oxide_scene_add_xdg_toplevel(server.tree_normal, (*tl).xdg_toplevel);
+            // Rebuild into the layer matching the window's state, so a
+            // fullscreen window comes back above the bars, not under them.
+            let tree = if (*tl).fullscreen { server.tree_fullscreen } else { server.tree_normal };
+            (*tl).scene_tree = oxide_scene_add_xdg_toplevel(tree, (*tl).xdg_toplevel);
         }
     }
 

@@ -4,6 +4,7 @@ use crate::config::{Action, MOD_ALT, MOD_CTRL, MOD_MASK};
 use crate::ffi::*;
 use crate::state::*;
 use crate::tiling::{active_output, active_workspace, refresh, spatial_neighbor};
+use crate::toplevel::set_fullscreen;
 use crate::wlr;
 use std::os::raw::c_void;
 use std::process::Command;
@@ -156,6 +157,14 @@ pub(crate) unsafe extern "C" fn handle_keybinding(
             }
         }
         Action::MoveFocus(_) | Action::MoveWindow(_) => {}
+        Action::Fullscreen if n > 0 => {
+            let a = active_workspace(server);
+            let ws = &server.workspaces[a];
+            if let Some(&tl) = ws.windows.get(ws.focused) {
+                set_fullscreen(server, tl, !(*tl).fullscreen);
+            }
+        }
+        Action::Fullscreen => {}
         Action::Workspace(ws) => switch_workspace(server, ws),
         Action::MoveToWorkspace(ws) => move_to_workspace(server, ws),
     }

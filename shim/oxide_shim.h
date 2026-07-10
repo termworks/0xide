@@ -117,11 +117,21 @@ struct oxide_listener *oxide_xdg_add_unmap(struct wlr_xdg_toplevel *toplevel,
         oxide_callback callback, void *userdata);
 struct oxide_listener *oxide_xdg_add_destroy(struct wlr_xdg_toplevel *toplevel,
         oxide_callback callback, void *userdata);
+// The client asked to enter/leave fullscreen (must be answered with a
+// configure — Rust calls wlr_xdg_toplevel_set_fullscreen either way).
+struct oxide_listener *oxide_xdg_add_request_fullscreen(
+        struct wlr_xdg_toplevel *toplevel, oxide_callback callback,
+        void *userdata);
+// The fullscreen state the client currently wants.
+bool oxide_xdg_toplevel_requested_fullscreen(struct wlr_xdg_toplevel *toplevel);
 
 // Layout helpers: move a window's scene node; give a window keyboard focus;
 // read an output's pixel size. (All touch wlroots struct internals.)
 void oxide_scene_tree_set_position(struct wlr_scene_tree *tree, int x, int y);
 void oxide_scene_tree_set_enabled(struct wlr_scene_tree *tree, bool enabled);
+// Move a window's scene tree between layer trees (normal <-> fullscreen).
+void oxide_scene_tree_reparent(struct wlr_scene_tree *tree,
+        struct wlr_scene_tree *new_parent);
 // Destroy a window's scene tree (to rebuild it on VT resume).
 void oxide_scene_tree_destroy(struct wlr_scene_tree *tree);
 void oxide_focus_toplevel(struct wlr_seat *seat,

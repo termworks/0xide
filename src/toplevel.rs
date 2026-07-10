@@ -24,10 +24,12 @@ pub(crate) unsafe extern "C" fn handle_new_toplevel(userdata: *mut c_void, data:
         y: 0,
         w: 0,
         h: 0,
+        fullscreen: false,
         commit_listener: ptr::null_mut(),
         map_listener: ptr::null_mut(),
         unmap_listener: ptr::null_mut(),
         destroy_listener: ptr::null_mut(),
+        fullscreen_listener: ptr::null_mut(),
     }));
 
     // Listen for its lifecycle so Rust can keep the window list current. We keep
@@ -37,6 +39,35 @@ pub(crate) unsafe extern "C" fn handle_new_toplevel(userdata: *mut c_void, data:
     (*tl).map_listener = oxide_xdg_add_map(toplevel, handle_map, ud);
     (*tl).unmap_listener = oxide_xdg_add_unmap(toplevel, handle_unmap, ud);
     (*tl).destroy_listener = oxide_xdg_add_destroy(toplevel, handle_destroy, ud);
+    (*tl).fullscreen_listener =
+        oxide_xdg_add_request_fullscreen(toplevel, handle_request_fullscreen, ud);
+}
+
+/// Put a window into or out of fullscreen: full output box, painted above
+/// layer-shell bars (the `tree_fullscreen` scene layer). Also answers the
+/// client — the protocol requires every state request to get a configure,
+/// which `wlr_xdg_toplevel_set_fullscreen` schedules.
+pub(crate) unsafe fn set_fullscreen(server: &mut Server, tl: *mut Toplevel, on: bool) {
+    if (*tl).fullscreen == on {
+        // Still answer the request (a configure is mandatory either way).
+        wlr::wlr_xdg_toplevel_set_fullscreen((*tl).xdg_toplevel, on);
+        return;
+    }
+    (*tl).fullscreen = on;
+    wlr::wlr_xdg_toplevel_set_fullscreen((*tl).xdg_toplevel, on);
+    let tree = if on { server.tree_fullscreen } else { server.tree_normal };
+    oxide_scene_tree_reparent((*tl).scene_tree, tree);
+    refresh(server);
+    println!("0xide: fullscreen {}", if on { "on" } else { "off" });
+}
+
+/// The client asked to enter or leave fullscreen (e.g. F11). Apply whatever
+/// it requested; the answer-configure happens inside set_fullscreen.
+unsafe extern "C" fn handle_request_fullscreen(userdata: *mut c_void, _data: *mut c_void) {
+    let tl = userdata as *mut Toplevel;
+    let server = &mut *(*tl).server;
+    let want = oxide_xdg_toplevel_requested_fullscreen((*tl).xdg_toplevel);
+    set_fullscreen(server, tl, want);
 }
 
 /// A window's surface became mapped: add it to the focused output's workspace,
@@ -56,6 +87,11 @@ unsafe extern "C" fn handle_map(userdata: *mut c_void, _data: *mut c_void) {
         a + 1,
         server.workspaces[a].windows.len()
     );
+    // A client may request fullscreen before it maps (e.g. launched with
+    // --fullscreen); the request struct is meant to be checked on map.
+    if oxide_xdg_toplevel_requested_fullscreen((*tl).xdg_toplevel) {
+        set_fullscreen(server, tl, true);
+    }
 }
 
 /// A window's surface was unmapped (hidden): drop it from the layout.
@@ -75,6 +111,7 @@ unsafe extern "C" fn handle_destroy(userdata: *mut c_void, _data: *mut c_void) {
     oxide_listener_remove((*tl).map_listener);
     oxide_listener_remove((*tl).unmap_listener);
     oxide_listener_remove((*tl).destroy_listener);
+    oxide_listener_remove((*tl).fullscreen_listener);
     remove_window(server, tl);
     drop(Box::from_raw(tl));
 }

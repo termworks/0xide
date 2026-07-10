@@ -72,6 +72,26 @@ struct wlr_surface *oxide_xdg_toplevel_surface(struct wlr_xdg_toplevel *toplevel
     return toplevel->base->surface;
 }
 
+// Fires when the client asks to enter OR leave fullscreen (F11 in a browser,
+// mpv --fs). The protocol requires the compositor to answer every state
+// request with a configure — Rust does that via wlr_xdg_toplevel_set_fullscreen.
+struct oxide_listener *oxide_xdg_add_request_fullscreen(
+        struct wlr_xdg_toplevel *toplevel, oxide_callback callback,
+        void *userdata) {
+    return signal_add(&toplevel->events.request_fullscreen, callback, userdata);
+}
+
+// What the client currently wants (checked on the request signal and on map).
+bool oxide_xdg_toplevel_requested_fullscreen(struct wlr_xdg_toplevel *toplevel) {
+    return toplevel->requested.fullscreen;
+}
+
+// Move a window's scene tree to another layer tree (normal <-> fullscreen).
+void oxide_scene_tree_reparent(struct wlr_scene_tree *tree,
+        struct wlr_scene_tree *new_parent) {
+    wlr_scene_node_reparent(&tree->node, new_parent);
+}
+
 void oxide_focus_toplevel(struct wlr_seat *seat,
         struct wlr_xdg_toplevel *toplevel) {
     struct wlr_surface *surface = toplevel->base->surface;

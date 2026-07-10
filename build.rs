@@ -124,6 +124,7 @@ fn main() {
         .allowlist_function("wlr_data_device_manager_create")
         .allowlist_function("wlr_xdg_shell_create")
         .allowlist_function("wlr_xdg_toplevel_set_size")
+        .allowlist_function("wlr_xdg_toplevel_set_fullscreen")
         .allowlist_function("wlr_xdg_toplevel_send_close")
         .allowlist_function("wlr_layer_shell_v1_create")
         .allowlist_function("wlr_xdg_decoration_manager_v1_create")
