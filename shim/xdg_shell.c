@@ -6,16 +6,6 @@
 
 #include "oxide_shim_internal.h"
 
-// On the client's very first commit we must answer with a configure, or it
-// never maps. Size 0,0 means "client, pick your own size".
-static void handle_xdg_initial_commit(void *userdata, void *data) {
-    (void)data;
-    struct wlr_xdg_toplevel *toplevel = userdata;
-    if (toplevel->base->initial_commit) {
-        wlr_xdg_toplevel_set_size(toplevel, 0, 0);
-    }
-}
-
 struct oxide_listener *oxide_xdg_shell_add_new_toplevel(
         struct wlr_xdg_shell *shell, oxide_callback callback, void *userdata) {
     return signal_add(&shell->events.new_toplevel, callback, userdata);
@@ -28,11 +18,20 @@ struct wlr_scene_tree *oxide_scene_add_xdg_toplevel(struct wlr_scene_tree *tree,
     return wlr_scene_xdg_surface_create(tree, toplevel->base);
 }
 
-// Configure the client on its initial commit so it can map. Returned so Rust
-// can remove it (with the other per-window listeners) on destroy.
-struct oxide_listener *oxide_xdg_add_commit(struct wlr_xdg_toplevel *toplevel) {
-    return signal_add(&toplevel->base->surface->events.commit,
-            handle_xdg_initial_commit, toplevel);
+// Commit listener, routed to Rust. Fires on every commit; Rust filters for
+// the initial one (oxide_xdg_initial_commit) and answers it with a configure
+// carrying the window's predicted tile size — so the client's very first
+// frame is already the right size instead of its own preferred (often huge)
+// one. Returned so Rust can remove it on destroy with the others.
+struct oxide_listener *oxide_xdg_add_commit(struct wlr_xdg_toplevel *toplevel,
+        oxide_callback callback, void *userdata) {
+    return signal_add(&toplevel->base->surface->events.commit, callback, userdata);
+}
+
+// True only for the client's very first commit — the one the compositor must
+// answer with a configure (or the client never maps).
+bool oxide_xdg_initial_commit(struct wlr_xdg_toplevel *toplevel) {
+    return toplevel->base->initial_commit;
 }
 
 struct oxide_listener *oxide_xdg_add_map(struct wlr_xdg_toplevel *toplevel,

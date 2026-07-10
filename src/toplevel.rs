@@ -3,7 +3,7 @@
 use crate::ffi::*;
 use crate::keybindings::focus_index;
 use crate::state::*;
-use crate::tiling::{active_workspace, refresh};
+use crate::tiling::{active_output, active_workspace, refresh, spiral_rects};
 use crate::wlr;
 use std::os::raw::c_void;
 use std::ptr;
@@ -35,7 +35,7 @@ pub(crate) unsafe extern "C" fn handle_new_toplevel(userdata: *mut c_void, data:
     // Listen for its lifecycle so Rust can keep the window list current. We keep
     // the listener handles to unregister them on destroy.
     let ud = tl as *mut c_void;
-    (*tl).commit_listener = oxide_xdg_add_commit(toplevel);
+    (*tl).commit_listener = oxide_xdg_add_commit(toplevel, handle_commit, ud);
     (*tl).map_listener = oxide_xdg_add_map(toplevel, handle_map, ud);
     (*tl).unmap_listener = oxide_xdg_add_unmap(toplevel, handle_unmap, ud);
     (*tl).destroy_listener = oxide_xdg_add_destroy(toplevel, handle_destroy, ud);
@@ -68,6 +68,33 @@ unsafe extern "C" fn handle_request_fullscreen(userdata: *mut c_void, _data: *mu
     let server = &mut *(*tl).server;
     let want = oxide_xdg_toplevel_requested_fullscreen((*tl).xdg_toplevel);
     set_fullscreen(server, tl, want);
+}
+
+/// Every surface commit; only the client's very first one matters here. That
+/// initial commit must be answered with a configure (or the client never
+/// maps) — and the size we put in it is the client's first real size hint.
+/// Answering `0,0` ("pick your own size") lets clients map at their
+/// remembered/preferred size — often larger than their tile, spilling across
+/// outputs, and some (e.g. browsers) then mishandle the immediate resize that
+/// follows on map. Instead, predict the tile this window will get — it joins
+/// the end of the active output's workspace, so it takes the last rect of the
+/// spiral with one extra window — and send that, so the first frame the
+/// client ever draws already fits.
+unsafe extern "C" fn handle_commit(userdata: *mut c_void, _data: *mut c_void) {
+    let tl = userdata as *mut Toplevel;
+    if !oxide_xdg_initial_commit((*tl).xdg_toplevel) {
+        return;
+    }
+    let server = &*(*tl).server;
+    let (mut w, mut h) = (0, 0); // 0,0 = client decides (no output to predict from)
+    if !server.outputs.is_empty() {
+        let o = &server.outputs[active_output(server)];
+        let ws = &server.workspaces[o.workspace];
+        let tiled = ws.windows.iter().filter(|&&t| !(*t).fullscreen).count();
+        let rects = spiral_rects(tiled + 1, o.ux, o.uy, o.uw, o.uh, server.config.gap);
+        (_, _, w, h) = *rects.last().unwrap();
+    }
+    wlr::wlr_xdg_toplevel_set_size((*tl).xdg_toplevel, w, h);
 }
 
 /// A window's surface became mapped: add it to the focused output's workspace,

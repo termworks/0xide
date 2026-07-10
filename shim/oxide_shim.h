@@ -103,9 +103,14 @@ struct oxide_listener *oxide_xdg_shell_add_new_toplevel(
 struct wlr_scene_tree *oxide_scene_add_xdg_toplevel(struct wlr_scene_tree *tree,
         struct wlr_xdg_toplevel *toplevel);
 
-// Register the initial-commit handler (lets the client map). Returns the
-// listener so Rust can remove it on destroy with the others.
-struct oxide_listener *oxide_xdg_add_commit(struct wlr_xdg_toplevel *toplevel);
+// Commit listener (fires every commit; Rust filters for the initial one and
+// answers it with a sized configure). Returns the listener so Rust can
+// remove it on destroy with the others.
+struct oxide_listener *oxide_xdg_add_commit(struct wlr_xdg_toplevel *toplevel,
+        oxide_callback callback, void *userdata);
+// True only on the client's very first commit (must be answered with a
+// configure or the client never maps).
+bool oxide_xdg_initial_commit(struct wlr_xdg_toplevel *toplevel);
 
 // Unsubscribe and free a listener returned by one of the add helpers.
 void oxide_listener_remove(struct oxide_listener *listener);

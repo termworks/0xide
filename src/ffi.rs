@@ -81,7 +81,12 @@ extern "C" {
         tree: *mut wlr::wlr_scene_tree,
         toplevel: *mut wlr::wlr_xdg_toplevel,
     ) -> *mut wlr::wlr_scene_tree;
-    pub(crate) fn oxide_xdg_add_commit(toplevel: *mut wlr::wlr_xdg_toplevel) -> *mut ShimListener;
+    pub(crate) fn oxide_xdg_add_commit(
+        toplevel: *mut wlr::wlr_xdg_toplevel,
+        callback: ShimCallback,
+        userdata: *mut c_void,
+    ) -> *mut ShimListener;
+    pub(crate) fn oxide_xdg_initial_commit(toplevel: *mut wlr::wlr_xdg_toplevel) -> bool;
     pub(crate) fn oxide_listener_remove(listener: *mut ShimListener);
     pub(crate) fn oxide_xdg_add_map(
         toplevel: *mut wlr::wlr_xdg_toplevel,
