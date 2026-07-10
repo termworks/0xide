@@ -94,7 +94,12 @@ unsafe extern "C" fn handle_commit(userdata: *mut c_void, _data: *mut c_void) {
         let rects = spiral_rects(tiled + 1, o.ux, o.uy, o.uw, o.uh, server.config.gap);
         (_, _, w, h) = *rects.last().unwrap();
     }
+    // Tiled state makes the size binding: without it this configure has
+    // floating semantics, and clients with a remembered size (Firefox) may
+    // use that instead of what we send.
+    oxide_xdg_toplevel_set_tiled_all((*tl).xdg_toplevel);
     wlr::wlr_xdg_toplevel_set_size((*tl).xdg_toplevel, w, h);
+    println!("0xide: new window — initial configure {w}x{h}");
 }
 
 /// A window's surface became mapped: add it to the focused output's workspace,

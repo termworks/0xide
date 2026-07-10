@@ -87,6 +87,7 @@ extern "C" {
         userdata: *mut c_void,
     ) -> *mut ShimListener;
     pub(crate) fn oxide_xdg_initial_commit(toplevel: *mut wlr::wlr_xdg_toplevel) -> bool;
+    pub(crate) fn oxide_xdg_toplevel_set_tiled_all(toplevel: *mut wlr::wlr_xdg_toplevel);
     pub(crate) fn oxide_listener_remove(listener: *mut ShimListener);
     pub(crate) fn oxide_xdg_add_map(
         toplevel: *mut wlr::wlr_xdg_toplevel,

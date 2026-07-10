@@ -111,6 +111,9 @@ struct oxide_listener *oxide_xdg_add_commit(struct wlr_xdg_toplevel *toplevel,
 // True only on the client's very first commit (must be answered with a
 // configure or the client never maps).
 bool oxide_xdg_initial_commit(struct wlr_xdg_toplevel *toplevel);
+// Mark a window tiled on all edges, making our configure sizes binding
+// rather than a "floating" hint clients may override with a saved size.
+void oxide_xdg_toplevel_set_tiled_all(struct wlr_xdg_toplevel *toplevel);
 
 // Unsubscribe and free a listener returned by one of the add helpers.
 void oxide_listener_remove(struct oxide_listener *listener);

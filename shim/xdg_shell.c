@@ -3,6 +3,7 @@
 #include <wlr/types/wlr_scene.h>
 #include <wlr/types/wlr_seat.h>
 #include <wlr/types/wlr_xdg_shell.h>
+#include <wlr/util/edges.h>
 
 #include "oxide_shim_internal.h"
 
@@ -32,6 +33,15 @@ struct oxide_listener *oxide_xdg_add_commit(struct wlr_xdg_toplevel *toplevel,
 // answer with a configure (or the client never maps).
 bool oxide_xdg_initial_commit(struct wlr_xdg_toplevel *toplevel) {
     return toplevel->base->initial_commit;
+}
+
+// Mark the window tiled on all four edges. Without a tiled state the
+// configure is "floating" semantics and clients (Firefox, GTK apps) may
+// prefer their own remembered size over the one we send; with it, the
+// configure size is binding. Kept in C so the WLR_EDGE_* enum stays native.
+void oxide_xdg_toplevel_set_tiled_all(struct wlr_xdg_toplevel *toplevel) {
+    wlr_xdg_toplevel_set_tiled(toplevel, WLR_EDGE_TOP | WLR_EDGE_BOTTOM
+            | WLR_EDGE_LEFT | WLR_EDGE_RIGHT);
 }
 
 struct oxide_listener *oxide_xdg_add_map(struct wlr_xdg_toplevel *toplevel,
