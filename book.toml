@@ -1,0 +1,11 @@
+[book]
+title = "0xide"
+description = "A from-scratch tiling Wayland compositor in Rust on wlroots — built and documented one phase at a time."
+authors = ["sn3rt"]
+src = "docs"
+language = "en"
+
+[output.html]
+git-repository-url = "https://github.com/sn3rt/0xide"
+default-theme = "navy"
+preferred-dark-theme = "navy"

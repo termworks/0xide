@@ -32,6 +32,18 @@ automatically to fill the screen instead of floating and overlapping.
 - **Screenshots/screen recording** (`wlr-screencopy-unstable-v1` + `xdg-output`) — tools
   like `grim` and `wf-recorder` capture 0xide's real composited output directly.
 
+## Docs
+
+The full story — architecture, environment/toolchain, and a phase-by-phase
+build log (Stage 0 through Stage 8, each with its deliverable and how it
+actually went) — lives in an [mdBook](https://rust-lang.github.io/mdBook/)
+under [`docs/`](docs/introduction.md), deployed to GitHub Pages. Preview it
+locally with:
+
+```sh
+mdbook serve
+```
+
 ## Architecture
 
 The split is deliberate:
@@ -148,7 +160,8 @@ A line 0xide can't parse is warned about on stderr and skipped — never fatal. 
 | `src/config.rs`           | Dependency-free config-file parser                        |
 | `shim/oxide_shim.{c,h}` | Thin C shim: wlroots listener glue + struct access        |
 | `build.rs`, `wrapper.h`   | The FFI pipeline (pkg-config, wayland-scanner, cc, bindgen) |
-| `notes/`                  | Architecture, toolchain, and run/verify notes             |
+| `notes/`                  | Architecture, toolchain, and run/verify notes (working reference) |
+| `docs/`, `book.toml`      | The mdBook doc site source — narrative chapters + phase build log |
 | `KICKOFF.md`              | The project's mission and learning-first working rules    |
 
 ---
