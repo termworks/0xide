@@ -37,7 +37,7 @@ it to parse the wlroots C headers into Rust FFI declarations.
    0xide actually calls (see [Architecture](architecture.md) for why the
    allowlist exists and what it means for opaque struct types).
 
-See [`build.rs`](https://github.com/sn3rt/0xide/blob/main/build.rs) for the
+See [`build.rs`](https://github.com/termworks/0xide/blob/main/build.rs) for the
 exact allowlist and flag wiring.
 
 ## Running it
@@ -60,5 +60,5 @@ Two run modes, both via cargo aliases in `.cargo/config.toml`:
 Full recipes, verification commands, and known gotchas (multi-GPU device
 selection, VT-switch repaint behavior, headless screenshot verification) live
 in [Running & Verifying](running.md) and the in-repo
-[`notes/`](https://github.com/sn3rt/0xide/tree/main/notes) directory, which
+[`notes/`](https://github.com/termworks/0xide/tree/main/notes) directory, which
 is the day-to-day working reference this chapter is distilled from.
