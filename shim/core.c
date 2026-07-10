@@ -36,6 +36,10 @@ void oxide_setup_signals(struct wl_event_loop *loop, struct wl_display *display)
     // Handled via the event loop's signalfd, so it's safe (not an async signal).
     wl_event_loop_add_signal(loop, SIGINT, handle_signal, display);
     wl_event_loop_add_signal(loop, SIGTERM, handle_signal, display);
+    // Auto-reap spawned clients (POSIX: ignoring SIGCHLD reaps children on
+    // exit). We never wait() on any child, so without this every closed app
+    // would stay a zombie for the compositor session's lifetime.
+    signal(SIGCHLD, SIG_IGN);
 }
 
 // --- session / VT ----------------------------------------------------------
