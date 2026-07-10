@@ -6,6 +6,6 @@ src = "docs"
 language = "en"
 
 [output.html]
-git-repository-url = "https://github.com/sn3rt/0xide"
+git-repository-url = "https://github.com/termworks/0xide"
 default-theme = "navy"
 preferred-dark-theme = "navy"

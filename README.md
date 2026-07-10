@@ -37,8 +37,9 @@ automatically to fill the screen instead of floating and overlapping.
 The full story — architecture, environment/toolchain, and a phase-by-phase
 build log (Stage 0 through Stage 8, each with its deliverable and how it
 actually went) — lives in an [mdBook](https://rust-lang.github.io/mdBook/)
-under [`docs/`](docs/introduction.md), deployed to GitHub Pages. Preview it
-locally with:
+under [`docs/`](docs/introduction.md), published at
+**[termworks.github.io/0xide](https://termworks.github.io/0xide/)**.
+Preview it locally with:
 
 ```sh
 mdbook serve
