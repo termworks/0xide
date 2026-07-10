@@ -28,29 +28,8 @@ pub(crate) unsafe fn refresh(server: &mut Server) {
             continue;
         }
 
-        // Spiral layout: each window except the last splits the remaining rect,
-        // alternating vertical (left/right) then horizontal (top/bottom). The
-        // window takes the first half; the rest recurse into the second half.
-        let (mut rx, mut ry) = (o.ux + gap, o.uy + gap);
-        let (mut rw, mut rh) = ((o.uw - gap * 2).max(1), (o.uh - gap * 2).max(1));
-        let mut split_vertical = true;
-        for (i, &tl) in ws.windows.iter().enumerate() {
-            let (x, y, w, h);
-            if i == n - 1 {
-                // Last window fills whatever rect is left.
-                (x, y, w, h) = (rx, ry, rw, rh);
-            } else if split_vertical {
-                let half = ((rw - gap) / 2).max(1);
-                (x, y, w, h) = (rx, ry, half, rh);
-                rx += half + gap;
-                rw = (rw - half - gap).max(1);
-            } else {
-                let half = ((rh - gap) / 2).max(1);
-                (x, y, w, h) = (rx, ry, rw, half);
-                ry += half + gap;
-                rh = (rh - half - gap).max(1);
-            }
-            split_vertical = !split_vertical;
+        let rects = spiral_rects(n, o.ux, o.uy, o.uw, o.uh, gap);
+        for (&tl, &(x, y, w, h)) in ws.windows.iter().zip(&rects) {
             oxide_scene_tree_set_position((*tl).scene_tree, x, y);
             wlr::wlr_xdg_toplevel_set_size((*tl).xdg_toplevel, w, h);
             (*tl).x = x;
@@ -59,6 +38,46 @@ pub(crate) unsafe fn refresh(server: &mut Server) {
             (*tl).h = h;
         }
     }
+}
+
+/// The spiral (dwindle) layout as a pure function: `n` rects filling the
+/// `x,y,w,h` box with `gap` pixels around and between windows. Each window
+/// except the last splits the remaining rect, alternating vertical
+/// (left/right) then horizontal (top/bottom); the window takes the first
+/// half, the rest recurse into the second. Pure so the unit tests exercise
+/// the exact same geometry `refresh()` applies.
+pub(crate) fn spiral_rects(
+    n: usize,
+    x: i32,
+    y: i32,
+    w: i32,
+    h: i32,
+    gap: i32,
+) -> Vec<(i32, i32, i32, i32)> {
+    let (mut rx, mut ry) = (x + gap, y + gap);
+    let (mut rw, mut rh) = ((w - gap * 2).max(1), (h - gap * 2).max(1));
+    let mut split_vertical = true;
+    let mut rects = Vec::with_capacity(n);
+    for i in 0..n {
+        let (x, y, w, h);
+        if i == n - 1 {
+            // Last window fills whatever rect is left.
+            (x, y, w, h) = (rx, ry, rw, rh);
+        } else if split_vertical {
+            let half = ((rw - gap) / 2).max(1);
+            (x, y, w, h) = (rx, ry, half, rh);
+            rx += half + gap;
+            rw = (rw - half - gap).max(1);
+        } else {
+            let half = ((rh - gap) / 2).max(1);
+            (x, y, w, h) = (rx, ry, rw, half);
+            ry += half + gap;
+            rh = (rh - half - gap).max(1);
+        }
+        split_vertical = !split_vertical;
+        rects.push((x, y, w, h));
+    }
+    rects
 }
 
 /// Find whichever window in workspace `ws_idx` is spatially adjacent to
@@ -169,35 +188,6 @@ mod tests {
     use crate::config::Config;
     use std::ptr;
 
-    // Compute the exact spiral rects `refresh()` would produce for `n`
-    // windows on an `ow`x`oh` output with no gap — lets tests build a
-    // realistic multi-window fixture without a live Server/output.
-    fn spiral_rects(n: usize, ow: i32, oh: i32) -> Vec<(i32, i32, i32, i32)> {
-        let (mut rx, mut ry) = (0, 0);
-        let (mut rw, mut rh) = (ow, oh);
-        let mut split_vertical = true;
-        let mut rects = Vec::new();
-        for i in 0..n {
-            let (x, y, w, h);
-            if i == n - 1 {
-                (x, y, w, h) = (rx, ry, rw, rh);
-            } else if split_vertical {
-                let half = (rw / 2).max(1);
-                (x, y, w, h) = (rx, ry, half, rh);
-                rx += half;
-                rw = (rw - half).max(1);
-            } else {
-                let half = (rh / 2).max(1);
-                (x, y, w, h) = (rx, ry, rw, half);
-                ry += half;
-                rh = (rh - half).max(1);
-            }
-            split_vertical = !split_vertical;
-            rects.push((x, y, w, h));
-        }
-        rects
-    }
-
     unsafe fn server_from_rects(rects: &[(i32, i32, i32, i32)]) -> Server {
         let windows = rects.iter().map(|&(x, y, w, h)| toplevel_at(x, y, w, h)).collect();
         server_with(windows)
@@ -213,7 +203,7 @@ mod tests {
     #[test]
     fn spatial_neighbor_prefers_overlapping_border_at_4_windows() {
         unsafe {
-            let rects = spiral_rects(4, 1280, 720);
+            let rects = spiral_rects(4, 0, 0, 1280, 720, 0);
             let server = server_from_rects(&rects);
             assert_eq!(spatial_neighbor(&server, 0, 2, Direction::Up), Some(1));
             assert_eq!(spatial_neighbor(&server, 0, 1, Direction::Down), Some(3));
@@ -234,7 +224,7 @@ mod tests {
     #[test]
     fn spatial_neighbor_corner_touch_is_not_reversible() {
         unsafe {
-            let rects = spiral_rects(4, 1280, 720);
+            let rects = spiral_rects(4, 0, 0, 1280, 720, 0);
             let server = server_from_rects(&rects);
             assert_eq!(spatial_neighbor(&server, 0, 1, Direction::Right), Some(3));
             assert_ne!(spatial_neighbor(&server, 0, 3, Direction::Left), Some(1));
