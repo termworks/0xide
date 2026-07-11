@@ -54,6 +54,6 @@ Wayland model (clients, `wl_display`, the event loop, `wl_compositor`, surfaces,
 
 *(Out of scope for now: running on the snert kernel. Linux-only. We may revisit much later once snert grows a sufficient syscall/driver surface — don't constrain the design for it yet.)*
 
-**Start here**
+**Where we are**
 
-We're at Stage 0. Before any code: explain how a wlroots compositor is structured and what the minimal "open a backend, render a clear color in a nested window" program needs. Then propose the FFI strategy (bindgen vs C shim) with tradeoffs, recommend one, and wait for my go-ahead. Smallest useful change first; explain every file; then run it via the nested backend and show me the output.
+Current status is always the lowest unfinished stage in the roadmap above. The full record of every stage — its deliverable and how it actually went — lives in the book (`docs/`, published via GitHub Pages). The Stage 0 decisions this document originally asked for (FFI strategy: bindgen + a thin C shim) are settled and documented in `notes/architecture.md` and the book's Architecture chapter.
