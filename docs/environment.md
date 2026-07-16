@@ -23,6 +23,14 @@ work around).
 `clang`/`libclang` is a build dependency, not a runtime one — `bindgen` needs
 it to parse the wlroots C headers into Rust FFI declarations.
 
+A [direnv](https://direnv.net) `.envrc` is committed (run `direnv allow`
+once after cloning, if you use direnv — it's optional). Today it only turns
+backtraces on (`RUST_BACKTRACE=1`); it's also the designated place for
+`PKG_CONFIG_PATH`/`LD_LIBRARY_PATH` if we ever pin our own wlroots build
+instead of the Arch package. Per-scenario variables (`WLR_BACKENDS`,
+`WLR_WL_OUTPUTS`, `OXIDE_MOD`, …) deliberately stay on the command line —
+they select a run mode and don't belong in ambient env.
+
 ## The FFI pipeline
 
 `build.rs` does four things, in order, every build:
