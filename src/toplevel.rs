@@ -86,9 +86,11 @@ pub(crate) unsafe fn set_floating(server: &mut Server, tl: *mut Toplevel, on: bo
         oxide_scene_tree_reparent((*tl).scene_tree, tree);
     }
     if on {
-        // Keep the size it had as a tile, centered on its output.
+        // The configured default floating size, centered — not the size it
+        // happened to have as a tile.
         oxide_xdg_toplevel_set_tiled_none((*tl).xdg_toplevel);
-        place_floating(server, tl, (*tl).w, (*tl).h);
+        let (w, h) = float_default_size(server);
+        place_floating(server, tl, w, h);
     } else {
         oxide_xdg_toplevel_set_tiled_all((*tl).xdg_toplevel);
     }
@@ -116,24 +118,38 @@ unsafe fn place_floating(server: &Server, tl: *mut Toplevel, w: i32, h: i32) {
     ((*tl).x, (*tl).y, (*tl).w, (*tl).h) = (x, y, w, h);
 }
 
-/// Should this window float instead of tiling? Checked on the initial commit
-/// (the first configure already differs) and re-checked on map for a
-/// late-set parent. In order: it's a dialog (has a parent toplevel), it
-/// declares a fixed size, or its app id matches a `float =` config rule.
-unsafe fn should_float(server: &Server, tl: *mut Toplevel) -> bool {
-    let toplevel = (*tl).xdg_toplevel;
-    if !oxide_xdg_toplevel_parent(toplevel).is_null() {
-        return true;
+/// Does this window float *at its own natural size*? True for dialogs (a
+/// parent toplevel is set — file pickers, "Save as…") and windows declaring
+/// a fixed size: their size is exactly what floating exists to preserve.
+/// Checked on the initial commit (the first configure already differs) and
+/// re-checked on map for a late-set parent.
+unsafe fn floats_naturally(tl: *mut Toplevel) -> bool {
+    !oxide_xdg_toplevel_parent((*tl).xdg_toplevel).is_null()
+        || oxide_xdg_toplevel_fixed_size((*tl).xdg_toplevel)
+}
+
+/// Does a `float = <app_id>` config rule float this window? Rule windows are
+/// ordinary apps told to float, so they get the configured default size
+/// (`float_size`) rather than their own.
+unsafe fn floats_by_rule(server: &Server, tl: *mut Toplevel) -> bool {
+    let app_id = oxide_xdg_toplevel_app_id((*tl).xdg_toplevel);
+    if app_id.is_null() {
+        return false;
     }
-    if oxide_xdg_toplevel_fixed_size(toplevel) {
-        return true;
+    let app_id = CStr::from_ptr(app_id).to_string_lossy().to_ascii_lowercase();
+    server.config.float_rules.contains(&app_id)
+}
+
+/// The configured default floating size (`float_size`, percentages) applied
+/// to the active output's usable area. (0, 0) — "client decides" — when no
+/// output exists yet.
+unsafe fn float_default_size(server: &Server) -> (i32, i32) {
+    if server.outputs.is_empty() {
+        return (0, 0);
     }
-    let app_id = oxide_xdg_toplevel_app_id(toplevel);
-    if !app_id.is_null() {
-        let app_id = CStr::from_ptr(app_id).to_string_lossy().to_ascii_lowercase();
-        return server.config.float_rules.contains(&app_id);
-    }
-    false
+    let o = &server.outputs[active_output(server)];
+    let (pw, ph) = server.config.float_size;
+    (o.uw * pw / 100, o.uh * ph / 100)
 }
 
 /// The client asked to enter or leave fullscreen (e.g. F11). Apply whatever
@@ -162,14 +178,23 @@ unsafe extern "C" fn handle_commit(userdata: *mut c_void, _data: *mut c_void) {
     }
     let server = &*(*tl).server;
 
-    // Floating windows get the opposite treatment: no tiled states and a
-    // 0,0 configure ("pick your own size") — the client's natural size is
-    // exactly what we want to keep. This is why detection happens here and
-    // not on map: the very first configure already differs.
-    if should_float(server, tl) {
+    // Floating windows get the opposite treatment: no tiled states, and
+    // either a 0,0 configure ("pick your own size" — dialogs and fixed-size
+    // windows, whose natural size is the point) or the configured default
+    // floating size (`float =` rule windows: ordinary apps told to float).
+    // This is why detection happens here and not on map: the very first
+    // configure already differs.
+    if floats_naturally(tl) {
         (*tl).floating = true;
         wlr::wlr_xdg_toplevel_set_size((*tl).xdg_toplevel, 0, 0);
         println!("0xide: new window — floating, initial configure 0x0");
+        return;
+    }
+    if floats_by_rule(server, tl) {
+        (*tl).floating = true;
+        let (w, h) = float_default_size(server);
+        wlr::wlr_xdg_toplevel_set_size((*tl).xdg_toplevel, w, h);
+        println!("0xide: new window — floating (rule), initial configure {w}x{h}");
         return;
     }
 
@@ -197,9 +222,9 @@ unsafe extern "C" fn handle_map(userdata: *mut c_void, _data: *mut c_void) {
     if server.outputs.is_empty() {
         return; // no monitor to place it on yet
     }
-    // Backstop for clients that set their dialog parent after the initial
-    // commit — the request struct is complete by map time.
-    if !(*tl).floating && !oxide_xdg_toplevel_parent((*tl).xdg_toplevel).is_null() {
+    // Backstop for clients that set their dialog parent (or committed their
+    // fixed size) after the initial commit — complete by map time.
+    if !(*tl).floating && floats_naturally(tl) {
         (*tl).floating = true;
     }
     if (*tl).floating {

@@ -32,6 +32,12 @@ A window floats when any of three signals match, checked in order:
 3. **A config rule says so** — `float = <app_id>` lines, matched
    case-insensitively (e.g. `float = pavucontrol`).
 
+The first two keep the client's natural size — that's the point of floating
+them. Rule windows are different: they're ordinary apps *told* to float, and
+an ordinary app's "natural" size is whatever it last remembered — so they
+open at the configured default instead: `float_size = 60% x 60%`
+(percentages of the usable area; that's also the built-in default).
+
 On map the window is centered in the active output's usable area at the
 natural size it just committed, in a new scene layer between the tiled
 windows and the layer-shell top layer — floating windows paint above tiles
@@ -54,8 +60,10 @@ Two follow-on behaviors fell out of testing rather than planning:
   machine and is deliberately left for a later pass.
 
 `Mod+V` (`togglefloating`) flips the focused window between the postures:
-tiled → floating keeps its current size and centers it; floating → tiled
-restores the tiled states so `refresh()`'s sizes bind again.
+tiled → floating resizes to the `float_size` default, centered (keeping the
+tile's size looked arbitrary in practice — whatever the spiral last
+assigned); floating → tiled restores the tiled states so `refresh()`'s
+sizes bind again.
 
 Verified nested with logs and screenshots: a tiled kitty, a GTK app whose
 file chooser (parent set) mapped floating and centered with its header

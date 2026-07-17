@@ -96,6 +96,11 @@ pub struct Config {
     /// App ids that always float (`float = <app_id>` lines), matched
     /// case-insensitively and exactly against each new window's app id.
     pub float_rules: Vec<String>,
+    /// Default floating window size (`float_size = W x H`), as percentages
+    /// of the output's usable area. Applies to the manual float toggle and
+    /// to `float =` rule windows; dialogs and fixed-size windows keep their
+    /// natural size instead.
+    pub float_size: (i32, i32),
 }
 
 impl Default for Config {
@@ -107,6 +112,7 @@ impl Default for Config {
             binds: Vec::new(),
             monitors: Vec::new(),
             float_rules: Vec::new(),
+            float_size: (60, 60),
         }
     }
 }
@@ -176,6 +182,10 @@ impl Config {
                         None => self.monitors.push(m),
                     },
                     None => warn(n, "invalid monitor (want `NAME, XxY[, SCALE]`)", raw),
+                },
+                "float_size" => match parse_float_size(val) {
+                    Some(s) => self.float_size = s,
+                    None => warn(n, "invalid float_size (want `W x H` percent, 1-100)", raw),
                 },
                 "float" => {
                     let app_id = val.to_ascii_lowercase();
@@ -320,6 +330,17 @@ fn parse_xy(spec: &str) -> Option<(i32, i32)> {
     Some((xs.trim().parse().ok()?, ys.trim().parse().ok()?))
 }
 
+/// Parse `W x H` for a `float_size =` line: two percentages in 1..=100,
+/// each with an optional `%` suffix — `60x60`, `60% x 60%`, `55 x 70%`.
+fn parse_float_size(spec: &str) -> Option<(i32, i32)> {
+    let pct = |s: &str| -> Option<i32> {
+        let n: i32 = s.trim().trim_end_matches('%').trim().parse().ok()?;
+        (1..=100).contains(&n).then_some(n)
+    };
+    let (ws, hs) = spec.split_once('x')?;
+    Some((pct(ws)?, pct(hs)?))
+}
+
 fn parse_action(name: &str, arg: Option<&str>) -> Option<Action> {
     match name.to_ascii_lowercase().as_str() {
         "spawn" | "exec" => Some(Action::Spawn(arg?.to_string())),
@@ -458,6 +479,24 @@ mod tests {
         let mut cfg = Config::default();
         cfg.parse_scalars("float = Zenity\nfloat = pavucontrol\nfloat = zenity\n");
         assert_eq!(cfg.float_rules, vec!["zenity", "pavucontrol"]);
+    }
+
+    #[test]
+    fn float_size_parses_with_and_without_percent() {
+        let mut cfg = Config::default();
+        assert_eq!(cfg.float_size, (60, 60), "default must be 60% x 60%");
+
+        cfg.parse_scalars("float_size = 55 x 70%\n");
+        assert_eq!(cfg.float_size, (55, 70));
+
+        cfg.parse_scalars("float_size = 80%x40%\n");
+        assert_eq!(cfg.float_size, (80, 40));
+
+        // Out-of-range or malformed values warn and leave the setting alone.
+        cfg.parse_scalars("float_size = 0 x 60\n");
+        cfg.parse_scalars("float_size = 60 x 120\n");
+        cfg.parse_scalars("float_size = huge\n");
+        assert_eq!(cfg.float_size, (80, 40));
     }
 
     #[test]

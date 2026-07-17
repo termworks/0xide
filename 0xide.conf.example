@@ -31,15 +31,20 @@ background = 0.0 0.6 0.6
 #
 # monitor = HDMI-A-1, 0x-1080, 1.0
 
-# --- float rules -------------------------------------------------------------
+# --- floating ----------------------------------------------------------------
 #
 # float = APP_ID
-# Windows whose app id matches (case-insensitive) always open floating:
-# centered at their own natural size, above the tiled windows. Dialogs (file
-# pickers etc.) and windows that declare a fixed size float automatically,
+# Windows whose app id matches (case-insensitive) always open floating,
+# centered, above the tiled windows. Dialogs (file pickers etc.) and windows
+# that declare a fixed size float automatically at their own natural size —
 # no rule needed.
 #
 # float = pavucontrol
+
+# Default size of floating windows, as percentages of the screen's usable
+# area (the space bars don't reserve). Applies to `float =` rule windows and
+# to the togglefloating bind; dialogs keep their natural size.
+float_size = 60% x 60%
 
 # --- keybindings -----------------------------------------------------------
 #

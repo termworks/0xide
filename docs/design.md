@@ -48,11 +48,12 @@ stays predictable regardless of how many outputs are attached.
 Windows that shouldn't tile, don't: dialogs (a toplevel with a parent set —
 file pickers, "Save as…"), windows that declare a fixed size, and anything
 matched by a `float = <app_id>` config rule open floating instead — centered,
-at their own natural size, painted above the tiled layer. Everything else
-tiles; floating is the exception, decided per window, never a mode the whole
-workspace switches into. A keybinding toggles the focused window between the
-two, and the details are in the
-[Stage 9 chapter](phases/stage-9-floating.md).
+painted above the tiled layer. Dialogs and fixed-size windows keep their own
+natural size (that's the point of floating them); rule windows and the
+manual float toggle use the configured default size (`float_size`, a
+percentage of the screen's usable area). Everything else tiles; floating is
+the exception, decided per window, never a mode the whole workspace switches
+into. The details are in the [Stage 9 chapter](phases/stage-9-floating.md).
 
 ## Decorations
 
