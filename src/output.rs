@@ -151,9 +151,19 @@ pub(crate) unsafe extern "C" fn handle_session_active(userdata: *mut c_void, _da
         for &tl in &ws.windows {
             oxide_scene_tree_destroy((*tl).scene_tree);
             // Rebuild into the layer matching the window's state, so a
-            // fullscreen window comes back above the bars, not under them.
-            let tree = if (*tl).fullscreen { server.tree_fullscreen } else { server.tree_normal };
+            // fullscreen window comes back above the bars (and a floating
+            // one above the tiles), not under them.
+            let tree = match ((*tl).fullscreen, (*tl).floating) {
+                (true, _) => server.tree_fullscreen,
+                (false, true) => server.tree_floating,
+                (false, false) => server.tree_normal,
+            };
             (*tl).scene_tree = oxide_scene_add_xdg_toplevel(tree, (*tl).xdg_toplevel);
+            // refresh() skips floating windows, so restore their position
+            // here (the fresh node starts at 0,0).
+            if (*tl).floating && !(*tl).fullscreen {
+                oxide_scene_tree_set_position((*tl).scene_tree, (*tl).x, (*tl).y);
+            }
         }
     }
 

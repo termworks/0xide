@@ -33,6 +33,10 @@ pub(crate) struct Server {
     pub(crate) tree_layer_bg: *mut wlr::wlr_scene_tree,
     pub(crate) tree_layer_bottom: *mut wlr::wlr_scene_tree,
     pub(crate) tree_normal: *mut wlr::wlr_scene_tree,
+    /// Floating windows: above tiled windows but below layer-shell top (bars
+    /// stay visible over them). Windows are reparented in and out as they
+    /// float/tile.
+    pub(crate) tree_floating: *mut wlr::wlr_scene_tree,
     pub(crate) tree_layer_top: *mut wlr::wlr_scene_tree,
     /// Fullscreen windows: above layer-shell top (covers bars) but below
     /// overlay (lock screens stay on top). Windows are reparented in and
@@ -106,6 +110,10 @@ pub(crate) struct Toplevel {
     /// Whether this window is fullscreen (covers its output's full box,
     /// scene tree parented under `Server.tree_fullscreen`).
     pub(crate) fullscreen: bool,
+    /// Whether this window floats (keeps its own size, centered on map,
+    /// scene tree parented under `Server.tree_floating`, skipped by the
+    /// spiral). Fullscreen wins while both are set.
+    pub(crate) floating: bool,
     // Listeners we registered; removed+freed on destroy so wlroots doesn't
     // assert on a non-empty destroy list.
     pub(crate) commit_listener: *mut ShimListener,

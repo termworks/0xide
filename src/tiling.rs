@@ -36,11 +36,12 @@ pub(crate) unsafe fn refresh(server: &mut Server) {
             (*tl).h = h;
         };
 
-        // Fullscreen windows cover the output's full box (over bars — their
-        // scene trees live in tree_fullscreen, above layer-shell top); the
-        // rest tile in the usable area beneath them as usual.
-        let tiled: Vec<*mut Toplevel> =
-            ws.windows.iter().copied().filter(|&tl| !(*tl).fullscreen).collect();
+        // Three kinds of window: fullscreen ones cover the output's full box
+        // (over bars — their scene trees live in tree_fullscreen, above
+        // layer-shell top); floating ones keep whatever rect they already
+        // have (we never place them here — their size is the client's own);
+        // the rest tile in the usable area as usual.
+        let tiled = tiled_windows(ws);
         for &tl in ws.windows.iter().filter(|&&tl| (*tl).fullscreen) {
             place(tl, o.x, o.y, o.w, o.h);
         }
@@ -49,6 +50,14 @@ pub(crate) unsafe fn refresh(server: &mut Server) {
             place(tl, x, y, w, h);
         }
     }
+}
+
+/// The windows of a workspace that participate in the spiral — neither
+/// fullscreen nor floating — in stacking order. Shared by `refresh()` and
+/// the initial-configure tile prediction (`toplevel::handle_commit`), so
+/// the predicted count and the placed count can't drift apart.
+pub(crate) unsafe fn tiled_windows(ws: &Workspace) -> Vec<*mut Toplevel> {
+    ws.windows.iter().copied().filter(|&tl| !(*tl).fullscreen && !(*tl).floating).collect()
 }
 
 /// The spiral (dwindle) layout as a pure function: `n` rects filling the
@@ -257,6 +266,7 @@ mod tests {
             w,
             h,
             fullscreen: false,
+            floating: false,
             commit_listener: ptr::null_mut(),
             map_listener: ptr::null_mut(),
             unmap_listener: ptr::null_mut(),
@@ -280,6 +290,7 @@ mod tests {
             tree_layer_bg: ptr::null_mut(),
             tree_layer_bottom: ptr::null_mut(),
             tree_normal: ptr::null_mut(),
+            tree_floating: ptr::null_mut(),
             tree_layer_top: ptr::null_mut(),
             tree_fullscreen: ptr::null_mut(),
             tree_layer_overlay: ptr::null_mut(),
@@ -287,6 +298,31 @@ mod tests {
             workspaces: vec![Workspace { windows, focused: 0 }],
             outputs: Vec::new(),
             config: Config::default(),
+        }
+    }
+
+    // Floating and fullscreen windows must never join the spiral: both
+    // refresh() and the initial-configure tile prediction count windows
+    // through this one function, so this pins the partition rule itself.
+    #[test]
+    fn tiled_windows_excludes_floating_and_fullscreen() {
+        unsafe {
+            let windows = vec![
+                toplevel_at(0, 0, 100, 100),
+                toplevel_at(100, 0, 100, 100),
+                toplevel_at(0, 100, 100, 100),
+            ];
+            let (floater, fuller) = (windows[1], windows[2]);
+            (*floater).floating = true;
+            (*fuller).fullscreen = true;
+            let server = server_with(windows);
+
+            let ws = &server.workspaces[0];
+            assert_eq!(tiled_windows(ws), vec![ws.windows[0]]);
+
+            for &tl in &server.workspaces[0].windows {
+                drop(Box::from_raw(tl));
+            }
         }
     }
 

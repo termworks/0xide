@@ -1,10 +1,10 @@
 //! Keybinding dispatch: VT switching, and the config's bind table.
 
-use crate::config::{Action, MOD_ALT, MOD_CTRL, MOD_MASK};
+use crate::config::{Action, Direction, MOD_ALT, MOD_CTRL, MOD_MASK};
 use crate::ffi::*;
 use crate::state::*;
 use crate::tiling::{active_output, active_workspace, refresh, spatial_neighbor};
-use crate::toplevel::set_fullscreen;
+use crate::toplevel::{set_floating, set_fullscreen};
 use crate::wlr;
 use std::os::raw::c_void;
 use std::process::Command;
@@ -83,6 +83,34 @@ unsafe fn move_to_workspace(server: &mut Server, target: usize) {
     eprintln!("0xide: moved window to workspace {}", target + 1);
 }
 
+/// How far one Mod+Shift+hjkl press moves a floating window, in pixels.
+const NUDGE_STEP: i32 = 50;
+
+/// Move a floating window one step in `dir`, kept within the usable area of
+/// the output currently showing its workspace (so it can't be pushed under a
+/// bar or off the screen).
+unsafe fn nudge_floating(server: &mut Server, tl: *mut Toplevel, dir: Direction) {
+    let ws_idx = server
+        .workspaces
+        .iter()
+        .position(|ws| ws.windows.contains(&tl))
+        .expect("nudged window must be in a workspace");
+    let Some(o) = server.outputs.iter().find(|o| o.workspace == ws_idx) else {
+        return; // workspace not on any output right now
+    };
+    let (mut x, mut y) = ((*tl).x, (*tl).y);
+    match dir {
+        Direction::Left => x -= NUDGE_STEP,
+        Direction::Right => x += NUDGE_STEP,
+        Direction::Up => y -= NUDGE_STEP,
+        Direction::Down => y += NUDGE_STEP,
+    }
+    x = x.clamp(o.ux, (o.ux + o.uw - (*tl).w).max(o.ux));
+    y = y.clamp(o.uy, (o.uy + o.uh - (*tl).h).max(o.uy));
+    oxide_scene_tree_set_position((*tl).scene_tree, x, y);
+    ((*tl).x, (*tl).y) = (x, y);
+}
+
 /// Launch a program as a client of 0xide (inherits our WAYLAND_DISPLAY). Runs
 /// through a shell (like Hyprland's `exec`) so `~`, env vars, `&&`, and quoting
 /// in bind commands work as expected — a plain `execvp` doesn't expand any of
@@ -150,7 +178,12 @@ pub(crate) unsafe extern "C" fn handle_keybinding(
         Action::MoveWindow(dir) if n > 0 => {
             let a = active_workspace(server);
             let f = server.workspaces[a].focused;
-            if let Some(i) = spatial_neighbor(server, a, f, dir) {
+            let tl = server.workspaces[a].windows[f];
+            if (*tl).floating && !(*tl).fullscreen {
+                // A floating window has no tiling position to swap; nudge it
+                // instead (keyboard-only move until interactive drag lands).
+                nudge_floating(server, tl, dir);
+            } else if let Some(i) = spatial_neighbor(server, a, f, dir) {
                 server.workspaces[a].windows.swap(f, i);
                 server.workspaces[a].focused = i;
                 refresh(server);
@@ -165,6 +198,14 @@ pub(crate) unsafe extern "C" fn handle_keybinding(
             }
         }
         Action::Fullscreen => {}
+        Action::ToggleFloating if n > 0 => {
+            let a = active_workspace(server);
+            let ws = &server.workspaces[a];
+            if let Some(&tl) = ws.windows.get(ws.focused) {
+                set_floating(server, tl, !(*tl).floating);
+            }
+        }
+        Action::ToggleFloating => {}
         Action::Workspace(ws) => switch_workspace(server, ws),
         Action::MoveToWorkspace(ws) => move_to_workspace(server, ws),
     }

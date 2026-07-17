@@ -119,6 +119,7 @@ main session. More detail and verification recipes are in
 | `Mod + H/J/K/L`     | Focus the window left/down/up/right |
 | `Mod + Shift + H/J/K/L` | Move the focused window left/down/up/right |
 | `Mod + F`           | Toggle fullscreen for the focused window |
+| `Mod + V`           | Toggle floating for the focused window |
 | `Mod + 1…9`         | Switch to workspace 1–9             |
 | `Mod + Shift + 1…9` | Move focused window to workspace 1–9 |
 | `Ctrl + Alt + F1…F12` | Switch virtual terminal           |

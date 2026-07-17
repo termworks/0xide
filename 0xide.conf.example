@@ -31,6 +31,16 @@ background = 0.0 0.6 0.6
 #
 # monitor = HDMI-A-1, 0x-1080, 1.0
 
+# --- float rules -------------------------------------------------------------
+#
+# float = APP_ID
+# Windows whose app id matches (case-insensitive) always open floating:
+# centered at their own natural size, above the tiled windows. Dialogs (file
+# pickers etc.) and windows that declare a fixed size float automatically,
+# no rule needed.
+#
+# float = pavucontrol
+
 # --- keybindings -----------------------------------------------------------
 #
 # bind = MODS, KEY, ACTION[, ARG]
@@ -38,7 +48,7 @@ background = 0.0 0.6 0.6
 #   KEY    an xkb key name: Return, Q, 1, space, F1, ... (case-insensitive)
 #   ACTION spawn <cmd> | close | quit | focusnext | focusprev
 #          | movefocus <l|r|u|d> | movewindow <l|r|u|d> | fullscreen
-#          | workspace <n> | movetoworkspace <n>      (n = 1..9)
+#          | togglefloating | workspace <n> | movetoworkspace <n>  (n = 1..9)
 
 bind = MOD, Return, spawn, kitty
 bind = MOD, Q, close
@@ -57,6 +67,10 @@ bind = MOD SHIFT, L, movewindow, r
 # Toggle the focused window fullscreen (full output, over bars). Clients can
 # also request it themselves (F11 in a browser, mpv --fs).
 bind = MOD, F, fullscreen
+
+# Toggle the focused window between tiled and floating. On a floating window,
+# movewindow (MOD SHIFT + hjkl above) nudges it instead of swapping tiles.
+bind = MOD, V, togglefloating
 
 bind = MOD, 1, workspace, 1
 bind = MOD, 2, workspace, 2

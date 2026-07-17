@@ -88,6 +88,21 @@ extern "C" {
     ) -> *mut ShimListener;
     pub(crate) fn oxide_xdg_initial_commit(toplevel: *mut wlr::wlr_xdg_toplevel) -> bool;
     pub(crate) fn oxide_xdg_toplevel_set_tiled_all(toplevel: *mut wlr::wlr_xdg_toplevel);
+    pub(crate) fn oxide_xdg_toplevel_set_tiled_none(toplevel: *mut wlr::wlr_xdg_toplevel);
+    // Float detection: dialog parent (NULL if none), app id (NULL if unset),
+    // client-declared fixed size, and current geometry size (for centering).
+    pub(crate) fn oxide_xdg_toplevel_parent(
+        toplevel: *mut wlr::wlr_xdg_toplevel,
+    ) -> *mut wlr::wlr_xdg_toplevel;
+    pub(crate) fn oxide_xdg_toplevel_app_id(
+        toplevel: *mut wlr::wlr_xdg_toplevel,
+    ) -> *const std::os::raw::c_char;
+    pub(crate) fn oxide_xdg_toplevel_fixed_size(toplevel: *mut wlr::wlr_xdg_toplevel) -> bool;
+    pub(crate) fn oxide_xdg_toplevel_geometry(
+        toplevel: *mut wlr::wlr_xdg_toplevel,
+        width: *mut i32,
+        height: *mut i32,
+    );
     pub(crate) fn oxide_listener_remove(listener: *mut ShimListener);
     pub(crate) fn oxide_xdg_add_map(
         toplevel: *mut wlr::wlr_xdg_toplevel,

@@ -114,6 +114,19 @@ bool oxide_xdg_initial_commit(struct wlr_xdg_toplevel *toplevel);
 // Mark a window tiled on all edges, making our configure sizes binding
 // rather than a "floating" hint clients may override with a saved size.
 void oxide_xdg_toplevel_set_tiled_all(struct wlr_xdg_toplevel *toplevel);
+// Clear the tiled states again (the tiled -> floating toggle): configures go
+// back to floating semantics and the client may keep its natural size.
+void oxide_xdg_toplevel_set_tiled_none(struct wlr_xdg_toplevel *toplevel);
+
+// Float-detection accessors: a dialog's parent toplevel (NULL if none), the
+// client's app id (NULL if never set), whether the client committed a fixed
+// (min == max, nonzero) size, and the current effective geometry size.
+struct wlr_xdg_toplevel *oxide_xdg_toplevel_parent(
+        struct wlr_xdg_toplevel *toplevel);
+const char *oxide_xdg_toplevel_app_id(struct wlr_xdg_toplevel *toplevel);
+bool oxide_xdg_toplevel_fixed_size(struct wlr_xdg_toplevel *toplevel);
+void oxide_xdg_toplevel_geometry(struct wlr_xdg_toplevel *toplevel,
+        int *width, int *height);
 
 // Unsubscribe and free a listener returned by one of the add helpers.
 void oxide_listener_remove(struct oxide_listener *listener);

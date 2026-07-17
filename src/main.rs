@@ -88,6 +88,8 @@ fn main() {
         let tree_layer_bg = oxide_scene_add_layer_tree(scene);
         let tree_layer_bottom = oxide_scene_add_layer_tree(scene);
         let tree_normal = oxide_scene_add_layer_tree(scene);
+        // Floating windows paint over tiled ones but under bars (layer top).
+        let tree_floating = oxide_scene_add_layer_tree(scene);
         let tree_layer_top = oxide_scene_add_layer_tree(scene);
         // Fullscreen windows paint over bars (layer top) but under overlay.
         let tree_fullscreen = oxide_scene_add_layer_tree(scene);
@@ -118,6 +120,7 @@ fn main() {
             tree_layer_bg,
             tree_layer_bottom,
             tree_normal,
+            tree_floating,
             tree_layer_top,
             tree_fullscreen,
             tree_layer_overlay,

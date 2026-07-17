@@ -54,6 +54,8 @@ pub enum Action {
     MoveWindow(Direction),
     /// Toggle the focused window fullscreen (full output box, above bars).
     Fullscreen,
+    /// Toggle the focused window between tiled and floating.
+    ToggleFloating,
     /// Switch to workspace (0-based index).
     Workspace(usize),
     /// Move the focused window to a workspace (0-based index).
@@ -91,6 +93,9 @@ pub struct Config {
     /// Per-output explicit position/scale (`monitor =` lines); empty means
     /// every output uses auto-placement.
     pub monitors: Vec<MonitorConfig>,
+    /// App ids that always float (`float = <app_id>` lines), matched
+    /// case-insensitively and exactly against each new window's app id.
+    pub float_rules: Vec<String>,
 }
 
 impl Default for Config {
@@ -101,6 +106,7 @@ impl Default for Config {
             background: (0.0, 0.6, 0.6),
             binds: Vec::new(),
             monitors: Vec::new(),
+            float_rules: Vec::new(),
         }
     }
 }
@@ -171,6 +177,14 @@ impl Config {
                     },
                     None => warn(n, "invalid monitor (want `NAME, XxY[, SCALE]`)", raw),
                 },
+                "float" => {
+                    let app_id = val.to_ascii_lowercase();
+                    if app_id.is_empty() {
+                        warn(n, "empty float rule (want `float = APP_ID`)", raw);
+                    } else if !self.float_rules.contains(&app_id) {
+                        self.float_rules.push(app_id);
+                    }
+                }
                 "bind" => {} // handled in parse_binds
                 _ => warn(n, "unknown setting", raw),
             }
@@ -226,6 +240,7 @@ fn default_binds(modifier: u32) -> Vec<Bind> {
         Bind { mods: ms, keysym: key("K"), action: Action::MoveWindow(Direction::Up) },
         Bind { mods: ms, keysym: key("L"), action: Action::MoveWindow(Direction::Right) },
         Bind { mods: m, keysym: key("F"), action: Action::Fullscreen },
+        Bind { mods: m, keysym: key("V"), action: Action::ToggleFloating },
     ];
     for i in 0..9u32 {
         let name = (b'1' + i as u8) as char;
@@ -315,6 +330,7 @@ fn parse_action(name: &str, arg: Option<&str>) -> Option<Action> {
         "movefocus" => Some(Action::MoveFocus(direction_from_arg(arg?)?)),
         "movewindow" => Some(Action::MoveWindow(direction_from_arg(arg?)?)),
         "fullscreen" | "togglefullscreen" => Some(Action::Fullscreen),
+        "float" | "togglefloating" => Some(Action::ToggleFloating),
         "workspace" => Some(Action::Workspace(workspace_index(arg?)?)),
         "movetoworkspace" => Some(Action::MoveToWorkspace(workspace_index(arg?)?)),
         _ => None,
@@ -435,6 +451,33 @@ mod tests {
             .find(|b| b.mods == (cfg.modifier | MOD_SHIFT) && b.keysym == f)
             .unwrap();
         assert!(matches!(msf.action, Action::Fullscreen));
+    }
+
+    #[test]
+    fn float_rules_parse_lowercased_and_deduplicated() {
+        let mut cfg = Config::default();
+        cfg.parse_scalars("float = Zenity\nfloat = pavucontrol\nfloat = zenity\n");
+        assert_eq!(cfg.float_rules, vec!["zenity", "pavucontrol"]);
+    }
+
+    #[test]
+    fn togglefloating_action_parses_and_has_default_bind() {
+        let mut cfg = Config::default();
+        cfg.binds = default_binds(cfg.modifier);
+
+        // Default: Mod+V toggles floating.
+        let v = key("V");
+        let default = cfg.binds.iter().find(|b| b.mods == cfg.modifier && b.keysym == v).unwrap();
+        assert!(matches!(default.action, Action::ToggleFloating));
+
+        // Both config spellings parse, with no argument required.
+        cfg.apply_binds("bind = MOD SHIFT, V, togglefloating\n");
+        let msv = cfg
+            .binds
+            .iter()
+            .find(|b| b.mods == (cfg.modifier | MOD_SHIFT) && b.keysym == v)
+            .unwrap();
+        assert!(matches!(msv.action, Action::ToggleFloating));
     }
 
     #[test]

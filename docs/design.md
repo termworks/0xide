@@ -43,6 +43,17 @@ swaps the two monitors' workspaces instead of duplicating it. New windows
 open on the monitor the cursor is on (focus-follows-monitor). The model
 stays predictable regardless of how many outputs are attached.
 
+## Floating windows
+
+Windows that shouldn't tile, don't: dialogs (a toplevel with a parent set —
+file pickers, "Save as…"), windows that declare a fixed size, and anything
+matched by a `float = <app_id>` config rule open floating instead — centered,
+at their own natural size, painted above the tiled layer. Everything else
+tiles; floating is the exception, decided per window, never a mode the whole
+workspace switches into. A keybinding toggles the focused window between the
+two, and the details are in the
+[Stage 9 chapter](phases/stage-9-floating.md).
+
 ## Decorations
 
 0xide always claims server-side decoration and draws nothing in its place:
@@ -57,8 +68,6 @@ Under consideration, not committed:
 - **An explicit split-tree layout** — per-window split ratios, interactive
   resize, and fully reversible directional navigation; the structural answer
   to the corner-touch limitation above.
-- **Floating exceptions** — per-window rules for clients that shouldn't
-  tile (pickers, dialogs).
 - **Runtime control** — a socket/IPC for querying and scripting the
   compositor without keybindings.
 

@@ -44,6 +44,44 @@ void oxide_xdg_toplevel_set_tiled_all(struct wlr_xdg_toplevel *toplevel) {
             | WLR_EDGE_LEFT | WLR_EDGE_RIGHT);
 }
 
+// Clear the tiled states again (edge mask 0) — the tiled -> floating toggle.
+// The next configure goes back to "floating" semantics: our size is a hint
+// and the client is free to use its own natural size.
+void oxide_xdg_toplevel_set_tiled_none(struct wlr_xdg_toplevel *toplevel) {
+    wlr_xdg_toplevel_set_tiled(toplevel, 0);
+}
+
+// The parent toplevel set via xdg_toplevel.set_parent (NULL if none). A
+// non-NULL parent marks a dialog/utility window — the main float signal.
+struct wlr_xdg_toplevel *oxide_xdg_toplevel_parent(
+        struct wlr_xdg_toplevel *toplevel) {
+    return toplevel->parent;
+}
+
+// The client's app id (e.g. "kitty", "firefox"); NULL if it never set one.
+// Matched against the config's `float = <app_id>` rules.
+const char *oxide_xdg_toplevel_app_id(struct wlr_xdg_toplevel *toplevel) {
+    return toplevel->app_id;
+}
+
+// True when the client committed equal, nonzero min and max sizes on both
+// axes — a window that declares it cannot be resized, so tiling it would
+// only stretch or letterbox it.
+bool oxide_xdg_toplevel_fixed_size(struct wlr_xdg_toplevel *toplevel) {
+    struct wlr_xdg_toplevel_state *s = &toplevel->current;
+    return s->min_width > 0 && s->min_width == s->max_width
+            && s->min_height > 0 && s->min_height == s->max_height;
+}
+
+// The window's current effective geometry (the part of the surface that is
+// actually the window, excluding client-side shadows), for centering a
+// floating window at its natural size on map.
+void oxide_xdg_toplevel_geometry(struct wlr_xdg_toplevel *toplevel,
+        int *width, int *height) {
+    *width = toplevel->base->geometry.width;
+    *height = toplevel->base->geometry.height;
+}
+
 struct oxide_listener *oxide_xdg_add_map(struct wlr_xdg_toplevel *toplevel,
         oxide_callback callback, void *userdata) {
     return signal_add(&toplevel->base->surface->events.map, callback, userdata);

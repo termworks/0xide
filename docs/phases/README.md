@@ -1,8 +1,8 @@
 # Why phase gates
 
-0xide's roadmap isn't a backlog or a progress bar — it's nine stages, each
-defined by one concrete **deliverable**: a thing you can point at, run, and
-see working. "A nested window shows a solid color." "A terminal appears." "I
+0xide's roadmap isn't a backlog or a progress bar — it's a series of stages,
+each defined by one concrete **deliverable**: a thing you can point at, run,
+and see working. "A nested window shows a solid color." "A terminal appears." "I
 can type into it." That's a deliberate constraint, not an accident of how
 the notes got organized.
 
@@ -40,7 +40,7 @@ advance — VT-switch black-screen bugs, opaque-struct FFI surprises, a
 reversibility bug in directional window navigation that only appears at four
 or more windows. The gate isn't the plan; it's the verified result.
 
-Stages 0–5 are done and described in full; 6 and 8 are substantially
+Stages 0–5 are done and described in full; 6, 8, and 9 are substantially
 working. The rest are open — those chapters are short and will grow as the
 work happens, the same way the rest of this book grows: after the fact,
 from what was actually built, not written speculatively in advance.
