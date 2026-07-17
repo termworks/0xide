@@ -34,6 +34,19 @@ typedef void (*oxide_callback)(void *userdata, void *data);
 typedef bool (*oxide_key_callback)(void *userdata, uint32_t keysym,
         uint32_t modifiers);
 
+// Pointer-grab callbacks (Mod+drag move/resize of floating windows).
+// Button: called on press (with the clicked root surface, held modifiers and
+// cursor position) and on release (root_surface NULL, modifiers 0); returning
+// true consumes the event — a grab started or ended, don't forward it to the
+// client. Motion: called with the cursor's layout position; returning true
+// means a grab is active and handled the motion.
+struct wlr_surface;
+typedef bool (*oxide_grab_button_callback)(void *userdata,
+        struct wlr_surface *root_surface, uint32_t button, uint32_t modifiers,
+        bool pressed, double cx, double cy);
+typedef bool (*oxide_grab_motion_callback)(void *userdata, double cx,
+        double cy);
+
 // --- toolchain / logging ---------------------------------------------------
 const char *oxide_wlroots_version(void);
 void oxide_log_init(void);
@@ -44,6 +57,10 @@ uint32_t oxide_keysym_from_name(const char *name);
 
 // Terminate the display loop on SIGINT/SIGTERM (graceful shutdown).
 void oxide_setup_signals(struct wl_event_loop *loop, struct wl_display *display);
+// Reset the compositor's signal state (ignored SIGCHLD, blocked INT/TERM) in
+// a forked child before exec, so clients start with clean signals. Must be
+// called from every spawn path's pre_exec.
+void oxide_reset_child_signals(void);
 
 // Switch to virtual terminal `vt` (1-based); no-op if `session` is NULL.
 void oxide_session_change_vt(struct wlr_session *session, unsigned vt);
@@ -241,5 +258,12 @@ struct wlr_cursor *oxide_cursor_setup(struct wlr_output_layout *layout,
 // constructed after the cursor exists.
 void oxide_cursor_set_focus_callback(struct wlr_cursor *cursor,
         oxide_callback callback, void *userdata);
+
+// Register the pointer-grab hooks (see the callback typedefs above). Same
+// late-registration story as the focus callback: the Server userdata is only
+// constructed after the cursor.
+void oxide_cursor_set_grab_callbacks(struct wlr_cursor *cursor,
+        oxide_grab_button_callback button_callback,
+        oxide_grab_motion_callback motion_callback, void *userdata);
 
 #endif // OXIDE_SHIM_H

@@ -12,6 +12,16 @@ pub(crate) type ShimCallback = unsafe extern "C" fn(*mut c_void, *mut c_void);
 /// Keybinding callback: (userdata, keysym, modifiers) -> was it consumed?
 pub(crate) type KeyCallback = unsafe extern "C" fn(*mut c_void, u32, u32) -> bool;
 
+/// Pointer-grab button callback: (userdata, clicked root wlr_surface — NULL
+/// on release, button, modifiers, pressed, cursor x, cursor y) -> did a grab
+/// start/end (consume the event)?
+pub(crate) type GrabButtonCallback =
+    unsafe extern "C" fn(*mut c_void, *mut c_void, u32, u32, bool, f64, f64) -> bool;
+
+/// Pointer-grab motion callback: (userdata, cursor x, cursor y) -> is a grab
+/// active (it handled the motion)?
+pub(crate) type GrabMotionCallback = unsafe extern "C" fn(*mut c_void, f64, f64) -> bool;
+
 /// Opaque handle to a `oxide_listener` living on the C heap.
 #[repr(C)]
 pub(crate) struct ShimListener {
@@ -22,6 +32,7 @@ pub(crate) struct ShimListener {
 extern "C" {
     pub(crate) fn oxide_log_init();
     pub(crate) fn oxide_setup_signals(loop_: *mut wlr::wl_event_loop, display: *mut wlr::wl_display);
+    pub(crate) fn oxide_reset_child_signals();
     pub(crate) fn oxide_session_change_vt(session: *mut wlr::wlr_session, vt: u32);
     pub(crate) fn oxide_session_add_active(
         session: *mut wlr::wlr_session,
@@ -169,6 +180,12 @@ extern "C" {
         userdata: *mut c_void,
     );
     // A toplevel's root wlr_surface, for matching clicks back to windows.
+    pub(crate) fn oxide_cursor_set_grab_callbacks(
+        cursor: *mut wlr::wlr_cursor,
+        button_callback: GrabButtonCallback,
+        motion_callback: GrabMotionCallback,
+        userdata: *mut c_void,
+    );
     pub(crate) fn oxide_xdg_toplevel_surface(
         toplevel: *mut wlr::wlr_xdg_toplevel,
     ) -> *mut c_void;

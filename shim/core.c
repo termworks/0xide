@@ -38,8 +38,28 @@ void oxide_setup_signals(struct wl_event_loop *loop, struct wl_display *display)
     wl_event_loop_add_signal(loop, SIGTERM, handle_signal, display);
     // Auto-reap spawned clients (POSIX: ignoring SIGCHLD reaps children on
     // exit). We never wait() on any child, so without this every closed app
-    // would stay a zombie for the compositor session's lifetime.
+    // would stay a zombie for the compositor session's lifetime. The ignored
+    // disposition would leak into clients (see oxide_reset_child_signals).
     signal(SIGCHLD, SIG_IGN);
+}
+
+// Undo the compositor's signal state in a freshly forked child, before exec.
+// Two things leak into clients otherwise, because they survive exec:
+//  - SIG_IGN dispositions (unlike handlers, which exec resets): our ignored
+//    SIGCHLD makes the kernel auto-reap the client's own children, so
+//    anything that reads child exit codes (Qt's QProcess, shells) breaks —
+//    found via quickshell's recording indicator treating every pgrep as
+//    exit 0, i.e. "wf-recorder is running", permanently.
+//  - The blocked-signal mask: libwayland's signalfd setup blocks SIGINT and
+//    SIGTERM in our process, so clients inherit them blocked and a plain
+//    kill -TERM would sit pending forever.
+// Called via pre_exec from every Rust spawn path; everything here is
+// async-signal-safe.
+void oxide_reset_child_signals(void) {
+    signal(SIGCHLD, SIG_DFL);
+    sigset_t empty;
+    sigemptyset(&empty);
+    sigprocmask(SIG_SETMASK, &empty, NULL);
 }
 
 // --- session / VT ----------------------------------------------------------

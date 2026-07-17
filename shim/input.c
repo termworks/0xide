@@ -134,6 +134,13 @@ struct oxide_pointer {
     // Rust side can keep its own focus bookkeeping in sync with the seat.
     oxide_callback focus_callback;
     void *focus_userdata;
+    // Rust pointer-grab hooks (Mod+drag move/resize of floating windows).
+    // The button hook decides whether a press starts / a release ends a grab;
+    // the motion hook applies an active grab. Either returning true means
+    // "this event is the grab's — don't forward it to any client".
+    oxide_grab_button_callback grab_button_callback;
+    oxide_grab_motion_callback grab_motion_callback;
+    void *grab_userdata;
 };
 
 // Find the surface under the cursor (and the surface-local coords), via the
@@ -151,6 +158,14 @@ static struct wlr_surface *surface_at(struct oxide_pointer *p,
 }
 
 static void process_motion(struct oxide_pointer *p, uint32_t time) {
+    // An active grab owns the cursor: the grabbed window follows it and no
+    // client sees enter/motion until the grab ends.
+    if (p->grab_motion_callback != NULL
+            && p->grab_motion_callback(p->grab_userdata, p->cursor->x,
+                    p->cursor->y)) {
+        wlr_cursor_set_xcursor(p->cursor, p->cursor_mgr, "grabbing");
+        return;
+    }
     double sx, sy;
     struct wlr_surface *surface = surface_at(p, &sx, &sy);
     if (surface == NULL) {
@@ -180,9 +195,8 @@ static void handle_cursor_motion_absolute(void *userdata, void *data) {
 static void handle_cursor_button(void *userdata, void *data) {
     struct oxide_pointer *p = userdata;
     struct wlr_pointer_button_event *e = data;
-    wlr_seat_pointer_notify_button(p->seat, e->time_msec, e->button, e->state);
-    // Click-to-focus: on press, give keyboard focus to the window under cursor.
     if (e->state == WL_POINTER_BUTTON_STATE_PRESSED) {
+        // Click-to-focus: give keyboard focus to the window under the cursor.
         double sx, sy;
         struct wlr_surface *surface = surface_at(p, &sx, &sy);
         struct wlr_keyboard *kb = wlr_seat_get_keyboard(p->seat);
@@ -194,11 +208,30 @@ static void handle_cursor_button(void *userdata, void *data) {
         // subsurface), so Workspace.focused follows mouse focus too —
         // otherwise close/movefocus/movewindow keep acting on the window
         // that last got focus via the keyboard.
-        if (surface != NULL && p->focus_callback != NULL) {
-            p->focus_callback(p->focus_userdata,
-                    wlr_surface_get_root_surface(surface));
+        struct wlr_surface *root =
+                surface != NULL ? wlr_surface_get_root_surface(surface) : NULL;
+        if (root != NULL && p->focus_callback != NULL) {
+            p->focus_callback(p->focus_userdata, root);
+        }
+        // Offer the press to Rust as a possible grab start (Mod+click on a
+        // floating window). A consumed press never reaches the client.
+        if (p->grab_button_callback != NULL) {
+            uint32_t mods = kb != NULL ? wlr_keyboard_get_modifiers(kb) : 0;
+            if (p->grab_button_callback(p->grab_userdata, root, e->button,
+                    mods, true, p->cursor->x, p->cursor->y)) {
+                return;
+            }
+        }
+    } else {
+        // A release ends an active grab and is swallowed with it — the
+        // client never saw the press, so it must not see the release.
+        if (p->grab_button_callback != NULL
+                && p->grab_button_callback(p->grab_userdata, NULL, e->button,
+                        0, false, p->cursor->x, p->cursor->y)) {
+            return;
         }
     }
+    wlr_seat_pointer_notify_button(p->seat, e->time_msec, e->button, e->state);
 }
 
 static void handle_cursor_axis(void *userdata, void *data) {
@@ -250,6 +283,17 @@ void oxide_cursor_set_focus_callback(struct wlr_cursor *cursor,
     struct oxide_pointer *p = cursor->data;
     p->focus_callback = callback;
     p->focus_userdata = userdata;
+}
+
+// Register the Rust pointer-grab hooks (same late-registration story as the
+// focus callback above).
+void oxide_cursor_set_grab_callbacks(struct wlr_cursor *cursor,
+        oxide_grab_button_callback button_callback,
+        oxide_grab_motion_callback motion_callback, void *userdata) {
+    struct oxide_pointer *p = cursor->data;
+    p->grab_button_callback = button_callback;
+    p->grab_motion_callback = motion_callback;
+    p->grab_userdata = userdata;
 }
 
 void oxide_handle_new_input(struct wlr_seat *seat, struct wlr_cursor *cursor,

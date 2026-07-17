@@ -46,6 +46,9 @@ background = 0.0 0.6 0.6
 # to the togglefloating bind; dialogs keep their natural size.
 float_size = 60% x 60%
 
+# Floating windows always move with MOD + left-drag and resize with
+# MOD + right-drag (not configurable; MOD is the primary modifier above).
+
 # --- keybindings -----------------------------------------------------------
 #
 # bind = MODS, KEY, ACTION[, ARG]

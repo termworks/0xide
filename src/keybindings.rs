@@ -4,7 +4,7 @@ use crate::config::{Action, Direction, MOD_ALT, MOD_CTRL, MOD_MASK};
 use crate::ffi::*;
 use crate::state::*;
 use crate::tiling::{active_output, active_workspace, refresh, spatial_neighbor};
-use crate::toplevel::{set_floating, set_fullscreen};
+use crate::toplevel::{clamp_floating, set_floating, set_fullscreen};
 use crate::wlr;
 use std::os::raw::c_void;
 use std::process::Command;
@@ -87,17 +87,8 @@ unsafe fn move_to_workspace(server: &mut Server, target: usize) {
 const NUDGE_STEP: i32 = 50;
 
 /// Move a floating window one step in `dir`, kept within the usable area of
-/// the output currently showing its workspace (so it can't be pushed under a
-/// bar or off the screen).
+/// its output (the same clamp pointer-grab moves use).
 unsafe fn nudge_floating(server: &mut Server, tl: *mut Toplevel, dir: Direction) {
-    let ws_idx = server
-        .workspaces
-        .iter()
-        .position(|ws| ws.windows.contains(&tl))
-        .expect("nudged window must be in a workspace");
-    let Some(o) = server.outputs.iter().find(|o| o.workspace == ws_idx) else {
-        return; // workspace not on any output right now
-    };
     let (mut x, mut y) = ((*tl).x, (*tl).y);
     match dir {
         Direction::Left => x -= NUDGE_STEP,
@@ -105,8 +96,7 @@ unsafe fn nudge_floating(server: &mut Server, tl: *mut Toplevel, dir: Direction)
         Direction::Up => y -= NUDGE_STEP,
         Direction::Down => y += NUDGE_STEP,
     }
-    x = x.clamp(o.ux, (o.ux + o.uw - (*tl).w).max(o.ux));
-    y = y.clamp(o.uy, (o.uy + o.uh - (*tl).h).max(o.uy));
+    let (x, y) = clamp_floating(server, tl, x, y);
     oxide_scene_tree_set_position((*tl).scene_tree, x, y);
     ((*tl).x, (*tl).y) = (x, y);
 }
@@ -116,8 +106,26 @@ unsafe fn nudge_floating(server: &mut Server, tl: *mut Toplevel, dir: Direction)
 /// in bind commands work as expected — a plain `execvp` doesn't expand any of
 /// that.
 fn spawn(cmd: &str) {
-    if let Err(e) = Command::new("sh").arg("-c").arg(cmd).spawn() {
+    let mut command = Command::new("sh");
+    command.arg("-c").arg(cmd);
+    reset_signals(&mut command);
+    if let Err(e) = command.spawn() {
         eprintln!("0xide: failed to spawn `{cmd}`: {e}");
+    }
+}
+
+/// Arrange for a spawned client to start with clean signal state. The
+/// compositor's ignored SIGCHLD and blocked SIGINT/SIGTERM survive exec and
+/// would leak into every client (breaking child exit codes in Qt apps and
+/// plain `kill`, respectively) — pre_exec runs in the forked child, where the
+/// shim resets both before the exec. Every spawn path must go through this.
+pub(crate) fn reset_signals(command: &mut Command) {
+    use std::os::unix::process::CommandExt;
+    unsafe {
+        command.pre_exec(|| {
+            oxide_reset_child_signals();
+            Ok(())
+        });
     }
 }
 

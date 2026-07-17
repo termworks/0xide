@@ -53,7 +53,9 @@ natural size (that's the point of floating them); rule windows and the
 manual float toggle use the configured default size (`float_size`, a
 percentage of the screen's usable area). Everything else tiles; floating is
 the exception, decided per window, never a mode the whole workspace switches
-into. The details are in the [Stage 9 chapter](phases/stage-9-floating.md).
+into. Floating windows move and resize with `Mod+drag` (left moves, right
+resizes) or keyboard nudges. The details are in the
+[Stage 9 chapter](phases/stage-9-floating.md).
 
 ## Decorations
 

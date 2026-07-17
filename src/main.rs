@@ -26,10 +26,10 @@ mod toplevel;
 use config::Config;
 use decoration::handle_new_decoration;
 use ffi::*;
-use input::{handle_click_focus, handle_new_input};
+use input::{handle_click_focus, handle_grab_button, handle_grab_motion, handle_new_input};
 use layer_shell::handle_new_layer_surface;
 use output::{handle_new_output, handle_session_active};
-use state::{Server, Workspace, WORKSPACE_COUNT};
+use state::{GrabMode, Server, Workspace, WORKSPACE_COUNT};
 use std::env;
 use std::ffi::CStr;
 use std::os::raw::c_void;
@@ -133,12 +133,22 @@ fn main() {
                 .collect(),
             outputs: Vec::new(),
             config,
+            grab: GrabMode::None,
+            grab_tl: std::ptr::null_mut(),
+            grab_cx: 0.0,
+            grab_cy: 0.0,
+            grab_x: 0,
+            grab_y: 0,
+            grab_w: 0,
+            grab_h: 0,
         };
         let server_ptr = &mut server as *mut Server as *mut c_void;
         oxide_backend_add_new_output(backend, handle_new_output, server_ptr);
         oxide_backend_add_new_input(backend, handle_new_input, server_ptr);
         // Keep Rust's focused-window bookkeeping in sync with click-to-focus.
         oxide_cursor_set_focus_callback(cursor, handle_click_focus, server_ptr);
+        // Mod+drag move/resize of floating windows (pointer grabs).
+        oxide_cursor_set_grab_callbacks(cursor, handle_grab_button, handle_grab_motion, server_ptr);
         // Repaint outputs when we regain the VT (no-op when nested / no session).
         oxide_session_add_active(session, handle_session_active, server_ptr);
 
@@ -190,7 +200,10 @@ fn main() {
         // `cargo nested -- <cmd> [args…]` auto-spawns a test client against us.
         let mut args = env::args().skip(1);
         if let Some(program) = args.next() {
-            match Command::new(&program).args(args).spawn() {
+            let mut command = Command::new(&program);
+            command.args(args);
+            keybindings::reset_signals(&mut command);
+            match command.spawn() {
                 Ok(_) => println!("0xide: spawned client `{program}`"),
                 Err(e) => eprintln!("0xide: failed to spawn `{program}`: {e}"),
             }

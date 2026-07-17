@@ -8,6 +8,15 @@ use std::os::raw::c_void;
 /// Number of virtual workspaces.
 pub(crate) const WORKSPACE_COUNT: usize = 9;
 
+/// What an active pointer grab is doing to the grabbed floating window
+/// (Mod+left-drag moves, Mod+right-drag resizes).
+#[derive(Clone, Copy, PartialEq)]
+pub(crate) enum GrabMode {
+    None,
+    Move,
+    Resize,
+}
+
 /// How many frames to force-repaint after an output comes up or the VT resumes.
 pub(crate) const REPAINT_FRAMES: u32 = 3;
 
@@ -51,6 +60,17 @@ pub(crate) struct Server {
     pub(crate) outputs: Vec<Output>,
     /// User configuration: modifier, gap, background, keybindings.
     pub(crate) config: Config,
+    /// Active pointer grab (Mod+drag on a floating window): what it does,
+    /// which window, and the cursor position + window rect when it started —
+    /// motion applies deltas against these, not against the previous event.
+    pub(crate) grab: GrabMode,
+    pub(crate) grab_tl: *mut Toplevel,
+    pub(crate) grab_cx: f64,
+    pub(crate) grab_cy: f64,
+    pub(crate) grab_x: i32,
+    pub(crate) grab_y: i32,
+    pub(crate) grab_w: i32,
+    pub(crate) grab_h: i32,
 }
 
 /// One workspace: an independent list of windows and its focused index.

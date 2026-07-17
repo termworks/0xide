@@ -298,6 +298,14 @@ mod tests {
             workspaces: vec![Workspace { windows, focused: 0 }],
             outputs: Vec::new(),
             config: Config::default(),
+            grab: GrabMode::None,
+            grab_tl: ptr::null_mut(),
+            grab_cx: 0.0,
+            grab_cy: 0.0,
+            grab_x: 0,
+            grab_y: 0,
+            grab_w: 0,
+            grab_h: 0,
         }
     }
 

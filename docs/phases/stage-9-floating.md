@@ -56,8 +56,7 @@ Two follow-on behaviors fell out of testing rather than planning:
   reachable no matter what size the client insists on.
 - **Keyboard moves.** `movewindow` on a floating window has no tile to swap
   with, so it nudges the window 50 px in that direction instead, clamped to
-  the usable area. Interactive mouse move/resize needs a pointer-grab state
-  machine and is deliberately left for a later pass.
+  the usable area (the same clamp mouse moves use).
 
 `Mod+V` (`togglefloating`) flips the focused window between the postures:
 tiled → floating resizes to the `float_size` default, centered (keeping the
@@ -65,12 +64,26 @@ tile's size looked arbitrary in practice — whatever the spiral last
 assigned); floating → tiled restores the tiled states so `refresh()`'s
 sizes bind again.
 
+The stage closed with **pointer grabs**: `Mod+left-drag` moves a floating
+window, `Mod+right-drag` resizes it (bottom-right-corner semantics, 50 px
+minimum). A grab is a mode the cursor enters — from press to release the
+seat never hears about the pointer, so the client under the cursor sees
+neither the button nor the motion; the release is swallowed along with the
+press it belongs to. The shim keeps owning the cursor event handlers and
+asks Rust "is this yours?" at the two decision points (button, motion) —
+the same policy/glue split as keybindings. All grab state lives in Rust:
+mode, window, and the cursor-position/window-rect pair captured at grab
+start (motion applies deltas against the start state, never the previous
+event, so rounding can't accumulate). One safety detail found by thinking
+rather than crashing: a client closing mid-drag must clear the grab, or the
+next motion event dereferences a freed window.
+
 Verified nested with logs and screenshots: a tiled kitty, a GTK app whose
 file chooser (parent set) mapped floating and centered with its header
 visible, and a `float =` rule floating an ordinary terminal by app id.
 
 ## Status
 
-**Substantially done.** The gate — a file picker opens floating and
-centered — is verified. Interactive mouse move/resize of floating windows is
-the one piece deliberately deferred.
+**Done.** The gate — a file picker opens floating and centered — is
+verified, and the full interaction set is in: automatic detection, config
+rules, `float_size`, the toggle, keyboard nudges, and mouse move/resize.

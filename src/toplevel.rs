@@ -118,6 +118,28 @@ unsafe fn place_floating(server: &Server, tl: *mut Toplevel, w: i32, h: i32) {
     ((*tl).x, (*tl).y, (*tl).w, (*tl).h) = (x, y, w, h);
 }
 
+/// Clamp a floating window's position into the usable area of the output
+/// currently showing its workspace (so it can't be pushed under a bar or off
+/// the screen). Position passes through unchanged when the workspace isn't
+/// on any output. Shared by keyboard nudges and pointer-grab moves.
+pub(crate) unsafe fn clamp_floating(
+    server: &Server,
+    tl: *mut Toplevel,
+    x: i32,
+    y: i32,
+) -> (i32, i32) {
+    let Some(ws_idx) = server.workspaces.iter().position(|ws| ws.windows.contains(&tl)) else {
+        return (x, y);
+    };
+    let Some(o) = server.outputs.iter().find(|o| o.workspace == ws_idx) else {
+        return (x, y);
+    };
+    (
+        x.clamp(o.ux, (o.ux + o.uw - (*tl).w).max(o.ux)),
+        y.clamp(o.uy, (o.uy + o.uh - (*tl).h).max(o.uy)),
+    )
+}
+
 /// Does this window float *at its own natural size*? True for dialogs (a
 /// parent toplevel is set — file pickers, "Save as…") and windows declaring
 /// a fixed size: their size is exactly what floating exists to preserve.
@@ -276,6 +298,12 @@ unsafe extern "C" fn handle_destroy(userdata: *mut c_void, _data: *mut c_void) {
 
 /// Remove a window from whichever workspace holds it, then re-tile and focus.
 unsafe fn remove_window(server: &mut Server, tl: *mut Toplevel) {
+    // If it's the window being dragged, the grab dies with it — otherwise
+    // the next motion event dereferences a freed Toplevel.
+    if server.grab_tl == tl {
+        server.grab = GrabMode::None;
+        server.grab_tl = ptr::null_mut();
+    }
     for ws in server.workspaces.iter_mut() {
         if let Some(pos) = ws.windows.iter().position(|&w| w == tl) {
             ws.windows.remove(pos);
