@@ -100,6 +100,71 @@ pub(crate) fn spiral_rects(
     rects
 }
 
+/// One node of a workspace's split tree: a window (`Leaf`) or a divider
+/// between two children. `ratio` is the fraction of the split's box the
+/// `first` child gets — the piece of state the flat `Vec`-order spiral had
+/// no room for, and the reason this tree exists (Stage 10: per-window
+/// resize). Shape mirrors `spiral_rects`'s alternating dwindle exactly, so
+/// `build_dwindle` + `tree_rects` reproduce it bit-for-bit at the default
+/// ratio (see the parity test below) — this step only introduces the type,
+/// nothing reads or persists it yet.
+pub(crate) enum Node {
+    Leaf,
+    Split { vertical: bool, ratio: f32, first: Box<Node>, second: Box<Node> },
+}
+
+/// Build the tree for `n` windows in the same shape `spiral_rects` computes
+/// iteratively: window 0 splits off the first half (alternating
+/// vertical/horizontal), the rest recurse into the second half, and the
+/// last window is a bare leaf that fills whatever's left. `None` for `n == 0`
+/// (nothing to tile).
+pub(crate) fn build_dwindle(n: usize) -> Option<Node> {
+    fn go(n: usize, vertical: bool) -> Node {
+        if n <= 1 {
+            Node::Leaf
+        } else {
+            Node::Split { vertical, ratio: 0.5, first: Box::new(Node::Leaf), second: Box::new(go(n - 1, !vertical)) }
+        }
+    }
+    (n > 0).then(|| go(n, true))
+}
+
+/// Render a split tree to rects, in the same left-to-right/top-to-bottom
+/// in-order as `spiral_rects` — leaf `i` here is window `i` of the same
+/// list. Gap semantics match exactly: one `gap` margin around the outer box,
+/// one `gap` between each split's two children, none inside a leaf.
+pub(crate) fn tree_rects(tree: &Node, x: i32, y: i32, w: i32, h: i32, gap: i32) -> Vec<(i32, i32, i32, i32)> {
+    fn go(node: &Node, x: i32, y: i32, w: i32, h: i32, gap: i32, out: &mut Vec<(i32, i32, i32, i32)>) {
+        match node {
+            Node::Leaf => out.push((x, y, w.max(1), h.max(1))),
+            Node::Split { vertical, ratio, first, second } => {
+                if *vertical {
+                    let fw = (((w - gap) as f32) * ratio) as i32;
+                    let (fw, sw) = (fw.max(1), (w - gap - fw).max(1));
+                    go(first, x, y, fw, h, gap, out);
+                    go(second, x + fw + gap, y, sw, h, gap, out);
+                } else {
+                    let fh = (((h - gap) as f32) * ratio) as i32;
+                    let (fh, sh) = (fh.max(1), (h - gap - fh).max(1));
+                    go(first, x, y, w, fh, gap, out);
+                    go(second, x, y + fh + gap, w, sh, gap, out);
+                }
+            }
+        }
+    }
+    let mut out = Vec::with_capacity(tree_leaf_count(tree));
+    go(tree, x + gap, y + gap, (w - gap * 2).max(1), (h - gap * 2).max(1), gap, &mut out);
+    out
+}
+
+/// Number of leaves (windows) a tree holds — the capacity hint for `tree_rects`.
+fn tree_leaf_count(tree: &Node) -> usize {
+    match tree {
+        Node::Leaf => 1,
+        Node::Split { first, second, .. } => tree_leaf_count(first) + tree_leaf_count(second),
+    }
+}
+
 /// Find whichever window in workspace `ws_idx` is spatially adjacent to
 /// `from_idx` in direction `dir` (by their rects as of the last `refresh()`),
 /// or `None` if nothing qualifies (no wraparound).
@@ -358,6 +423,21 @@ mod tests {
             for &tl in &server.workspaces[0].windows {
                 drop(Box::from_raw(tl));
             }
+        }
+    }
+
+    // The tree must reproduce today's spiral exactly at the default ratio —
+    // this is what lets Stage 10 land without changing anything a user can
+    // see until resize (a later step) actually sets a non-0.5 ratio.
+    #[test]
+    fn dwindle_tree_matches_spiral_rects() {
+        for n in 0..=8 {
+            let spiral = spiral_rects(n, 10, 20, 1280, 720, 3);
+            let tree = match build_dwindle(n) {
+                Some(t) => tree_rects(&t, 10, 20, 1280, 720, 3),
+                None => Vec::new(),
+            };
+            assert_eq!(tree, spiral, "mismatch at n={n}");
         }
     }
 
