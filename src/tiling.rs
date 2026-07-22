@@ -276,19 +276,21 @@ const MAX_RATIO: f32 = 0.9;
 /// from its leaf to the *nearest* ancestor split whose axis matches `dir`
 /// (vertical for Left/Right, horizontal for Up/Down) — deeper splits along
 /// the other axis don't affect this edge at all, so the first matching one
-/// found is the one actually bordering the window in that direction. Only
-/// one of that split's two edges is adjustable from a leaf's side of it (the
-/// other is the tree's own outer boundary); pressing toward the boundary
-/// edge is a no-op, the same "no wraparound" rule `spatial_neighbor` uses at
-/// the edge of the layout — deliberately local, no cascading to a farther
-/// split even if one exists further up.
+/// found is the one actually bordering the window in that direction —
+/// deliberately local, no cascading to a farther split even if one exists
+/// further up. That split has exactly one edge shared between its two
+/// windows, and *both* directions on the matching axis move it — Right/Down
+/// give `first` more of the box (ratio up), Left/Up give it less (ratio
+/// down) — so every direction does something; which one grows the *focused*
+/// window versus shrinks it just falls out of which side of the split it's
+/// on (`first` grows on Right/Down, `second` grows on Left/Up).
 pub(crate) fn tree_resize(tree: &mut Node, i: usize, dir: Direction, delta: f32) {
     fn go(node: &mut Node, i: usize, dir: Direction, delta: f32) -> bool {
         let Node::Split { vertical, ratio, first, second } = node else { return false };
         let first_n = tree_leaf_count(first);
-        let (child, in_first, child_i) =
-            if i < first_n { (first.as_mut(), true, i) } else { (second.as_mut(), false, i - first_n) };
-        if go(child, child_i, dir, delta) {
+        let found =
+            if i < first_n { go(first, i, dir, delta) } else { go(second, i - first_n, dir, delta) };
+        if found {
             return true; // a nearer matching-axis split already handled this
         }
         let axis_matches = matches!(
@@ -298,16 +300,9 @@ pub(crate) fn tree_resize(tree: &mut Node, i: usize, dir: Direction, delta: f32)
         if !axis_matches {
             return false; // keep looking further up for the right axis
         }
-        // first is left/top, second is right/bottom (tree_rects' layout) — so
-        // growing "into" the shared edge means: first grows on Right/Down,
-        // second grows on Left/Up. The opposite direction from either side
-        // has no adjustable edge here — a genuine no-op, not a search miss.
-        match (in_first, matches!(dir, Direction::Right | Direction::Down)) {
-            (true, true) => *ratio = (*ratio + delta).clamp(MIN_RATIO, MAX_RATIO),
-            (false, false) => *ratio = (*ratio - delta).clamp(MIN_RATIO, MAX_RATIO),
-            _ => {}
-        }
-        true // this was the nearest matching-axis split either way — stop here
+        let step = if matches!(dir, Direction::Right | Direction::Down) { delta } else { -delta };
+        *ratio = (*ratio + step).clamp(MIN_RATIO, MAX_RATIO);
+        true // this was the nearest matching-axis split — stop here
     }
     go(tree, i, dir, delta);
 }
@@ -637,39 +632,40 @@ mod tests {
         assert!(tree_remove(Some(Node::Leaf), 0).is_none());
     }
 
-    // A|B, vertical split: A is first(left), B is second(right). Growing A
-    // rightward (into the shared edge) and growing B leftward (same edge,
-    // opposite side) both move the ratio the same direction it takes to
-    // widen whichever one is asking; the outward edges (A-Left, B-Right) are
-    // the layout's own boundary and must no-op.
+    // A|B, vertical split: A is first(left), B is second(right). Whichever
+    // window is focused, both directions on the matching axis move the one
+    // shared edge — one direction grows it, the other shrinks it back — so a
+    // grow is always fully undone by the opposite key, on either window.
     #[test]
-    fn tree_resize_vertical_split_adjustable_edge_only() {
+    fn tree_resize_either_direction_moves_the_shared_edge() {
         let mut tree =
             Node::Split { vertical: true, ratio: 0.5, first: Box::new(Node::Leaf), second: Box::new(Node::Leaf) };
 
         // 0.25 (not the real RESIZE_STEP) because it's exactly representable
         // in binary floating point, so the assertions below can compare
         // against literals without worrying about rounding drift.
-        tree_resize(&mut tree, 0, Direction::Right, 0.25); // A grows right: ratio up
+        tree_resize(&mut tree, 0, Direction::Right, 0.25); // A grows: ratio up
         assert_ratio(&tree, 0.75);
-        tree_resize(&mut tree, 0, Direction::Left, 0.25); // A's left edge is outer: no-op
-        assert_ratio(&tree, 0.75);
-        tree_resize(&mut tree, 1, Direction::Left, 0.25); // B grows left: ratio down
+        tree_resize(&mut tree, 0, Direction::Left, 0.25); // A shrinks back: ratio down
         assert_ratio(&tree, 0.5);
-        tree_resize(&mut tree, 1, Direction::Right, 0.25); // B's right edge is outer: no-op
+        tree_resize(&mut tree, 1, Direction::Left, 0.25); // B grows: ratio down
+        assert_ratio(&tree, 0.25);
+        tree_resize(&mut tree, 1, Direction::Right, 0.25); // B shrinks back: ratio up
         assert_ratio(&tree, 0.5);
     }
 
     #[test]
-    fn tree_resize_horizontal_split_adjustable_edge_only() {
+    fn tree_resize_either_direction_moves_the_shared_edge_horizontal() {
         let mut tree =
             Node::Split { vertical: false, ratio: 0.5, first: Box::new(Node::Leaf), second: Box::new(Node::Leaf) };
 
-        tree_resize(&mut tree, 0, Direction::Down, 0.25); // top grows down: ratio up
+        tree_resize(&mut tree, 0, Direction::Down, 0.25); // top grows: ratio up
         assert_ratio(&tree, 0.75);
-        tree_resize(&mut tree, 0, Direction::Up, 0.25); // top's own edge is outer: no-op
-        assert_ratio(&tree, 0.75);
-        tree_resize(&mut tree, 1, Direction::Up, 0.25); // bottom grows up: ratio down
+        tree_resize(&mut tree, 0, Direction::Up, 0.25); // top shrinks back: ratio down
+        assert_ratio(&tree, 0.5);
+        tree_resize(&mut tree, 1, Direction::Up, 0.25); // bottom grows: ratio down
+        assert_ratio(&tree, 0.25);
+        tree_resize(&mut tree, 1, Direction::Down, 0.25); // bottom shrinks back: ratio up
         assert_ratio(&tree, 0.5);
     }
 

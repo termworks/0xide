@@ -52,10 +52,11 @@ pub enum Action {
     MoveFocus(Direction),
     /// Swap the focused window's tiling position with its spatial neighbor.
     MoveWindow(Direction),
-    /// Grow the focused tiled window's edge in this direction (shrinking
-    /// whatever's on the other side of that split), by adjusting the split
-    /// tree ratio the edge belongs to. No-op on an edge that's the layout's
-    /// own outer boundary, or if the focused window is floating/fullscreen.
+    /// Resize the focused tiled window along its nearest matching-axis split
+    /// (vertical for Left/Right, horizontal for Up/Down): Right/Down grow it
+    /// or shrink it depending on which side of that split it's on — the
+    /// opposite direction always undoes it. No-op if the focused window is
+    /// floating/fullscreen (it isn't in the split tree at all).
     ResizeWindow(Direction),
     /// Toggle the focused window fullscreen (full output box, above bars).
     Fullscreen,

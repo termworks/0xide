@@ -73,9 +73,9 @@ bind = MOD SHIFT, J, movewindow, d
 bind = MOD SHIFT, K, movewindow, u
 bind = MOD SHIFT, L, movewindow, r
 
-# Grow the focused tiled window's edge in this direction (shrinking whatever's
-# on the other side of that split). No-op toward an edge that's the layout's
-# own outer boundary, or on a floating/fullscreen window.
+# Resize the focused tiled window along its nearest split. Either direction
+# works — one grows it, the opposite shrinks it back. No-op on a
+# floating/fullscreen window (not in the split tree).
 bind = MOD CTRL, H, resizewindow, l
 bind = MOD CTRL, J, resizewindow, d
 bind = MOD CTRL, K, resizewindow, u
