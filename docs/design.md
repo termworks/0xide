@@ -7,18 +7,22 @@ next. It is updated as decisions are made.
 
 ## Layout
 
-There is one tiling layout — the spiral/dwindle described in
-[Stage 5](phases/stage-5-window-management.md) — and it is **recomputed from
-the window list's order on every change**. There is no persisted layout
-tree, no per-window split ratios, no manual layout mode.
+Tiled windows sit in an explicit split tree (`tiling::Node`: `Leaf` or
+`Split { vertical, ratio, first, second }`), one per workspace, shaped like
+the dwindle spiral described in
+[Stage 5](phases/stage-5-window-management.md) by default but with a
+**persisted ratio per split** — [Stage 10](phases/stage-10-split-tree.md)'s
+addition. `Mod+Ctrl+hjkl` (`resizewindow`) adjusts the ratio of whichever
+split borders the focused window in that direction; every other window's
+ratio is untouched, including across opening and closing unrelated windows.
 
-The tradeoff: layout is a pure function of a `Vec` — reproducible, unit-
-testable against exact computed rectangles, with no layout state to corrupt
-or desynchronize. The cost is that some layout-shape questions have no clean
-answer; the corner-touch ambiguity in directional navigation is a direct
-consequence, and is documented with a test that pins the behavior. If
-per-window split control becomes a requirement, the structural fix is an
-explicit split-tree — listed under planned ideas below.
+Windows themselves stay unaware of the tree: which window is tiled-position
+*i* is still decided purely by `Workspace.windows`' order (now filtered to
+non-floating, non-fullscreen ones), exactly as before. The tree only adds
+the one thing a plain `Vec` had no room for — a number that survives between
+`refresh()` calls. Directional navigation (`spatial_neighbor`) still uses
+Stage 5's geometric heuristic rather than the tree's actual adjacency, so
+the corner-touch ambiguity documented there is unchanged.
 
 ## Configuration
 
@@ -68,10 +72,11 @@ already visible from the arrangement.
 
 Under consideration, not committed:
 
-- **An explicit split-tree layout** — per-window split ratios, interactive
-  resize, and fully reversible directional navigation; the structural answer
-  to the corner-touch limitation above.
 - **Runtime control** — a socket/IPC for querying and scripting the
   compositor without keybindings.
+- **Exact tree-based directional navigation** — now that the split tree
+  exists, `spatial_neighbor` could use its real adjacency instead of Stage
+  5's geometric heuristic, fully resolving the corner-touch case. Not
+  pursued in Stage 10 since it wasn't needed for the resize deliverable.
 
 When one of these lands, it moves out of this list and into a stage chapter.
