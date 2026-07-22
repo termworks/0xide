@@ -2,6 +2,7 @@
 
 use crate::config::Config;
 use crate::ffi::ShimListener;
+use crate::tiling::Node;
 use crate::wlr;
 use std::os::raw::c_void;
 
@@ -73,10 +74,15 @@ pub(crate) struct Server {
     pub(crate) grab_h: i32,
 }
 
-/// One workspace: an independent list of windows and its focused index.
+/// One workspace: an independent list of windows, its focused index, and the
+/// split tree its tiled (non-floating, non-fullscreen) windows are arranged
+/// into. `tree`'s leaves correspond, in order, to `tiling::tiled_windows(self)`
+/// — kept in sync by `tiling::tree_track`/`tree_untrack` every time a window
+/// starts or stops tiling. `None` iff no window is currently tiled.
 pub(crate) struct Workspace {
     pub(crate) windows: Vec<*mut Toplevel>,
     pub(crate) focused: usize,
+    pub(crate) tree: Option<Node>,
 }
 
 /// One connected output (monitor): its box in layout coordinates, the workspace

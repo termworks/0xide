@@ -3,7 +3,7 @@
 use crate::ffi::*;
 use crate::keybindings::focus_index;
 use crate::state::*;
-use crate::tiling::{active_output, active_workspace, refresh, spiral_rects, tiled_windows};
+use crate::tiling::{active_output, active_workspace, predict_tile_rect, refresh, tree_track, tree_untrack, workspace_of};
 use crate::wlr;
 use std::ffi::CStr;
 use std::os::raw::c_void;
@@ -55,6 +55,14 @@ pub(crate) unsafe fn set_fullscreen(server: &mut Server, tl: *mut Toplevel, on: 
         wlr::wlr_xdg_toplevel_set_fullscreen((*tl).xdg_toplevel, on);
         return;
     }
+    // Untrack/track around the flag flip: tiled_position (which both read)
+    // needs to see the state from the side it's being called on.
+    let ws_idx = workspace_of(server, tl);
+    if on && !(*tl).floating {
+        if let Some(a) = ws_idx {
+            tree_untrack(&mut server.workspaces[a], tl);
+        }
+    }
     (*tl).fullscreen = on;
     wlr::wlr_xdg_toplevel_set_fullscreen((*tl).xdg_toplevel, on);
     let tree = match (on, (*tl).floating) {
@@ -63,6 +71,11 @@ pub(crate) unsafe fn set_fullscreen(server: &mut Server, tl: *mut Toplevel, on: 
         (false, false) => server.tree_normal,
     };
     oxide_scene_tree_reparent((*tl).scene_tree, tree);
+    if !on && !(*tl).floating {
+        if let Some(a) = ws_idx {
+            tree_track(&mut server.workspaces[a], tl);
+        }
+    }
     refresh(server);
     // A floating window keeps no protocol-side size when fullscreen ends
     // (refresh skips it), so restore its remembered floating rect itself.
@@ -74,11 +87,20 @@ pub(crate) unsafe fn set_fullscreen(server: &mut Server, tl: *mut Toplevel, on: 
 
 /// Float or re-tile a window. Floating windows keep their own size (no tiled
 /// states, configures are hints), paint above tiled ones (the `tree_floating`
-/// scene layer), and are skipped by the spiral; re-tiling restores the tiled
-/// states so `refresh()`'s sizes bind again.
+/// scene layer), and hold no leaf in the split tree; re-tiling restores the
+/// tiled states so `refresh()`'s sizes bind again.
 pub(crate) unsafe fn set_floating(server: &mut Server, tl: *mut Toplevel, on: bool) {
     if (*tl).floating == on {
         return;
+    }
+    // Same untrack-before/track-after split as set_fullscreen, and for the
+    // same reason: tiled_position needs to see the pre-flip state to find
+    // the leaf, and the post-flip state to know where it belongs again.
+    let ws_idx = workspace_of(server, tl);
+    if on && !(*tl).fullscreen {
+        if let Some(a) = ws_idx {
+            tree_untrack(&mut server.workspaces[a], tl);
+        }
     }
     (*tl).floating = on;
     if !(*tl).fullscreen {
@@ -93,6 +115,11 @@ pub(crate) unsafe fn set_floating(server: &mut Server, tl: *mut Toplevel, on: bo
         place_floating(server, tl, w, h);
     } else {
         oxide_xdg_toplevel_set_tiled_all((*tl).xdg_toplevel);
+        if !(*tl).fullscreen {
+            if let Some(a) = ws_idx {
+                tree_track(&mut server.workspaces[a], tl);
+            }
+        }
     }
     refresh(server);
     println!("0xide: floating {}", if on { "on" } else { "off" });
@@ -128,7 +155,7 @@ pub(crate) unsafe fn clamp_floating(
     x: i32,
     y: i32,
 ) -> (i32, i32) {
-    let Some(ws_idx) = server.workspaces.iter().position(|ws| ws.windows.contains(&tl)) else {
+    let Some(ws_idx) = workspace_of(server, tl) else {
         return (x, y);
     };
     let Some(o) = server.outputs.iter().find(|o| o.workspace == ws_idx) else {
@@ -190,9 +217,9 @@ unsafe extern "C" fn handle_request_fullscreen(userdata: *mut c_void, _data: *mu
 /// remembered/preferred size — often larger than their tile, spilling across
 /// outputs, and some (e.g. browsers) then mishandle the immediate resize that
 /// follows on map. Instead, predict the tile this window will get — it joins
-/// the end of the active output's workspace, so it takes the last rect of the
-/// spiral with one extra window — and send that, so the first frame the
-/// client ever draws already fits.
+/// the end of the active output's workspace, so `predict_tile_rect` simulates
+/// appending it to that workspace's split tree — and send that, so the first
+/// frame the client ever draws already fits.
 unsafe extern "C" fn handle_commit(userdata: *mut c_void, _data: *mut c_void) {
     let tl = userdata as *mut Toplevel;
     if !oxide_xdg_initial_commit((*tl).xdg_toplevel) {
@@ -224,9 +251,7 @@ unsafe extern "C" fn handle_commit(userdata: *mut c_void, _data: *mut c_void) {
     if !server.outputs.is_empty() {
         let o = &server.outputs[active_output(server)];
         let ws = &server.workspaces[o.workspace];
-        let tiled = tiled_windows(ws).len();
-        let rects = spiral_rects(tiled + 1, o.ux, o.uy, o.uw, o.uh, server.config.gap);
-        (_, _, w, h) = *rects.last().unwrap();
+        (_, _, w, h) = predict_tile_rect(ws, o.ux, o.uy, o.uw, o.uh, server.config.gap);
     }
     // Tiled state makes the size binding: without it this configure has
     // floating semantics, and clients with a remembered size (Firefox) may
@@ -259,6 +284,9 @@ unsafe extern "C" fn handle_map(userdata: *mut c_void, _data: *mut c_void) {
     }
     let a = active_workspace(server);
     server.workspaces[a].windows.push(tl);
+    if !(*tl).floating {
+        tree_track(&mut server.workspaces[a], tl);
+    }
     refresh(server);
     focus_index(server, server.workspaces[a].windows.len() - 1);
     println!(
@@ -306,6 +334,9 @@ unsafe fn remove_window(server: &mut Server, tl: *mut Toplevel) {
     }
     for ws in server.workspaces.iter_mut() {
         if let Some(pos) = ws.windows.iter().position(|&w| w == tl) {
+            if !(*tl).floating && !(*tl).fullscreen {
+                tree_untrack(ws, tl);
+            }
             ws.windows.remove(pos);
             if ws.focused >= ws.windows.len() && !ws.windows.is_empty() {
                 ws.focused = ws.windows.len() - 1;

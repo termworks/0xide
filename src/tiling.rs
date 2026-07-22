@@ -6,8 +6,8 @@ use crate::state::*;
 use crate::wlr;
 
 /// Recompute the whole picture: hide windows whose workspace isn't on any
-/// output, then tile each output's workspace as a spiral (dwindle). Called after
-/// any change to windows, workspaces or outputs.
+/// output, then tile each output's workspace from its split tree. Called
+/// after any change to windows, workspaces or outputs.
 pub(crate) unsafe fn refresh(server: &mut Server) {
     // A window is visible iff its workspace is currently shown on some output.
     let mut shown = [false; WORKSPACE_COUNT];
@@ -45,27 +45,32 @@ pub(crate) unsafe fn refresh(server: &mut Server) {
         for &tl in ws.windows.iter().filter(|&&tl| (*tl).fullscreen) {
             place(tl, o.x, o.y, o.w, o.h);
         }
-        let rects = spiral_rects(tiled.len(), o.ux, o.uy, o.uw, o.uh, gap);
+        let rects = match &ws.tree {
+            Some(t) => tree_rects(t, o.ux, o.uy, o.uw, o.uh, gap),
+            None => Vec::new(),
+        };
         for (&tl, &(x, y, w, h)) in tiled.iter().zip(&rects) {
             place(tl, x, y, w, h);
         }
     }
 }
 
-/// The windows of a workspace that participate in the spiral — neither
-/// fullscreen nor floating — in stacking order. Shared by `refresh()` and
-/// the initial-configure tile prediction (`toplevel::handle_commit`), so
-/// the predicted count and the placed count can't drift apart.
+/// The windows of a workspace that are tiled — neither fullscreen nor
+/// floating — in stacking order; the same order the split tree's leaves are
+/// in. Shared by `refresh()`, `tiled_position`, and the initial-configure
+/// tile prediction (`toplevel::handle_commit`), so nothing can drift apart.
 pub(crate) unsafe fn tiled_windows(ws: &Workspace) -> Vec<*mut Toplevel> {
     ws.windows.iter().copied().filter(|&tl| !(*tl).fullscreen && !(*tl).floating).collect()
 }
 
-/// The spiral (dwindle) layout as a pure function: `n` rects filling the
+/// The original flat-list spiral (dwindle) layout: `n` rects filling the
 /// `x,y,w,h` box with `gap` pixels around and between windows. Each window
 /// except the last splits the remaining rect, alternating vertical
 /// (left/right) then horizontal (top/bottom); the window takes the first
-/// half, the rest recurse into the second. Pure so the unit tests exercise
-/// the exact same geometry `refresh()` applies.
+/// half, the rest recurse into the second. `refresh()` no longer calls this
+/// (Stage 10 moved it to the split tree below) — it survives as the known-
+/// good reference the tree's output is checked against.
+#[cfg(test)]
 pub(crate) fn spiral_rects(
     n: usize,
     x: i32,
@@ -104,10 +109,12 @@ pub(crate) fn spiral_rects(
 /// between two children. `ratio` is the fraction of the split's box the
 /// `first` child gets — the piece of state the flat `Vec`-order spiral had
 /// no room for, and the reason this tree exists (Stage 10: per-window
-/// resize). Shape mirrors `spiral_rects`'s alternating dwindle exactly, so
+/// resize). Shape mirrors the old spiral's alternating dwindle exactly, so
 /// `build_dwindle` + `tree_rects` reproduce it bit-for-bit at the default
-/// ratio (see the parity test below) — this step only introduces the type,
-/// nothing reads or persists it yet.
+/// ratio. Lives on `Workspace.tree`, one per workspace; `Clone` is for
+/// `predict_tile_rect`, which simulates an insert without touching the real
+/// tree.
+#[derive(Clone)]
 pub(crate) enum Node {
     Leaf,
     Split { vertical: bool, ratio: f32, first: Box<Node>, second: Box<Node> },
@@ -163,6 +170,101 @@ fn tree_leaf_count(tree: &Node) -> usize {
         Node::Leaf => 1,
         Node::Split { first, second, .. } => tree_leaf_count(first) + tree_leaf_count(second),
     }
+}
+
+/// Insert a new leaf so it becomes tiled-position `i` (0-indexed, in-order)
+/// once inserted. Every split the new leaf doesn't pass through keeps its
+/// `ratio` exactly as it was — only the split that gains the new leaf as a
+/// child is freshly created, at the default 0.5, same as any leaf
+/// `build_dwindle` creates. Passing the tree's current leaf count as `i`
+/// appends at the end, which is what a newly mapped window always does; any
+/// other `i` is a window rejoining the tiled set (after a float/fullscreen
+/// toggle) at whichever position `Workspace.windows` order puts it among the
+/// other tiled ones.
+pub(crate) fn tree_insert_at(tree: Option<Node>, i: usize) -> Node {
+    fn go(node: Node, i: usize, axis: bool) -> Node {
+        match node {
+            Node::Leaf => {
+                Node::Split { vertical: axis, ratio: 0.5, first: Box::new(Node::Leaf), second: Box::new(Node::Leaf) }
+            }
+            Node::Split { vertical, ratio, first, second } => {
+                let first_n = tree_leaf_count(&first);
+                if i < first_n {
+                    Node::Split { vertical, ratio, first: Box::new(go(*first, i, !vertical)), second }
+                } else {
+                    Node::Split { vertical, ratio, first, second: Box::new(go(*second, i - first_n, !vertical)) }
+                }
+            }
+        }
+    }
+    match tree {
+        None => Node::Leaf,
+        Some(t) => go(t, i, true),
+    }
+}
+
+/// Remove tiled-position `i` (0-indexed, in-order) from the tree. The
+/// removed leaf's sibling — and everything under it, ratios untouched —
+/// reclaims the freed space by collapsing the now-empty parent split away.
+/// `None` once the last leaf is gone.
+pub(crate) fn tree_remove(tree: Option<Node>, i: usize) -> Option<Node> {
+    match tree? {
+        Node::Leaf => None,
+        Node::Split { vertical, ratio, first, second } => {
+            let first_n = tree_leaf_count(&first);
+            if i < first_n {
+                match tree_remove(Some(*first), i) {
+                    Some(f) => Some(Node::Split { vertical, ratio, first: Box::new(f), second }),
+                    None => Some(*second),
+                }
+            } else {
+                match tree_remove(Some(*second), i - first_n) {
+                    Some(s) => Some(Node::Split { vertical, ratio, first, second: Box::new(s) }),
+                    None => Some(*first),
+                }
+            }
+        }
+    }
+}
+
+/// `tl`'s index among its workspace's tiled windows right now — its leaf
+/// position in the split tree — or `None` if it's floating or fullscreen.
+pub(crate) unsafe fn tiled_position(ws: &Workspace, tl: *mut Toplevel) -> Option<usize> {
+    tiled_windows(ws).iter().position(|&w| w == tl)
+}
+
+/// Remove `tl`'s leaf from `ws`'s tree. Call *before* flipping whatever flag
+/// (`floating`/`fullscreen`) is about to take it out of the tiled set — the
+/// lookup needs the old state to still find it.
+pub(crate) unsafe fn tree_untrack(ws: &mut Workspace, tl: *mut Toplevel) {
+    if let Some(p) = tiled_position(ws, tl) {
+        ws.tree = tree_remove(ws.tree.take(), p);
+    }
+}
+
+/// Insert a leaf for `tl` into `ws`'s tree, at the position its (already
+/// updated) tiled state puts it among the workspace's other tiled windows.
+/// Call *after* flipping the flag that just made it tiled again.
+pub(crate) unsafe fn tree_track(ws: &mut Workspace, tl: *mut Toplevel) {
+    if let Some(p) = tiled_position(ws, tl) {
+        ws.tree = Some(tree_insert_at(ws.tree.take(), p));
+    }
+}
+
+/// Which workspace currently holds `tl`, if any.
+pub(crate) unsafe fn workspace_of(server: &Server, tl: *mut Toplevel) -> Option<usize> {
+    server.workspaces.iter().position(|ws| ws.windows.contains(&tl))
+}
+
+/// The rect a new tiled window would get if it mapped onto `ws` right now:
+/// simulates the append on a clone of the tree, leaving the real one
+/// untouched, so the very first configure a client gets already matches the
+/// size it will actually receive once it maps (Stage 8: avoids a resize jump
+/// on the client's first frame — see `toplevel::handle_commit`).
+pub(crate) fn predict_tile_rect(ws: &Workspace, x: i32, y: i32, w: i32, h: i32, gap: i32) -> (i32, i32, i32, i32) {
+    let n = ws.tree.as_ref().map_or(0, tree_leaf_count);
+    let candidate = tree_insert_at(ws.tree.clone(), n);
+    *tree_rects(&candidate, x, y, w, h, gap).last().unwrap()
 }
 
 /// Find whichever window in workspace `ws_idx` is spatially adjacent to
@@ -360,7 +462,7 @@ mod tests {
             tree_fullscreen: ptr::null_mut(),
             tree_layer_overlay: ptr::null_mut(),
             layers: Vec::new(),
-            workspaces: vec![Workspace { windows, focused: 0 }],
+            workspaces: vec![Workspace { windows, focused: 0, tree: None }],
             outputs: Vec::new(),
             config: Config::default(),
             grab: GrabMode::None,
@@ -439,6 +541,55 @@ mod tests {
             };
             assert_eq!(tree, spiral, "mismatch at n={n}");
         }
+    }
+
+    // The real insert path (append one at a time, as every window map does)
+    // must land on the exact same shape `build_dwindle` computes in one shot
+    // — otherwise a workspace built window-by-window would tile differently
+    // than the parity test above assumes.
+    #[test]
+    fn tree_insert_at_end_matches_build_dwindle() {
+        let mut tree: Option<Node> = None;
+        for n in 1..=8 {
+            let count_before = tree.as_ref().map_or(0, tree_leaf_count);
+            tree = Some(tree_insert_at(tree, count_before));
+            let expected = build_dwindle(n).unwrap();
+            assert_eq!(
+                tree_rects(tree.as_ref().unwrap(), 0, 0, 1280, 720, 4),
+                tree_rects(&expected, 0, 0, 1280, 720, 4),
+                "mismatch at n={n}"
+            );
+        }
+    }
+
+    // The whole point of the tree over the old spiral: removing one window
+    // must not disturb another split's ratio. A|[B|C] with B|C customized to
+    // 0.7 — removing A must leave B|C exactly as it was.
+    #[test]
+    fn tree_remove_collapses_sibling_and_preserves_other_ratios() {
+        let tree = Node::Split {
+            vertical: true,
+            ratio: 0.5,
+            first: Box::new(Node::Leaf),
+            second: Box::new(Node::Split {
+                vertical: false,
+                ratio: 0.7,
+                first: Box::new(Node::Leaf),
+                second: Box::new(Node::Leaf),
+            }),
+        };
+        match tree_remove(Some(tree), 0).unwrap() {
+            Node::Split { vertical, ratio, .. } => {
+                assert!(!vertical);
+                assert_eq!(ratio, 0.7);
+            }
+            Node::Leaf => panic!("expected the B|C split to survive removal of A"),
+        }
+    }
+
+    #[test]
+    fn tree_remove_last_leaf_empties_the_tree() {
+        assert!(tree_remove(Some(Node::Leaf), 0).is_none());
     }
 
     #[test]

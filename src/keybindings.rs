@@ -3,7 +3,7 @@
 use crate::config::{Action, Direction, MOD_ALT, MOD_CTRL, MOD_MASK};
 use crate::ffi::*;
 use crate::state::*;
-use crate::tiling::{active_output, active_workspace, refresh, spatial_neighbor};
+use crate::tiling::{active_output, active_workspace, refresh, spatial_neighbor, tree_track, tree_untrack};
 use crate::toplevel::{clamp_floating, set_floating, set_fullscreen};
 use crate::wlr;
 use std::os::raw::c_void;
@@ -71,12 +71,20 @@ unsafe fn move_to_workspace(server: &mut Server, target: usize) {
         return;
     }
     let focused = server.workspaces[a].focused;
-    let tl = server.workspaces[a].windows.remove(focused);
+    let tl = server.workspaces[a].windows[focused];
+    let tiled = !(*tl).floating && !(*tl).fullscreen;
+    if tiled {
+        tree_untrack(&mut server.workspaces[a], tl);
+    }
+    server.workspaces[a].windows.remove(focused);
     let len = server.workspaces[a].windows.len();
     if server.workspaces[a].focused >= len && len > 0 {
         server.workspaces[a].focused = len - 1;
     }
     server.workspaces[target].windows.push(tl);
+    if tiled {
+        tree_track(&mut server.workspaces[target], tl);
+    }
     refresh(server); // recomputes visibility (target may or may not be displayed)
     let f = server.workspaces[a].focused;
     focus_index(server, f);

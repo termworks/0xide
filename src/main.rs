@@ -129,6 +129,7 @@ fn main() {
                 .map(|_| Workspace {
                     windows: Vec::new(),
                     focused: 0,
+                    tree: None,
                 })
                 .collect(),
             outputs: Vec::new(),
