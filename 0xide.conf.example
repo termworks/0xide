@@ -55,8 +55,9 @@ float_size = 60% x 60%
 #   MODS   space/`+` separated: MOD (=primary), SUPER, ALT, SHIFT, CTRL
 #   KEY    an xkb key name: Return, Q, 1, space, F1, ... (case-insensitive)
 #   ACTION spawn <cmd> | close | quit | focusnext | focusprev
-#          | movefocus <l|r|u|d> | movewindow <l|r|u|d> | fullscreen
-#          | togglefloating | workspace <n> | movetoworkspace <n>  (n = 1..9)
+#          | movefocus <l|r|u|d> | movewindow <l|r|u|d> | resizewindow <l|r|u|d>
+#          | fullscreen | togglefloating | workspace <n> | movetoworkspace <n>
+#          (n = 1..9)
 
 bind = MOD, Return, spawn, kitty
 bind = MOD, Q, close
@@ -71,6 +72,14 @@ bind = MOD SHIFT, H, movewindow, l
 bind = MOD SHIFT, J, movewindow, d
 bind = MOD SHIFT, K, movewindow, u
 bind = MOD SHIFT, L, movewindow, r
+
+# Grow the focused tiled window's edge in this direction (shrinking whatever's
+# on the other side of that split). No-op toward an edge that's the layout's
+# own outer boundary, or on a floating/fullscreen window.
+bind = MOD CTRL, H, resizewindow, l
+bind = MOD CTRL, J, resizewindow, d
+bind = MOD CTRL, K, resizewindow, u
+bind = MOD CTRL, L, resizewindow, r
 
 # Toggle the focused window fullscreen (full output, over bars). Clients can
 # also request it themselves (F11 in a browser, mpv --fs).

@@ -52,6 +52,11 @@ pub enum Action {
     MoveFocus(Direction),
     /// Swap the focused window's tiling position with its spatial neighbor.
     MoveWindow(Direction),
+    /// Grow the focused tiled window's edge in this direction (shrinking
+    /// whatever's on the other side of that split), by adjusting the split
+    /// tree ratio the edge belongs to. No-op on an edge that's the layout's
+    /// own outer boundary, or if the focused window is floating/fullscreen.
+    ResizeWindow(Direction),
     /// Toggle the focused window fullscreen (full output box, above bars).
     Fullscreen,
     /// Toggle the focused window between tiled and floating.
@@ -237,6 +242,7 @@ impl Config {
 fn default_binds(modifier: u32) -> Vec<Bind> {
     let m = modifier;
     let ms = modifier | MOD_SHIFT;
+    let mc = modifier | MOD_CTRL;
     let mut binds = vec![
         Bind { mods: m, keysym: key("Return"), action: Action::Spawn("kitty".into()) },
         Bind { mods: m, keysym: key("Q"), action: Action::Close },
@@ -249,6 +255,10 @@ fn default_binds(modifier: u32) -> Vec<Bind> {
         Bind { mods: ms, keysym: key("J"), action: Action::MoveWindow(Direction::Down) },
         Bind { mods: ms, keysym: key("K"), action: Action::MoveWindow(Direction::Up) },
         Bind { mods: ms, keysym: key("L"), action: Action::MoveWindow(Direction::Right) },
+        Bind { mods: mc, keysym: key("H"), action: Action::ResizeWindow(Direction::Left) },
+        Bind { mods: mc, keysym: key("J"), action: Action::ResizeWindow(Direction::Down) },
+        Bind { mods: mc, keysym: key("K"), action: Action::ResizeWindow(Direction::Up) },
+        Bind { mods: mc, keysym: key("L"), action: Action::ResizeWindow(Direction::Right) },
         Bind { mods: m, keysym: key("F"), action: Action::Fullscreen },
         Bind { mods: m, keysym: key("V"), action: Action::ToggleFloating },
     ];
@@ -350,6 +360,7 @@ fn parse_action(name: &str, arg: Option<&str>) -> Option<Action> {
         "focusprev" => Some(Action::FocusPrev),
         "movefocus" => Some(Action::MoveFocus(direction_from_arg(arg?)?)),
         "movewindow" => Some(Action::MoveWindow(direction_from_arg(arg?)?)),
+        "resizewindow" => Some(Action::ResizeWindow(direction_from_arg(arg?)?)),
         "fullscreen" | "togglefullscreen" => Some(Action::Fullscreen),
         "float" | "togglefloating" => Some(Action::ToggleFloating),
         "workspace" => Some(Action::Workspace(workspace_index(arg?)?)),

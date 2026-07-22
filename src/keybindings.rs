@@ -3,7 +3,9 @@
 use crate::config::{Action, Direction, MOD_ALT, MOD_CTRL, MOD_MASK};
 use crate::ffi::*;
 use crate::state::*;
-use crate::tiling::{active_output, active_workspace, refresh, spatial_neighbor, tree_track, tree_untrack};
+use crate::tiling::{
+    active_output, active_workspace, refresh, spatial_neighbor, tiled_position, tree_resize, tree_track, tree_untrack,
+};
 use crate::toplevel::{clamp_floating, set_floating, set_fullscreen};
 use crate::wlr;
 use std::os::raw::c_void;
@@ -93,6 +95,9 @@ unsafe fn move_to_workspace(server: &mut Server, target: usize) {
 
 /// How far one Mod+Shift+hjkl press moves a floating window, in pixels.
 const NUDGE_STEP: i32 = 50;
+
+/// How far one Mod+Ctrl+hjkl press adjusts a tiled window's split ratio.
+const RESIZE_STEP: f32 = 0.05;
 
 /// Move a floating window one step in `dir`, kept within the usable area of
 /// its output (the same clamp pointer-grab moves use).
@@ -205,7 +210,19 @@ pub(crate) unsafe extern "C" fn handle_keybinding(
                 refresh(server);
             }
         }
-        Action::MoveFocus(_) | Action::MoveWindow(_) => {}
+        Action::ResizeWindow(dir) if n > 0 => {
+            let a = active_workspace(server);
+            let f = server.workspaces[a].focused;
+            if let Some(&tl) = server.workspaces[a].windows.get(f) {
+                if let Some(i) = tiled_position(&server.workspaces[a], tl) {
+                    if let Some(tree) = &mut server.workspaces[a].tree {
+                        tree_resize(tree, i, dir, RESIZE_STEP);
+                    }
+                    refresh(server);
+                }
+            }
+        }
+        Action::MoveFocus(_) | Action::MoveWindow(_) | Action::ResizeWindow(_) => {}
         Action::Fullscreen if n > 0 => {
             let a = active_workspace(server);
             let ws = &server.workspaces[a];
