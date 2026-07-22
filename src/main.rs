@@ -18,6 +18,7 @@ mod ffi;
 mod input;
 mod keybindings;
 mod layer_shell;
+mod layout;
 mod output;
 mod state;
 mod tiling;

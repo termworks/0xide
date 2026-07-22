@@ -66,7 +66,8 @@ The shim itself is split one file per protocol/concern (`shim/output.c`,
 | `src/main.rs`            | Orchestration: builds the compositor, runs the event loop          |
 | `src/state.rs`           | `Server`, `Output`, `Toplevel`, `Workspace` — the Rust-owned state  |
 | `src/config.rs`          | Dependency-free config-file parser                                 |
-| `src/tiling.rs`          | Spiral/dwindle layout, directional focus/move, layer arrangement   |
+| `src/layout.rs`          | The split tree (`Node`) and its pure operations — insert/remove/resize |
+| `src/tiling.rs`          | Tiling orchestration: syncs the tree to live state, directional focus/move, layer arrangement |
 | `src/output.rs`, `input.rs`, `toplevel.rs`, `layer_shell.rs`, `decoration.rs`, `keybindings.rs` | Per-concern policy modules |
 | `src/ffi.rs`             | `extern "C"` declarations mirroring `shim/oxide_shim.h`             |
 | `shim/*.c`, `shim/oxide_shim.h` | The C shim — listener glue + opaque struct field access     |

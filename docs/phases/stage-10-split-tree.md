@@ -17,7 +17,7 @@ the layout keeps it.*
 
 ## How it went
 
-The tree (`tiling::Node`) is a binary `Leaf`/`Split { vertical, ratio, first,
+The tree (`layout::Node`) is a binary `Leaf`/`Split { vertical, ratio, first,
 second }`, one per workspace (`Workspace.tree`), shaped exactly like the old
 spiral at the default 0.5 ratio — a parity test checks the two produce
 bit-identical rects. The key design choice: leaves carry no payload. Which

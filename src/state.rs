@@ -2,7 +2,7 @@
 
 use crate::config::Config;
 use crate::ffi::ShimListener;
-use crate::tiling::Node;
+use crate::layout::Node;
 use crate::wlr;
 use std::os::raw::c_void;
 

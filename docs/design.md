@@ -7,7 +7,7 @@ next. It is updated as decisions are made.
 
 ## Layout
 
-Tiled windows sit in an explicit split tree (`tiling::Node`: `Leaf` or
+Tiled windows sit in an explicit split tree (`layout::Node`: `Leaf` or
 `Split { vertical, ratio, first, second }`), one per workspace, shaped like
 the dwindle spiral described in
 [Stage 5](phases/stage-5-window-management.md) by default but with a
